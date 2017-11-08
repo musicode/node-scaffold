@@ -7,7 +7,7 @@ module.exports = options => {
       ctx.body = '已登录，无法进行该操作'
     }
     else {
-      next()
+      await next()
     }
   }
 }

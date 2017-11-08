@@ -19,6 +19,7 @@ module.exports = appInfo => {
   // 全局中间件
   config.middleware = [
     'errorHandler',
+    'notFoundHandler',
   ]
 
   exports.jsonp = {

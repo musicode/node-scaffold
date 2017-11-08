@@ -15,7 +15,12 @@ module.exports = app => {
       else {
         data = this.ctx.request.query
       }
-      this.ctx.validate(rules, data)
+      try {
+        this.ctx.validate(rules, data)
+      }
+      catch (err) {
+        throw err
+      }
     }
 
     success(data = { }, msg = 'success') {
