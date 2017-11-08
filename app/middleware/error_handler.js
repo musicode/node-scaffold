@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = options => {
-  return async function errorHandler(next) {
+  return async function errorHandler(ctx, next) {
     console.log('err1')
     try {
       await next()
