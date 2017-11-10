@@ -2,8 +2,16 @@
 const UADevice = require('ua-device')
 
 const UA = Symbol('Context#ua')
+const ACCESS_TOKEN = Symbol('Context#accessToken')
+const CURRENT_USER = Symbol('Context#currentUser')
+const INPUT = Symbol('Context#input')
+const OUTPUT = Symbol('Context#output')
 
 module.exports = {
+
+  /**
+   * 访客的客户端信息
+   */
   get ua() {
     if (!this[UA]) {
       let ua = new UADevice(
@@ -27,4 +35,79 @@ module.exports = {
     }
     return this[UA]
   },
+
+  /**
+   * 输入参数
+   */
+  get input() {
+    if (!this[INPUT]) {
+      this[INPUT] = this.method === 'POST'
+        ? this.request.body
+        : this.request.query
+    }
+    return this[INPUT]
+  },
+
+  /**
+   * 输出数据
+   */
+  get output() {
+    if (!this[OUTPUT]) {
+      this[OUTPUT] = { }
+    }
+    return this[OUTPUT]
+  },
+
+  /**
+   * 获取身份标识符
+   * 不存在时新建一个
+   */
+  async getAccessToken() {
+    if (!this[ACCESS_TOKEN]) {
+      let accessToken = this.input.access_token
+      if (!accessToken) {
+        accessToken = this.cookies.get('access_token')
+        if (!accessToken) {
+          let { config, redis } = this.app
+          accessToken = this.helper.uuid()
+          let key = `session:${accessToken}`
+          // 写进 redis
+          await redis.hset(key, config.session.currentUser, accessToken)
+          // 设置过期时间
+          await redis.expire(key, config.session.maxAge)
+          // 如果对方有 cookie 功能
+          this.cookies.set(
+            'access_token',
+            accessToken,
+            {
+              maxAge: config.session.maxAge
+            }
+          )
+          // 作为结果返回
+          this.output.accessToken = accessToken
+        }
+      }
+      this[ACCESS_TOKEN] = accessToken
+    }
+    return this[ACCESS_TOKEN]
+  },
+
+  /**
+   * 当前登录用户
+   */
+  async getCurrentUser() {
+    if (this[CURRENT_USER] == null) {
+      let { config, redis } = this.app
+      let accessToken = await this.getAccessToken()
+      let userId = await redis.hget(`session:${accessToken}`, config.session.currentUser)
+      if (userId) {
+        this[CURRENT_USER] = await redis.hgetall(`user:${userId}`)
+      }
+      else {
+        this[CURRENT_USER] = false
+      }
+    }
+    return this[CURRENT_USER]
+  },
+
 }

@@ -3,41 +3,31 @@
 module.exports = app => {
   class BaseController extends app.Controller {
 
-    get currentUser() {
-
-    }
-
     validate(rules) {
-      let data
-      if (this.ctx.method === 'POST') {
-        data = this.ctx.request.body
-      }
-      else {
-        data = this.ctx.request.query
-      }
       try {
-        this.ctx.validate(rules, data)
+        this.ctx.validate(rules, this.ctx.input)
       }
       catch (err) {
         throw err
       }
     }
 
-    success(data = { }, msg = 'success') {
+    success(msg = 'success') {
       this.ctx.body = {
         code: 0,
-        data,
+        data: this.ctx.output,
         msg,
       }
     }
 
-    list(list, page, pageSize, totalSize) {
+    list(list, totalSize) {
+      let { input } = this.ctx
       this.success({
         list,
         pager: {
-          page,
+          page: input.page,
           count: Math.ceil(totalSize / pageSize),
-          page_size,
+          page_size: input.page_size,
           total_size,
         }
       })
@@ -45,4 +35,5 @@ module.exports = app => {
 
   }
   app.BaseController = BaseController
+
 }

@@ -1,6 +1,7 @@
 'use strict'
 
 const path = require('path')
+const moment = require('../app/moment')
 
 /**
  *  @type {Object} appInfo
@@ -76,6 +77,13 @@ module.exports = appInfo => {
       password: '123456',
       db: 0,
     },
+  }
+
+  config.session = {
+    currentUser: 'current_user',
+    captcha: 'captcha',
+    verifyCode: 'verify_code',
+    maxAge: 30 * moment.DAY,
   }
 
   return config

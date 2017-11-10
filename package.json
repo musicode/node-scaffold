@@ -5,12 +5,14 @@
   "private": true,
   "dependencies": {
     "bcrypt": "^1.0.3",
+    "bcryptjs": "^2.4.3",
     "egg": "^1.9.0",
     "egg-mysql": "^3.0.0",
     "egg-redis": "^1.0.2",
     "egg-scripts": "^2.1.0",
     "egg-validate": "^1.0.0",
-    "ua-device": "^0.1.10"
+    "ua-device": "^0.1.10",
+    "uuid": "^3.1.0"
   },
   "devDependencies": {
     "autod": "^2.10.0",
