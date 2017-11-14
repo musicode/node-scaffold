@@ -5,13 +5,20 @@ const code = require('../constant/code')
 module.exports = options => {
   return async function errorHandler(ctx, next) {
     try {
-      console.log('11')
       await next()
-      console.log('12')
-      ctx.body = {
-        code: code.SUCCESS,
-        data: ctx.output,
-        msg: 'success',
+      // 未匹配路由，表示 404 了
+      if (ctx._matchedRoute) {
+        ctx.body = {
+          code: code.SUCCESS,
+          data: ctx.output,
+          msg: 'success',
+        }
+      }
+      else {
+        ctx.body = {
+          code: code.RESOURCE_NOT_FOUND,
+          msg: 'not found',
+        }
       }
     }
     catch (err) {
@@ -20,9 +27,9 @@ module.exports = options => {
       ctx.app.emit('error', err, ctx)
       // 自定义错误时异常返回的格式
       ctx.body = {
-        code: err.errorCode || code.FAILURE,
+        code: err.code || code.FAILURE,
         data: ctx.output,
-        msg: err.errorMessage,
+        msg: err.message,
       }
     }
   }

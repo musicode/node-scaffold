@@ -4,12 +4,12 @@
 // exports.static = true;
 
 exports.mysql = {
-  enable: false,
+  enable: true,
   package: 'egg-mysql',
 }
 
 exports.redis = {
-  enable: false,
+  enable: true,
   package: 'egg-redis',
 }
 

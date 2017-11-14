@@ -24,6 +24,11 @@ module.exports = app => {
         this.ctx.validate(rules, this.ctx.input)
       }
       catch (err) {
+        err.errors.forEach(
+          error => {
+            this.output[ error.field ] = error.message
+          }
+        )
         this.throw(
           code.PARAM_INVALID,
           'param invalid'
@@ -38,14 +43,23 @@ module.exports = app => {
      * @param {string} message
      */
     throw(errorCode, errorMessage) {
-      this.ctx.throw(200, 'Ok', {
-        errorCode,
-        errorMessage
-      })
+      let error = new Error()
+      error.code = errorCode
+      error.message = errorMessage
+      throw error
     }
 
   }
 
   app.BaseController = BaseController
+
+  app.validator.addRule(
+    'mobile',
+    (rule, value) => {
+      if (typeof value !== 'string' || !/1\d{10}/.test(value)) {
+        return 'must be a mobile number'
+      }
+    }
+  )
 
 }
