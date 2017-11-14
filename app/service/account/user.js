@@ -1,11 +1,16 @@
 'use strict'
 
+const bcrypt = require('bcryptjs')
+
 module.exports = app => {
   class User extends app.Service {
 
-    async isLogin(userId) {
-      userId = await app.redis.hget(`user:${userId}`, 'id')
-      return userId ? true : false
+    async createHash(password) {
+      return bcrypt.hash(password)
+    }
+
+    async checkPassword(password, hash) {
+      return bcrypt.compare(password, hash)
     }
 
   }

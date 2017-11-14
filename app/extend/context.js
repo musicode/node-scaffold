@@ -2,10 +2,10 @@
 const UADevice = require('ua-device')
 
 const UA = Symbol('Context#ua')
-const ACCESS_TOKEN = Symbol('Context#accessToken')
-const CURRENT_USER = Symbol('Context#currentUser')
 const INPUT = Symbol('Context#input')
 const OUTPUT = Symbol('Context#output')
+const ACCESS_TOKEN = Symbol('Context#accessToken')
+const CURRENT_USER = Symbol('Context#currentUser')
 
 module.exports = {
 
@@ -56,6 +56,22 @@ module.exports = {
       this[OUTPUT] = { }
     }
     return this[OUTPUT]
+  },
+
+  /**
+   * 创建分页信息对象，返回列表型数据时需要用到这个方法
+   *
+   * @param {numbebr} totalSize 数据总条数
+   * @return {Object}
+   */
+  createPager(totalSize) {
+    let { page, page_size } = this.input
+    return {
+      page: page,
+      count: Math.ceil(totalSize / page_size),
+      page_size: page_size,
+      total_size: totalSize,
+    }
   },
 
   /**

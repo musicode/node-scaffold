@@ -1,5 +1,8 @@
 'use strict'
 
+/**
+ * 确保用户已登录才能进行后续操作
+ */
 module.exports = options => {
   return async function isLogin(ctx, next) {
     let currentUser = await ctx.getCurrentUser()
@@ -7,7 +10,7 @@ module.exports = options => {
       await next()
     }
     else {
-      ctx.body = '未登录，无法进行该操作'
+      ctx.message = '未登录，无法进行该操作'
     }
   }
 }
