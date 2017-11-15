@@ -58,6 +58,10 @@ module.exports = {
     return this[OUTPUT]
   },
 
+  set output(output) {
+    this[OUTPUT] = output
+  },
+
   /**
    * 创建分页信息对象，返回列表型数据时需要用到这个方法
    *

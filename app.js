@@ -1,5 +1,6 @@
 'use strict'
 
+const Parameter = require('parameter')
 const code = require('./app/constant/code')
 
 module.exports = app => {
@@ -14,17 +15,14 @@ module.exports = app => {
       return this.ctx.output
     }
 
-    /**
-     * 验证输入参数
-     *
-     * @param {Object} rules
-     */
-    validate(rules) {
-      try {
-        this.ctx.validate(rules, this.ctx.input)
-      }
-      catch (err) {
-        err.errors.forEach(
+    filter(data, filters) {
+      return this.ctx.filter(data, filters)
+    }
+
+    validate(data, rules) {
+      let errors = validator.validate(rules, data)
+      if (errors) {
+        errors.forEach(
           error => {
             this.output[ error.field ] = error.message
           }
@@ -53,11 +51,22 @@ module.exports = app => {
 
   app.BaseController = BaseController
 
-  app.validator.addRule(
+  let validator = new Parameter()
+
+  validator.addRule(
     'mobile',
     (rule, value) => {
       if (typeof value !== 'string' || !/1\d{10}/.test(value)) {
         return 'must be a mobile number'
+      }
+    }
+  )
+
+  validator.addRule(
+    'verify_code',
+    (rule, value) => {
+      if (typeof value !== 'string' || !/\d{6}/.test(value)) {
+        return 'must be a number'
       }
     }
   )

@@ -13,7 +13,7 @@ exports.redis = {
   package: 'egg-redis',
 }
 
-exports.validate = {
+exports.filter = {
   enable: true,
-  package: 'egg-validate',
+  package: 'egg-filter',
 }

@@ -4,22 +4,32 @@ module.exports = app => {
 
   class AuthController extends app.BaseController {
     async signup() {
-      this.validate({
+
+      let input = this.filter(this.input, {
+        nickname: 'trim',
+        gender: 'number',
+        company: 'trim',
+        job: 'trim',
+        mobile: 'trim',
+        password: ['trim', 'lower'],
+        verify_code: 'trim'
+      })
+
+      this.validate(input, {
         nickname: {
           required: true,
-          type: 'string'
+          type: 'string',
+          max: 20,
+          min: 2
         },
         gender: [1, 2],
-        // company: 'string',
-        // job: 'string',
-        // mobile: {
-        //   required: true,
-        //   type: 'mobile',
-        // },
-        // password: {
-        //   required: true,
-        //   type: 'string'
-        // },
+        company: {
+          required: false,
+          type: 'string',
+        },
+        mobile: 'mobile',
+        password: 'string',
+        verify_code: 'verify_code'
       })
     }
   }

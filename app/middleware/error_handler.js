@@ -6,7 +6,6 @@ module.exports = options => {
   return async function errorHandler(ctx, next) {
     try {
       await next()
-      // 未匹配路由，表示 404 了
       if (ctx._matchedRoute) {
         ctx.body = {
           code: code.SUCCESS,
@@ -14,6 +13,7 @@ module.exports = options => {
           msg: 'success',
         }
       }
+      // 未匹配路由，表示 404 了
       else {
         ctx.body = {
           code: code.RESOURCE_NOT_FOUND,
