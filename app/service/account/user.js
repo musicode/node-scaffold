@@ -4,7 +4,11 @@ const bcrypt = require('bcryptjs')
 const salt = 10
 
 module.exports = app => {
-  class User extends app.Service {
+  class User extends app.BaseService {
+
+    get tableName() {
+      return 'account_user'
+    }
 
     async createHash(password) {
       return bcrypt.hash(password, salt)
@@ -14,20 +18,13 @@ module.exports = app => {
       return bcrypt.compare(password, hash)
     }
 
-    async findOneByMobile(mobile) {
-      return app.mysql.get('account_user', { mobile })
-    }
-
     async insert(data) {
       let password = await this.createHash(data.password)
-      return app.mysql.insert(
-        'account_user',
-        {
-          number: data.number,
-          mobile: data.mobile,
-          password,
-        }
-      )
+      return super.insert({
+        number: this.ctx.helper.randomInt(11),
+        mobile: data.mobile,
+        password,
+      })
     }
 
   }

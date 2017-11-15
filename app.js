@@ -49,7 +49,59 @@ module.exports = app => {
 
   }
 
+  class BaseService extends app.Service {
+
+    async findOneBy(where) {
+      return app.mysql.get(this.tableName, where)
+    }
+
+    async findBy(options) {
+
+      let data = { where: options.where }
+
+      if (options.page && options.pageSize) {
+        data.offset = (options.page - 1) * options.pageSize
+        data.limit = options.pageSize
+      }
+
+      if (options.sortBy && options.sortOrder) {
+        data.orders = [[options.sortOrder,  options.sortBy]]
+      }
+
+      return app.mysql.get(this.tableName, data)
+
+    }
+
+    async insert(data) {
+      let result = await app.mysql.insert(
+        this.tableName,
+        data
+      )
+      if (result.affectedRows === 1) {
+        return result.insertId
+      }
+    }
+
+    async update(data) {
+      let result = await app.mysql.update(
+        this.tableName,
+        data
+      )
+      return result.affectedRows
+    }
+
+    async delete(where) {
+      let result = await app.mysql.delete(
+        this.tableName,
+        where
+      )
+      return result.affectedRows
+    }
+
+  }
+
   app.BaseController = BaseController
+  app.BaseService = BaseService
 
   let validator = new Parameter()
 

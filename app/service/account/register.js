@@ -1,15 +1,19 @@
 'use strict'
 
 module.exports = app => {
-  class Register extends app.Service {
+  class Register extends app.BaseService {
+
+    get tableName() {
+      return 'account_register'
+    }
 
     async insert(data) {
-      return app.mysql.insert(
-        'account_register',
+      let { request } = this.ctx
+      return super.insert(
         {
           user_id: data.userId,
-          client_ip: data.clientIp,
-          user_agent: data.userAgent,
+          client_ip: request.ip,
+          user_agent: request.get('user-agent'),
         }
       )
     }

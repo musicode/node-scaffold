@@ -37,13 +37,15 @@ module.exports = app => {
         verify_code: 'verify_code'
       })
 
-      let { service, helper, request } = this.ctx
+      let { service, helper } = this.ctx
 
       let userService = service.account.user
       let userInfoService = service.account.userInfo
       let registerService = service.account.register
 
-      let user = await userService.findOneByMobile(input.mobile)
+      let user = await userService.findOneBy({
+        mobile: input.mobile,
+      })
       if (user) {
         this.throw(
           code.RESOURCE_EXISTS,
@@ -51,20 +53,17 @@ module.exports = app => {
         )
       }
 
-      let result = await userService.insert({
-        number: helper.randomInt(11),
+      let userId = await userService.insert({
         mobile: input.mobile,
         password: input.password,
       })
 
-      if (result.affectedRows !== 1) {
+      if (userId == null) {
         this.throw(
           code.DB_INSERT_ERROR,
           '注册失败'
         )
       }
-
-      let userId = result.insertId
 
       await userInfoService.insert({
         userId,
@@ -76,8 +75,6 @@ module.exports = app => {
 
       await registerService.insert({
         userId,
-        clientIp: request.ip,
-        userAgent: request.get('user-agent'),
       })
 
     }

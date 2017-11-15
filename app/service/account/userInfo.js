@@ -1,11 +1,14 @@
 'use strict'
 
 module.exports = app => {
-  class UserInfo extends app.Service {
+  class UserInfo extends app.BaseService {
+
+    get tableName() {
+      return 'account_user_info'
+    }
 
     async insert(data) {
-      return app.mysql.insert(
-        'account_user_info',
+      return super.insert(
         {
           user_id: data.userId,
           nickname: data.nickname,
