@@ -66,6 +66,17 @@ module.exports = app => {
 
     }
 
+    async setCache(userId, data) {
+      await app.redis.hset(`user:${userId}`, data)
+    }
+
+    async getCache(userId, name) {
+      if (name) {
+        return await app.redis.hget(`user:${userId}`, name)
+      }
+      return await app.redis.hgetall(`user:${userId}`)
+    }
+
   }
   return User
 }

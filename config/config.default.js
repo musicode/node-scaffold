@@ -20,14 +20,22 @@ module.exports = appInfo => {
   // 全局中间件
   config.middleware = [
     'errorHandler',
-
+    'sessionHandler',
   ]
 
   exports.jsonp = {
     callback: 'callback',
     // 函数名最长为 100 个字符
     limit: 100,
-  };
+  }
+
+  exports.security = {
+    csrf: {
+      useSession: false,
+      cookieName: 'csrf_token', // Cookie 中的字段名
+      sessionName: 'csrf_token', // Session 中的字段名
+    },
+  }
 
   // 因为运行时的配置会输出到 baseDir/run 目录
   // 因此这里统一把日志也输出到 baseDir/log 目录
