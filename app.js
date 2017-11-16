@@ -5,6 +5,13 @@ const code = require('./app/constant/code')
 
 module.exports = app => {
 
+  function throwError(code, message) {
+    let error = new Error()
+    error.code = code
+    error.message = message
+    throw error
+  }
+
   class BaseController extends app.Controller {
 
     get input() {
@@ -40,11 +47,8 @@ module.exports = app => {
      * @param {number} code
      * @param {string} message
      */
-    throw(errorCode, errorMessage) {
-      let error = new Error()
-      error.code = errorCode
-      error.message = errorMessage
-      throw error
+    throw(code, message) {
+      throwError(code, message)
     }
 
   }
@@ -96,6 +100,24 @@ module.exports = app => {
         where
       )
       return result.affectedRows
+    }
+
+    async transaction(handler) {
+      let result = await app.mysql.beginTransactionScope(
+        handler,
+        this.ctx
+      )
+      return result
+    }
+
+    /**
+     * 抛出一个逻辑异常
+     *
+     * @param {number} code
+     * @param {string} message
+     */
+    throw(code, message) {
+      throwError(code, message)
     }
 
   }
