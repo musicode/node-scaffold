@@ -5,6 +5,7 @@ const code = require('../../../../constant/code')
 module.exports = app => {
 
   class AuthController extends app.BaseController {
+
     async signup() {
 
       let input = this.filter(this.input, {
@@ -37,9 +38,16 @@ module.exports = app => {
         verify_code: 'verify_code'
       })
 
-      let userId = await this.ctx.service.account.user.signup(input)
+      let { service } = this.ctx
 
-      console.log(userId)
+      let userId = await service.account.user.signup(input)
+
+      await service.account.session.set(
+        app.config.session.currentUser,
+        userId
+      )
+
+      this.output.user = await service.account.user.getCache(userId)
 
     }
   }

@@ -4,7 +4,6 @@ const UADevice = require('ua-device')
 const UA = Symbol('Context#ua')
 const INPUT = Symbol('Context#input')
 const OUTPUT = Symbol('Context#output')
-const ACCESS_TOKEN = Symbol('Context#accessToken')
 const CURRENT_USER = Symbol('Context#currentUser')
 
 module.exports = {

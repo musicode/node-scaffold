@@ -36,9 +36,10 @@ module.exports = app => {
       let userId = this.transaction(
         async () => {
           let password = await this.createHash(data.password)
+          let number = this.ctx.helper.randomInt(11)
           let userId = await super.insert({
-            number: this.ctx.helper.randomInt(11),
             mobile: data.mobile,
+            number,
             password,
           })
           await this.service.account.userInfo.insert({
@@ -51,7 +52,29 @@ module.exports = app => {
           await this.service.account.register.insert({
             userId,
           })
+
+          let user = {
+            id: userId,
+            number,
+            password,
+            nickname: data.nickname,
+            gender: data.gender,
+            mobile: data.mobile,
+            company: data.company,
+            job: data.job,
+          }
+
+          await this.setCache(userId, user)
+
+          user.email = ''
+          user.domain = ''
+          user.avatar = ''
+          user.followee_count = 0
+          user.follower_count = 0
+          user.view_count = 0
+
           return userId
+
         }
       )
 
@@ -67,7 +90,12 @@ module.exports = app => {
     }
 
     async setCache(userId, data) {
-      await app.redis.hset(`user:${userId}`, data)
+      for (let key in data) {
+        let value = data[key]
+        if (value != null) {
+          await app.redis.hset(`user:${userId}`, key, value)
+        }
+      }
     }
 
     async getCache(userId, name) {
