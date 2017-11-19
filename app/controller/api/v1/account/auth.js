@@ -40,14 +40,14 @@ module.exports = app => {
 
       let { service } = this.ctx
 
-      let userId = await service.account.user.signup(input)
+      let user = await service.account.user.signup(input)
 
       await service.account.session.set(
         app.config.session.currentUser,
-        userId
+        user.id
       )
 
-      this.output.user = await service.account.user.getCache(userId)
+      this.output.user = user
 
     }
   }

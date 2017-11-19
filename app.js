@@ -77,13 +77,27 @@ module.exports = app => {
     }
 
     async insert(data) {
-      const result = await app.mysql.insert(
-        this.tableName,
-        data
+
+      let params = { }
+
+      this.fields.forEach(
+        field => {
+          if (field in data) {
+            params[field] = data[field]
+          }
+        }
       )
-      if (result.affectedRows === 1) {
-        return result.insertId
+
+      if (Object.keys(params).length) {
+        const result = await app.mysql.insert(
+          this.tableName,
+          params
+        )
+        if (result.affectedRows === 1) {
+          return result.insertId
+        }
       }
+
     }
 
     async update(data) {

@@ -12,6 +12,12 @@ module.exports = app => {
       return 'account_user'
     }
 
+    get fields() {
+      return [
+        'number', 'mobile', 'password', 'email', 'status'
+      ]
+    }
+
     async createHash(password) {
       return bcrypt.hash(password, salt)
     }
@@ -33,59 +39,103 @@ module.exports = app => {
         )
       }
 
-      let userId = this.transaction(
+      user = this.transaction(
         async () => {
           let password = await this.createHash(data.password)
           let number = this.ctx.helper.randomInt(6)
-          let userId = await super.insert({
-            mobile: data.mobile,
-            number,
-            password,
-          })
-          await this.service.account.userInfo.insert({
-            userId,
-            nickname: data.nickname,
-            gender: data.gender,
-            company: data.company,
-            job: data.job
-          })
+
+          data.number = data.password
+          data.password = password
+
+          let userId = await super.insert(data)
+
+          data.user_id = userId
+          let userInfoId = await this.service.account.userInfo.insert(data)
+
+          let { request } = this.ctx
           await this.service.account.register.insert({
-            userId,
+            user_id: userId,
+            client_ip: request.ip,
+            user_agent: request.get('user-agent'),
           })
 
-          let user = {
-            id: userId,
-            number,
-            password,
-            nickname: data.nickname,
-            gender: data.gender,
-            mobile: data.mobile,
-            company: data.company,
-            job: data.job,
+          data.id = userId
+
+          await this.setCache(userId, data)
+
+          // 对外隐藏密码
+          if (data.password) {
+            data.password = true
           }
 
-          await this.setCache(userId, user)
+          data.followee_count = 0
+          data.follower_count = 0
+          data.view_count = 0
 
-          user.email = ''
-          user.domain = ''
-          user.avatar = ''
-          user.followee_count = 0
-          user.follower_count = 0
-          user.view_count = 0
-
-          return userId
+          return data
 
         }
       )
 
-      if (userId == null) {
+      if (!user) {
         this.throw(
           code.DB_INSERT_ERROR,
           '注册失败'
         )
       }
 
-      return userId
+      return user
+
+    }
+
+    /**
+     * 登录
+     *
+     * @param {Object} data
+     * @property {string} data.mobile
+     * @property {string} data.password
+     */
+    async signin(data) {
+
+      let user = await this.findOneBy({
+        mobile: data.mobile,
+      })
+
+      if (!user) {
+        this.throw(
+          code.RESOURCE_NOT_FOUND,
+          '该手机号未注册'
+        )
+      }
+
+      let matched = await this.checkPassword(data.password, user.password)
+      if (!matched) {
+        this.throw(
+          code.AUTH_ERROR,
+          '手机号或密码错误'
+        )
+      }
+
+      return user
+
+    }
+
+    /**
+     * 退出登录
+     */
+    async signout() {
+      let { session } = this.service
+      let { currentUser } = this.config.session
+
+      let userId = await session.get(currentUser)
+      if (!userId) {
+        this.throw(
+          code.RESOURCE_NOT_FOUND,
+          '未登录，无法退出登录'
+        )
+      }
+
+      session.remove(currentUser)
 
     }
 

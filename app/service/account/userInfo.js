@@ -7,16 +7,13 @@ module.exports = app => {
       return 'account_user_info'
     }
 
-    async insert(data) {
-      return super.insert(
-        {
-          user_id: data.userId,
-          nickname: data.nickname,
-          gender: data.gender,
-          company: data.company,
-          job: data.job,
-        }
-      )
+    get fields() {
+      return [
+        'user_id', 'nickname', 'avatar',
+        'gender', 'intro', 'birthday',
+        'area_id', 'company', 'job',
+        'domain', 'level'
+      ]
     }
 
   }
