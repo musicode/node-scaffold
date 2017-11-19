@@ -6,7 +6,7 @@ const code = require('./app/constant/code')
 module.exports = app => {
 
   function throwError(code, message) {
-    let error = new Error()
+    const error = new Error()
     error.code = code
     error.message = message
     throw error
@@ -27,7 +27,7 @@ module.exports = app => {
     }
 
     validate(data, rules) {
-      let errors = validator.validate(rules, data)
+      const errors = validator.validate(rules, data)
       if (errors) {
         errors.forEach(
           error => {
@@ -61,7 +61,7 @@ module.exports = app => {
 
     async findBy(options) {
 
-      let data = { where: options.where }
+      const data = { where: options.where }
 
       if (options.page && options.pageSize) {
         data.offset = (options.page - 1) * options.pageSize
@@ -77,7 +77,7 @@ module.exports = app => {
     }
 
     async insert(data) {
-      let result = await app.mysql.insert(
+      const result = await app.mysql.insert(
         this.tableName,
         data
       )
@@ -87,7 +87,7 @@ module.exports = app => {
     }
 
     async update(data) {
-      let result = await app.mysql.update(
+      const result = await app.mysql.update(
         this.tableName,
         data
       )
@@ -95,7 +95,7 @@ module.exports = app => {
     }
 
     async delete(where) {
-      let result = await app.mysql.delete(
+      const result = await app.mysql.delete(
         this.tableName,
         where
       )
@@ -103,7 +103,7 @@ module.exports = app => {
     }
 
     async transaction(handler) {
-      let result = await app.mysql.beginTransactionScope(
+      const result = await app.mysql.beginTransactionScope(
         handler,
         this.ctx
       )

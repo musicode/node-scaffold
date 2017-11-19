@@ -36,7 +36,7 @@ module.exports = app => {
       let userId = this.transaction(
         async () => {
           let password = await this.createHash(data.password)
-          let number = this.ctx.helper.randomInt(11)
+          let number = this.ctx.helper.randomInt(6)
           let userId = await super.insert({
             mobile: data.mobile,
             number,
