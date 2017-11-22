@@ -7,7 +7,7 @@
     "bcrypt": "^1.0.3",
     "bcryptjs": "^2.4.3",
     "egg": "^2.0.0-beta.1",
-    "egg-filter": "^1.0.0",
+    "egg-filter": "^1.0.1",
     "egg-mysql": "^3.0.0",
     "egg-redis": "^1.0.2",
     "egg-scripts": "^2.1.0",
