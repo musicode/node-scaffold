@@ -24,7 +24,7 @@ describe('test/service/user.test.js', () => {
       const ctx = app.mockContext()
       const userService = ctx.service.account.user
 
-      let mobile = '13333333313'
+      let mobile = '1' + ctx.helper.randomInt(10)
       let password = 'Abc123'
       let nickname = 'haha'
       let gender = 1

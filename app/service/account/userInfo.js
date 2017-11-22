@@ -16,6 +16,20 @@ module.exports = app => {
       ]
     }
 
+    async getUserInfoByUserId(userId) {
+
+      const userInfo = await this.findOneBy({
+        user_id: userId,
+      })
+
+      if (userInfo.birthday === '0000-00-00') {
+        userInfo.birthday = ''
+      }
+
+      return userInfo
+
+    }
+
   }
   return UserInfo
 }

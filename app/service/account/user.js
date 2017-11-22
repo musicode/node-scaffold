@@ -26,7 +26,34 @@ module.exports = app => {
       return bcrypt.compare(password, hash)
     }
 
+    async getUserById(userId) {
+      const user = await this.ctx.service.account.user.findOneBy({
+        id: userId
+      })
+      const userInfo = await this.ctx.service.account.userInfo.getUserInfoByUserId(userId)
+      for (let key in userInfo) {
+        if (!user[key]) {
+          user[key] = userInfo[key]
+        }
+      }
+      if (user.password) {
+        user.password = true
+      }
+      return user
+    }
+
     async signup(data) {
+
+      const { session } = this.service.account
+      const { currentUser } = this.config.session
+
+      let userId = await session.get(currentUser)
+      if (userId) {
+        this.throw(
+          code.RESOURCE_EXISTS,
+          '已登录，无法注册'
+        )
+      }
 
       let user = await this.findOneBy({
         mobile: data.mobile,
@@ -39,18 +66,20 @@ module.exports = app => {
         )
       }
 
-      user = this.transaction(
+      userId = this.transaction(
         async () => {
-          let password = await this.createHash(data.password)
+
           let number = this.ctx.helper.randomInt(6)
+          let password = await this.createHash(data.password)
 
-          data.number = data.password
-          data.password = password
-
-          let userId = await super.insert(data)
+          let userId = await super.insert({
+            number,
+            password,
+            mobile: data.mobile,
+          })
 
           data.user_id = userId
-          let userInfoId = await this.service.account.userInfo.insert(data)
+          await this.service.account.userInfo.insert(data)
 
           let { request } = this.ctx
           await this.service.account.register.insert({
@@ -59,32 +88,21 @@ module.exports = app => {
             user_agent: request.get('user-agent'),
           })
 
-          data.id = userId
-
-          await this.setCache(userId, data)
-
-          // 对外隐藏密码
-          if (data.password) {
-            data.password = true
-          }
-
-          data.followee_count = 0
-          data.follower_count = 0
-          data.view_count = 0
-
-          return data
+          return userId
 
         }
       )
 
-      if (!user) {
+      if (userId == null) {
         this.throw(
           code.DB_INSERT_ERROR,
           '注册失败'
         )
       }
 
-      return user
+      await session.set(currentUser, userId)
+
+      return userId
 
     }
 
@@ -94,8 +112,20 @@ module.exports = app => {
      * @param {Object} data
      * @property {string} data.mobile
      * @property {string} data.password
+     * @return {Object} 登录用户对象
      */
     async signin(data) {
+
+      const { session } = this.service.account
+      const { currentUser } = this.config.session
+
+      let userId = await session.get(currentUser)
+      if (userId) {
+        this.throw(
+          code.RESOURCE_EXISTS,
+          '已登录，无法重复登录'
+        )
+      }
 
       let user = await this.findOneBy({
         mobile: data.mobile,
@@ -116,6 +146,8 @@ module.exports = app => {
         )
       }
 
+      await session.set(currentUser, user.id)
+
       return user
 
     }
@@ -124,10 +156,11 @@ module.exports = app => {
      * 退出登录
      */
     async signout() {
-      let { session } = this.service
-      let { currentUser } = this.config.session
 
-      let userId = await session.get(currentUser)
+      const { session } = this.service.account
+      const { currentUser } = this.config.session
+
+      const userId = await session.get(currentUser)
       if (!userId) {
         this.throw(
           code.RESOURCE_NOT_FOUND,
@@ -137,22 +170,6 @@ module.exports = app => {
 
       session.remove(currentUser)
 
-    }
-
-    async setCache(userId, data) {
-      for (let key in data) {
-        let value = data[key]
-        if (value != null) {
-          await app.redis.hset(`user:${userId}`, key, value)
-        }
-      }
-    }
-
-    async getCache(userId, name) {
-      if (name) {
-        return await app.redis.hget(`user:${userId}`, name)
-      }
-      return await app.redis.hgetall(`user:${userId}`)
     }
 
   }

@@ -8,7 +8,7 @@ module.exports = app => {
 
     async signup() {
 
-      let input = this.filter(this.input, {
+      const input = this.filter(this.input, {
         nickname: 'trim',
         gender: 'number',
         company: 'trim',
@@ -38,14 +38,12 @@ module.exports = app => {
         verify_code: 'verify_code'
       })
 
-      let { service } = this.ctx
+      const userService = this.ctx.service.account.user
 
-      let user = await service.account.user.signup(input)
+      const userId = await userService.signup(input)
+      const user = await userService.getUserById(userId)
 
-      await service.account.session.set(
-        app.config.session.currentUser,
-        user.id
-      )
+      app.redis.set(`user:${userId}`, this.ctx.helper.stringifyJSON(user))
 
       this.output.user = user
 
