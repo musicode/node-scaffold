@@ -75,7 +75,7 @@ module.exports = app => {
         )
       }
 
-      let user = await this.findOneBy({
+      const user = await this.findOneBy({
         mobile: data.mobile,
       })
 
@@ -89,10 +89,10 @@ module.exports = app => {
       userId = this.transaction(
         async () => {
 
-          let number = this.ctx.helper.randomInt(6)
-          let password = await this.createHash(data.password)
+          const number = this.ctx.helper.randomInt(6)
+          const password = await this.createHash(data.password)
 
-          let userId = await super.insert({
+          const userId = await super.insert({
             number,
             password,
             mobile: data.mobile,
@@ -101,7 +101,7 @@ module.exports = app => {
           data.user_id = userId
           await this.service.account.userInfo.insert(data)
 
-          let { request } = this.ctx
+          const { request } = this.ctx
           await this.service.account.register.insert({
             user_id: userId,
             client_ip: request.ip,
@@ -136,10 +136,10 @@ module.exports = app => {
      */
     async signin(data) {
 
-      const { session } = this.service.account
+      const { session, login } = this.service.account
       const { currentUser } = this.config.session
 
-      let userId = await session.get(currentUser)
+      const userId = await session.get(currentUser)
       if (userId) {
         this.throw(
           code.RESOURCE_EXISTS,
@@ -147,7 +147,7 @@ module.exports = app => {
         )
       }
 
-      let user = await this.findOneBy({
+      const user = await this.findOneBy({
         mobile: data.mobile,
       })
 
@@ -158,13 +158,20 @@ module.exports = app => {
         )
       }
 
-      let matched = await this.checkPassword(data.password, user.password)
+      const matched = await this.checkPassword(data.password, user.password)
       if (!matched) {
         this.throw(
           code.AUTH_ERROR,
           '手机号或密码错误'
         )
       }
+
+      const { request } = this.ctx
+      await login.insert({
+        user_id: user.id,
+        client_ip: request.ip,
+        user_agent: request.get('user-agent'),
+      })
 
       await session.set(currentUser, user.id)
 
