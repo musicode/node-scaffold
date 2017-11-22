@@ -21,5 +21,18 @@ describe('test/extend/helper.test.js', () => {
       assert(randomInt !== ctx.helper.randomInt(length))
     })
 
+    it('object parse/stringify', () => {
+      const ctx = app.mockContext()
+      const object = {
+        name: 'test',
+        age: 10,
+        married: false
+      }
+      const str = ctx.helper.stringifyObject(object)
+      const newObject = ctx.helper.parseObject(str)
+
+      assert(JSON.stringify(object) === JSON.stringify(newObject))
+    })
+
   })
 })

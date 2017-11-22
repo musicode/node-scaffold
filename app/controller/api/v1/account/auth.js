@@ -1,7 +1,5 @@
 'use strict'
 
-const code = require('../../../../constant/code')
-
 module.exports = app => {
 
   class AuthController extends app.BaseController {
@@ -41,11 +39,8 @@ module.exports = app => {
       const userService = this.ctx.service.account.user
 
       const userId = await userService.signup(input)
-      const user = await userService.getUserById(userId)
 
-      app.redis.set(`user:${userId}`, this.ctx.helper.stringifyJSON(user))
-
-      this.output.user = user
+      this.output.user = await userService.getUserById(userId)
 
     }
   }

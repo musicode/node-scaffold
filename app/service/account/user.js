@@ -27,10 +27,20 @@ module.exports = app => {
     }
 
     async getUserById(userId) {
-      const user = await this.ctx.service.account.user.findOneBy({
+
+      const { helper, service } = this.ctx
+
+      const key = `user:${userId}`
+      const value = await app.redis.get(key)
+
+      if (value) {
+        return helper.parseObject(value)
+      }
+
+      const user = await this.findOneBy({
         id: userId
       })
-      const userInfo = await this.ctx.service.account.userInfo.getUserInfoByUserId(userId)
+      const userInfo = await service.account.userInfo.getUserInfoByUserId(userId)
       for (let key in userInfo) {
         if (!user[key]) {
           user[key] = userInfo[key]
@@ -39,6 +49,9 @@ module.exports = app => {
       if (user.password) {
         user.password = true
       }
+
+      app.redis.set(key, helper.stringifyObject(user))
+
       return user
     }
 

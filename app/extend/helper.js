@@ -22,7 +22,7 @@ module.exports = {
     return min + Math.floor(Math.random() * (max - min))
   },
 
-  parseJSON(str) {
+  parseObject(str) {
     const result = { }
     str.split(';').forEach(
       pair => {
@@ -53,7 +53,7 @@ module.exports = {
     return result
   },
 
-  stringifyJSON(data) {
+  stringifyObject(data) {
     const result = [ ]
     for (let key in data) {
       let value = data[key]
@@ -81,7 +81,7 @@ module.exports = {
           break
 
         default:
-          throw new Error(`helper.stringifyJSON: data.${key} is a ${type}.`)
+          throw new Error(`helper.stringifyObject: data.${key} is a ${type}.`)
       }
       result.push(
         `${key}:${type}_${value}`

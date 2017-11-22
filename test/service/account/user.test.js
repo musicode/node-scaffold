@@ -31,7 +31,7 @@ describe('test/service/user.test.js', () => {
       let company = 'baidu'
       let job = 'fe'
 
-      let user = await userService.signup({
+      let userId = await userService.signup({
         mobile,
         password,
         nickname,
@@ -40,7 +40,9 @@ describe('test/service/user.test.js', () => {
         job,
       })
 
-      assert(typeof user === 'object')
+      let user = await userService.getUserById(userId)
+
+      assert(userId != null)
       assert(user.mobile === mobile)
       assert(user.nickname === nickname)
       assert(user.gender === gender)
