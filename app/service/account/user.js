@@ -37,10 +37,17 @@ module.exports = app => {
         return helper.parseObject(value)
       }
 
-      const user = await this.findOneBy({
-        id: userId
-      })
-      const userInfo = await service.account.userInfo.getUserInfoByUserId(userId)
+      let user
+      if (userId && userId.id) {
+        user = userId
+      }
+      else {
+        user = await this.findOneBy({
+          id: userId
+        })
+      }
+
+      const userInfo = await service.account.userInfo.getUserInfoByUserId(user.id)
       for (let key in userInfo) {
         if (!user[key]) {
           user[key] = userInfo[key]

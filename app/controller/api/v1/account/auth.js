@@ -43,6 +43,30 @@ module.exports = app => {
       this.output.user = await userService.getUserById(userId)
 
     }
+
+    async signin() {
+
+      const input = this.filter(this.input, {
+        mobile: 'trim',
+        password: ['trim', 'lower'],
+      })
+
+      this.validate(input, {
+        mobile: 'mobile',
+        password: 'password',
+      })
+
+      const userService = this.ctx.service.account.user
+      const user =  await userService.signin(input)
+
+      this.output.user = await userService.getUserById(user)
+
+    }
+
+    async signout() {
+      await this.ctx.service.account.user.signout()
+    }
+
   }
 
   return AuthController
