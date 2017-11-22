@@ -5,17 +5,17 @@ module.exports = app => {
 
   app.get(
     '/api/v1/auth/signup',
-    controller.api.v1.account.auth.signup
+    controller.api.v1.auth.signup
   )
 
   app.get(
     '/api/v1/auth/signin',
-    controller.api.v1.account.auth.signin
+    controller.api.v1.auth.signin
   )
 
   app.get(
     '/api/v1/auth/signout',
-    controller.api.v1.account.auth.signout
+    controller.api.v1.auth.signout
   )
 
 }

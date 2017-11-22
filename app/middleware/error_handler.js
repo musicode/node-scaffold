@@ -11,6 +11,7 @@ module.exports = options => {
           code: code.SUCCESS,
           data: ctx.output,
           msg: 'success',
+          ts: Date.now(),
         }
       }
       // 未匹配路由，表示 404 了
@@ -18,6 +19,7 @@ module.exports = options => {
         ctx.body = {
           code: code.RESOURCE_NOT_FOUND,
           msg: 'not found',
+          ts: Date.now(),
         }
       }
     }
@@ -30,6 +32,7 @@ module.exports = options => {
         code: err.code || code.FAILURE,
         data: ctx.output,
         msg: err.message,
+        ts: Date.now(),
       }
     }
 
