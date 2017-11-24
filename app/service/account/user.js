@@ -3,9 +3,33 @@
 const bcrypt = require('bcryptjs')
 const salt = 10
 
-const code = require('../../constant/code')
-
 module.exports = app => {
+
+  const { code, limit, redis, eventEmitter } = app
+
+  eventEmitter
+  .on(
+    eventEmitter.USER_UPDATE,
+    async data => {
+
+      const { user, fields } = data
+
+      const key = `user:${user.id}`
+      const value = await redis.get(key)
+
+      if (!value) {
+        return
+      }
+
+      const { helper } = app
+      const userObject = helper.parseObject(value)
+      Object.assign(userObject, fields)
+
+      await redis.set(key, helper.stringifyObject(userObject))
+
+    }
+  )
+
   class User extends app.BaseService {
 
     get tableName() {
@@ -26,53 +50,77 @@ module.exports = app => {
       return bcrypt.compare(password, hash)
     }
 
+    /**
+     * 获取用户的完整信息
+     *
+     * @param {string|Object} userId
+     */
     async getUserById(userId) {
+
+      let user
+      if (userId && userId.id) {
+        user = userId
+        userId = user.id
+      }
 
       const { helper, service } = this.ctx
 
       const key = `user:${userId}`
-      const value = await app.redis.get(key)
+      const value = await redis.get(key)
 
       if (value) {
         return helper.parseObject(value)
       }
 
-      let user
-      if (userId && userId.id) {
-        user = userId
-      }
-      else {
+      if (!user) {
         user = await this.findOneBy({
           id: userId
         })
       }
 
-      const userInfo = await service.account.userInfo.getUserInfoByUserId(user.id)
+      const userInfo = await service.account.userInfo.getUserInfoByUserId(userId)
       for (let key in userInfo) {
         if (!user[key]) {
           user[key] = userInfo[key]
         }
       }
-      if (user.password) {
-        user.password = true
-      }
 
-      app.redis.set(key, helper.stringifyObject(user))
+      redis.set(key, helper.stringifyObject(user))
 
       return user
     }
 
+    toExternal(user) {
+      user.password = user.password ? true : false
+      return user
+    }
+
+    /**
+     * 注册
+     *
+     * @param {Object} data
+     * @property {string} data.mobile
+     * @property {string} data.password
+     * @property {string?} data.verify_code 如果传了验证码，必须和 session 保存的一致
+     * @property {string?} data.invite_code 如果传了邀请码，必须是可用状态的邀请码
+     * @property {...} 其他 user info 字段
+     * @return {string} 新插入的 user id
+     */
     async signup(data) {
 
-      const { session } = this.service.account
-      const { currentUser } = this.config.session
+      const { account } = this.service
+      const { currentUser, verifyCode } = this.config.session
 
-      let userId = await session.get(currentUser)
+      let userId = await account.session.get(currentUser)
       if (userId) {
         this.throw(
           code.RESOURCE_EXISTS,
           '已登录，无法注册'
         )
+      }
+
+      if (data.mobile) {
+        await this.service.account.session.checkVerifyCode(data.verify_code)
       }
 
       const user = await this.findOneBy({
@@ -81,15 +129,21 @@ module.exports = app => {
 
       if (user) {
         this.throw(
-          code.RESOURCE_EXISTS,
-          '该手机号已注册'
+          code.PARAM_INVALID,
+          '手机号已注册'
         )
       }
 
-      userId = this.transaction(
+
+      let inviteCode
+      if (data.invite_code) {
+        inviteCode = await account.inviteCode.checkAvailable(data.invite_code)
+      }
+
+      userId = await this.transaction(
         async () => {
 
-          const number = this.ctx.helper.randomInt(6)
+          const number = this.ctx.helper.randomInt(limit.USER_NUMBER_LENGTH)
           const password = await this.createHash(data.password)
 
           const userId = await super.insert({
@@ -99,14 +153,21 @@ module.exports = app => {
           })
 
           data.user_id = userId
-          await this.service.account.userInfo.insert(data)
+          await account.userInfo.insert(data)
 
           const { request } = this.ctx
-          await this.service.account.register.insert({
+          await account.register.insert({
             user_id: userId,
             client_ip: request.ip,
             user_agent: request.get('user-agent'),
           })
+
+          if (inviteCode) {
+            await account.inviteCodeUsed.insert({
+              user_id: userId,
+              invite_code_id: inviteCode.id,
+            })
+          }
 
           return userId
 
@@ -120,7 +181,7 @@ module.exports = app => {
         )
       }
 
-      await session.set(currentUser, userId)
+      await account.session.set(currentUser, userId)
 
       return userId
 
@@ -136,10 +197,10 @@ module.exports = app => {
      */
     async signin(data) {
 
-      const { session, login } = this.service.account
+      const { account } = this.service
       const { currentUser } = this.config.session
 
-      const userId = await session.get(currentUser)
+      const userId = await account.session.get(currentUser)
       if (userId) {
         this.throw(
           code.RESOURCE_EXISTS,
@@ -167,13 +228,13 @@ module.exports = app => {
       }
 
       const { request } = this.ctx
-      await login.insert({
+      await account.login.insert({
         user_id: user.id,
         client_ip: request.ip,
         user_agent: request.get('user-agent'),
       })
 
-      await session.set(currentUser, user.id)
+      await account.session.set(currentUser, user.id)
 
       return user
 
@@ -196,6 +257,151 @@ module.exports = app => {
       }
 
       session.remove(currentUser)
+
+    }
+
+
+    async checkMobileAvailable(mobile) {
+      const existed = await this.findOneBy({ mobile })
+      if (existed) {
+        this.throw(
+          code.PARAM_INVALID,
+          '手机号已被占用'
+        )
+      }
+    }
+
+    async checkEmailAvailable(email) {
+      const existed = await this.findOneBy({ email })
+      if (existed) {
+        this.throw(
+          code.PARAM_INVALID,
+          '邮箱已被占用'
+        )
+      }
+    }
+
+    /**
+     * 设置手机号
+     *
+     * @param {Object} data
+     * @property {string} data.mobile
+     * @property {string} data.verify_code
+     */
+    async setMobile(data) {
+
+      const { account } = this.service
+
+      // 先判断是本人操作
+      const currentUser = await account.session.checkCurrentUser()
+
+      if (currentUser.mobile !== data.mobile) {
+        await this.checkMobileAvailable(data.mobile)
+        await account.session.checkVerifyCode(data.verify_code)
+        const fields = {
+          id: currentUser.id,
+          mobile: data.mobile,
+        }
+        const rows = await this.update(fields)
+        if (rows === 1) {
+          eventEmitter.emit(
+            eventEmitter.USER_UPDATE,
+            {
+              user: currentUser,
+              fields,
+            }
+          )
+        }
+        return false
+      }
+
+      return true
+
+    }
+
+    /**
+     * 设置邮箱
+     *
+     * @param {Object} data
+     * @property {string} data.email
+     */
+    async setEmail(data) {
+
+      const { account } = this.service
+
+      // 先判断是本人操作
+      const currentUser = await account.session.checkCurrentUser()
+
+      if (currentUser.email !== data.email) {
+        await this.checkEmailAvailable(data.email)
+        const fields = {
+          id: currentUser.id,
+          email: data.email,
+        }
+        const rows = await this.update(fields)
+        if (rows === 1) {
+          eventEmitter.emit(
+            eventEmitter.USER_UPDATE,
+            {
+              user: currentUser,
+              fields,
+            }
+          )
+        }
+        return false
+      }
+
+      return true
+
+    }
+
+    /**
+     * 设置登录密码
+     *
+     * @param {Object} data
+     * @property {string} data.password
+     * @property {string} data.old_password
+     */
+    async setPassword(data) {
+
+      const { account } = this.service
+
+      // 先判断是本人操作
+      const currentUser = await account.session.checkCurrentUser()
+
+      if (!data.old_password) {
+        this.throw(
+          code.PARAM_INVALID,
+          '缺少旧密码'
+        )
+      }
+
+      const matched = await this.checkPassword(data.old_password, currentUser.password)
+      if (!matched) {
+        this.throw(
+          code.PARAM_INVALID,
+          '旧密码错误'
+        )
+      }
+
+      const password = await this.createHash(data.password)
+
+      const fields = {
+        id: currentUser.id,
+        password,
+      }
+      const rows = await this.update(fields)
+
+      if (rows === 1) {
+        eventEmitter.emit(
+          eventEmitter.USER_UPDATE,
+          {
+            user: currentUser,
+            fields,
+          }
+        )
+      }
+      return false
 
     }
 

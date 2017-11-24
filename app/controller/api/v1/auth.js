@@ -6,6 +6,8 @@ module.exports = app => {
 
     async signup() {
 
+      const { limit } = app
+
       const input = this.filter(this.input, {
         nickname: 'trim',
         gender: 'number',
@@ -13,37 +15,52 @@ module.exports = app => {
         job: 'trim',
         mobile: 'trim',
         password: ['trim', 'lower'],
-        verify_code: 'trim'
+        verify_code: 'trim',
+        invite_code: 'trim',
       })
 
-      this.validate(input, {
+      const rules = {
         nickname: {
           type: 'string',
-          max: 20,
-          min: 2
+          max: limit.USER_NICKNAME_MAX_LENGTH,
+          min: limit.USER_NICKNAME_MIN_LENGTH,
         },
-        gender: [1, 2],
+        gender: [
+          limit.USER_GENDER_MALE,
+          limit.USER_GENDER_FEMALE,
+        ],
         company: {
+          required: false,
           empty: true,
           type: 'string',
+          max: limit.CAREER_COMPANY_MAX_LENGTH,
         },
         job: {
+          required: false,
           empty: true,
           type: 'string',
+          max: limit.CAREER_JOB_MAX_LENGTH,
         },
         mobile: 'mobile',
         password: {
-          empty: false,
-          type: 'password',
+          type: 'string',
+          max: limit.USER_PASSWORD_MAX_LENGTH,
+          min: limit.USER_PASSWORD_MIN_LENGTH,
         },
         verify_code: 'verify_code'
-      })
+      }
+
+      if (app.config.signupByInvite) {
+        rules.invite_code = 'string'
+      }
+
+      this.validate(input, rules)
 
       const userService = this.ctx.service.account.user
-
       const userId = await userService.signup(input)
 
-      this.output.user = await userService.getUserById(userId)
+      const result = await userService.getUserById(userId)
+      this.output.user = userService.toExternal(result)
 
     }
 
@@ -56,10 +73,7 @@ module.exports = app => {
 
       this.validate(input, {
         username: 'mobile',
-        password: {
-          empty: false,
-          type: 'password',
-        }
+        password: 'string',
       })
 
       const userService = this.ctx.service.account.user
@@ -68,7 +82,8 @@ module.exports = app => {
         password: input.password,
       })
 
-      this.output.user = await userService.getUserById(user)
+      const result = await userService.getUserById(user)
+      this.output.user = userService.toExternal(result)
 
     }
 

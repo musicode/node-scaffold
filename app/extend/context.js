@@ -4,7 +4,6 @@ const UADevice = require('ua-device')
 const UA = Symbol('Context#ua')
 const INPUT = Symbol('Context#input')
 const OUTPUT = Symbol('Context#output')
-const CURRENT_USER = Symbol('Context#currentUser')
 
 module.exports = {
 
@@ -75,24 +74,6 @@ module.exports = {
       page_size: page_size,
       total_size: totalSize,
     }
-  },
-
-  /**
-   * 当前登录用户
-   */
-  async getCurrentUser() {
-    if (this[CURRENT_USER] == null) {
-      let userId = this.service.account.session.get(
-        this.app.config.session.currentUser
-      )
-      if (userId) {
-        this[CURRENT_USER] = await this.service.account.user.getCache(userId)
-      }
-      else {
-        this[CURRENT_USER] = false
-      }
-    }
-    return this[CURRENT_USER]
   },
 
 }

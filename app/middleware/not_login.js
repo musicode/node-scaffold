@@ -5,7 +5,7 @@
  */
 module.exports = options => {
   return async function notLogin(ctx, next) {
-    let currentUser = await ctx.getCurrentUser()
+    let currentUser = await ctx.service.account.session.getCurrentUser()
     if (!currentUser) {
       await next()
     }

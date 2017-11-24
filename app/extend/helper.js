@@ -1,10 +1,10 @@
 
 const uuidv1 = require('uuid/v1')
 
-const TYPE_STRING = 'str'
-const TYPE_NUMBER = 'num'
-const TYPE_BOOLEAN = 'bool'
-const TYPE_DATE = 'date'
+const TYPE_STRING = '1'
+const TYPE_NUMBER = '2'
+const TYPE_BOOLEAN = '3'
+const TYPE_DATE = '4'
 
 module.exports = {
 

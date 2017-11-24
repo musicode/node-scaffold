@@ -1,26 +1,103 @@
 'use strict'
 
+const CURRENT_USER = Symbol('Context#currentUser')
+
 module.exports = app => {
   class Session extends app.BaseService {
 
+    get accessToken() {
+      return this.ctx.accessToken
+    }
+
     async get(name) {
-      let { accessToken } = this.ctx
-      return await app.redis.hget(`session:${accessToken}`, name)
+      return await app.redis.hget(`session:${this.accessToken}`, name)
     }
 
     async set(name, value) {
-      let { accessToken } = this.ctx
-      await app.redis.hset(`session:${accessToken}`, name, value)
+      await app.redis.hset(`session:${this.accessToken}`, name, value)
     }
 
     async remove(name) {
-      let { accessToken } = this.ctx
       if (name) {
-        await app.redis.hdel(`session:${accessToken}`, name)
+        await app.redis.hdel(`session:${this.accessToken}`, name)
       }
       else {
-        await app.redis.del(`session:${accessToken}`)
+        await app.redis.del(`session:${this.accessToken}`)
       }
+    }
+
+    async getExpire(name) {
+      return await app.redis.get(`expire_session:${this.accessToken}:${name}`)
+    }
+
+    /**
+     *
+     * @param {string} name
+     * @param {string|number} value
+     * @param {number} expireTime 过期时间，单位毫秒
+     */
+    async setExpire(name, value, expireTime) {
+      if (!expireTime) {
+        this.throw(
+          app.code.INNER_ERROR,
+          'setExpire 缺少 expireTime 参数'
+        )
+      }
+      const key = `expire_session:${this.accessToken}:${name}`
+      await app.redis.set(key, value)
+      await app.redis.expire(key, expireTime / 1000)
+    }
+
+    async checkVerifyCode(verifyCode) {
+      const { PARAM_INVALID } = app.code
+      if (!verifyCode) {
+        this.throw(
+          PARAM_INVALID,
+          '缺少验证码'
+        )
+      }
+return true
+      const value = await this.getExpire(
+        this.config.session.verifyCode
+      )
+      if (!value) {
+        this.throw(
+          PARAM_INVALID,
+          '未发送该验证码'
+        )
+      }
+      if (value != verifyCode) {
+        this.throw(
+          PARAM_INVALID,
+          '验证码错误'
+        )
+      }
+    }
+
+    async checkCurrentUser() {
+      const currentUser = await this.getCurrentUser()
+      if (!currentUser) {
+        this.throw(
+          app.code.AUTH_UNSIGNIN,
+          '未登录，无法操作'
+        )
+      }
+      return currentUser
+    }
+
+    async getCurrentUser() {
+      if (this[CURRENT_USER] == null) {
+        let userId = await this.get(
+          this.config.session.currentUser
+        )
+        if (userId) {
+          this[CURRENT_USER] = await this.service.account.user.getUserById(userId)
+        }
+        else {
+          this[CURRENT_USER] = false
+        }
+      }
+      return this[CURRENT_USER]
     }
 
   }

@@ -12,11 +12,11 @@ module.exports = app => {
         mobile: 'trim',
         email: 'trim',
         avatar: 'trim',
-        domain: 'trim',
+        domain: ['trim', 'lower'],
         intro: 'trim',
         company: 'trim',
         job: 'trim',
-        area_id: 'int',
+        area_id: 'number',
       })
 
       this.validate(input, {
@@ -42,7 +42,7 @@ module.exports = app => {
         verify_code: 'verify_code'
       })
 
-      const userService = this.ctx.service.account.user
+      const userService = this.ctx.service.account.user.updateUser()
 
     }
   }

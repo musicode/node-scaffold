@@ -1,6 +1,9 @@
 'use strict'
 
 const code = require('./app/constant/code')
+const helper = require('./app/extend/helper')
+const limit = require('./app/limit')
+const moment = require('./app/moment')
 const validator = require('./app/validator')
 const eventEmitter = require('./app/eventEmitter')
 
@@ -73,7 +76,7 @@ module.exports = app => {
         data.orders = [[options.sortOrder,  options.sortBy]]
       }
 
-      return app.mysql.get(this.tableName, data)
+      return app.mysql.select(this.tableName, data)
 
     }
 
@@ -101,7 +104,8 @@ module.exports = app => {
 
     }
 
-    async update(data) {
+    async update(data, where) {
+      Object.assign(data, where)
       const result = await app.mysql.update(
         this.tableName,
         data
@@ -118,11 +122,10 @@ module.exports = app => {
     }
 
     async transaction(handler) {
-      const result = await app.mysql.beginTransactionScope(
+      return await app.mysql.beginTransactionScope(
         handler,
         this.ctx
       )
-      return result
     }
 
     /**
@@ -139,6 +142,11 @@ module.exports = app => {
 
   app.BaseController = BaseController
   app.BaseService = BaseService
+
+  app.code = code
+  app.helper = helper
+  app.limit = limit
+  app.moment = moment
   app.eventEmitter = eventEmitter
 
 }

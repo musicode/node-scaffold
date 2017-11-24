@@ -4,7 +4,8 @@
 
 'use strict'
 
-const eventEmitter = new require('events').EventEmitter
+const events = require('events')
+const eventEmitter = new events.EventEmitter()
 
 /**
 * 用户注册
@@ -21,5 +22,9 @@ eventEmitter.USER_SIGN_IN = 'user_sign_in'
 */
 eventEmitter.USER_SIGN_OUT = 'user_sign_out'
 
+/**
+* 用户修改个人资料
+*/
+eventEmitter.USER_UPDATE = 'user_update'
 
 module.exports = eventEmitter

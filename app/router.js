@@ -18,4 +18,19 @@ module.exports = app => {
     controller.api.v1.auth.signout
   )
 
+  app.get(
+    '/api/v1/user/email/update',
+    controller.api.v1.user.email.update
+  )
+
+  app.get(
+    '/api/v1/user/mobile/update',
+    controller.api.v1.user.mobile.update
+  )
+
+  app.get(
+    '/api/v1/user/password/update',
+    controller.api.v1.user.password.update
+  )
+
 }
