@@ -1,19 +1,17 @@
 
 const { app, mock, assert } = require('egg-mock/bootstrap')
 
-describe('test/extend/helper.test.js', () => {
+describe('test/util.test.js', () => {
 
   describe('helper', () => {
 
     it('uuid should be a string', () => {
-      const ctx = app.mockContext()
       const uuid = app.util.uuid()
       assert(typeof uuid === 'string')
       assert(uuid.length > 10)
     })
 
     it('randomInt should be a number', () => {
-      const ctx = app.mockContext()
       const length = 10
       const randomInt = app.util.randomInt(length)
       assert(typeof randomInt === 'number')
@@ -22,16 +20,18 @@ describe('test/extend/helper.test.js', () => {
     })
 
     it('object parse/stringify', () => {
-      const ctx = app.mockContext()
       const object = {
         name: 'test',
         age: 10,
-        married: false
+        married: false,
+        birthday: new Date()
       }
       const str = app.util.stringifyObject(object)
       const newObject = app.util.parseObject(str)
-
-      assert(JSON.stringify(object) === JSON.stringify(newObject))
+      assert(newObject.name === object.name)
+      assert(newObject.age === object.age)
+      assert(newObject.married === object.married)
+      assert(newObject.birthday.getTime() === object.birthday.getTime())
     })
 
   })

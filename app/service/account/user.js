@@ -1,7 +1,6 @@
 'use strict'
 
 const bcrypt = require('bcryptjs')
-const salt = 10
 
 module.exports = app => {
 
@@ -42,11 +41,11 @@ module.exports = app => {
     }
 
     async createHash(password) {
-      return bcrypt.hash(password, salt)
+      return bcrypt.hash(password.toLowerCase(), 10)
     }
 
     async checkPassword(password, hash) {
-      return bcrypt.compare(password, hash)
+      return bcrypt.compare(password.toLowerCase(), hash)
     }
 
     /**
@@ -90,8 +89,16 @@ module.exports = app => {
     }
 
     toExternal(user) {
-      user.password = user.password ? true : false
-      return user
+      const result = { }
+      Object.assign(result, user)
+
+      result.password = result.password ? true : false
+      const { number } = result
+      delete result.id
+
+      result.id = number
+
+      return result
     }
 
     /**
