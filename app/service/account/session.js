@@ -3,6 +3,9 @@
 const CURRENT_USER = Symbol('Context#currentUser')
 
 module.exports = app => {
+
+  const { code, config } = app
+
   class Session extends app.BaseService {
 
     get accessToken() {
@@ -39,7 +42,7 @@ module.exports = app => {
     async setExpire(name, value, expireTime) {
       if (!expireTime) {
         this.throw(
-          app.code.INNER_ERROR,
+          code.INNER_ERROR,
           'setExpire 缺少 expireTime 参数'
         )
       }
@@ -49,16 +52,16 @@ module.exports = app => {
     }
 
     async checkVerifyCode(verifyCode) {
-      const { PARAM_INVALID } = app.code
+      const { PARAM_INVALID } = code
       if (!verifyCode) {
         this.throw(
           PARAM_INVALID,
           '缺少验证码'
         )
       }
-      if (!app.config.system.ignoreVerifyCode) {
+      if (!config.system.ignoreVerifyCode) {
         const value = await this.getExpire(
-          this.config.session.verifyCode
+          config.session.verifyCode
         )
         if (!value) {
           this.throw(
@@ -79,7 +82,7 @@ module.exports = app => {
       const currentUser = await this.getCurrentUser()
       if (!currentUser) {
         this.throw(
-          app.code.AUTH_UNSIGNIN,
+          code.AUTH_UNSIGNIN,
           '未登录，无法操作'
         )
       }
@@ -89,7 +92,7 @@ module.exports = app => {
     async getCurrentUser() {
       if (this[CURRENT_USER] == null) {
         let userId = await this.get(
-          this.config.session.currentUser
+          config.session.currentUser
         )
         if (userId) {
           this[CURRENT_USER] = await this.service.account.user.getUserById(userId)

@@ -1,6 +1,9 @@
 'use strict'
 
 module.exports = app => {
+
+  const { code, moment } = app
+
   class InviteCode extends app.BaseService {
 
     get tableName() {
@@ -19,7 +22,7 @@ module.exports = app => {
         invite_code: inviteCode,
       })
 
-      const { PARAM_INVALID } = app.code
+      const { PARAM_INVALID } = code
 
       if (!result) {
         this.throw(
@@ -29,7 +32,7 @@ module.exports = app => {
       }
 
       const passedTime = Date.now() - result.create_time.getTime()
-      const expiredTime =  app.limit.INVITE_CODE_MAX_AGE_BY_MONTH * app.moment.MONTH
+      const expiredTime =  app.limit.INVITE_CODE_MAX_AGE_BY_MONTH * moment.MONTH
       if (passedTime > expiredTime) {
         this.throw(
           PARAM_INVALID,

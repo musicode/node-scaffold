@@ -5,7 +5,7 @@ const salt = 10
 
 module.exports = app => {
 
-  const { code, util, limit, redis, eventEmitter } = app
+  const { code, util, limit, redis, config, eventEmitter } = app
 
   eventEmitter
   .on(
@@ -108,7 +108,7 @@ module.exports = app => {
     async signup(data) {
 
       const { account } = this.service
-      const { currentUser, verifyCode } = this.config.session
+      const { currentUser, verifyCode } = config.session
 
       let userId = await account.session.get(currentUser)
       if (userId) {
@@ -197,7 +197,7 @@ module.exports = app => {
     async signin(data) {
 
       const { account } = this.service
-      const { currentUser } = this.config.session
+      const { currentUser } = config.session
 
       const userId = await account.session.get(currentUser)
       if (userId) {
@@ -245,7 +245,7 @@ module.exports = app => {
     async signout() {
 
       const { session } = this.service.account
-      const { currentUser } = this.config.session
+      const { currentUser } = config.session
 
       const userId = await session.get(currentUser)
       if (!userId) {
