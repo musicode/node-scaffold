@@ -90,18 +90,12 @@ module.exports = app => {
     }
 
     async getCurrentUser() {
-      if (this[CURRENT_USER] == null) {
-        let userId = await this.get(
-          config.session.currentUser
-        )
-        if (userId) {
-          this[CURRENT_USER] = await this.service.account.user.getUserById(userId)
-        }
-        else {
-          this[CURRENT_USER] = false
-        }
+      let userId = await this.get(
+        config.session.currentUser
+      )
+      if (userId) {
+        return await this.service.account.user.getUserById(userId)
       }
-      return this[CURRENT_USER]
     }
 
   }

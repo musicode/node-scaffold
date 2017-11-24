@@ -4,29 +4,7 @@ const bcrypt = require('bcryptjs')
 
 module.exports = app => {
 
-  const { code, util, limit, redis, config, eventEmitter } = app
-
-  eventEmitter
-  .on(
-    eventEmitter.USER_UPDATE,
-    async data => {
-
-      const { user, fields } = data
-
-      const key = `user:${user.id}`
-      const value = await redis.get(key)
-
-      if (!value) {
-        return
-      }
-
-      const userObject = util.parseObject(value)
-      Object.assign(userObject, fields)
-
-      await redis.set(key, util.stringifyObject(userObject))
-
-    }
-  )
+  const { code, util, limit, redis, config } = app
 
   class User extends app.BaseService {
 
@@ -88,6 +66,22 @@ module.exports = app => {
       return user
     }
 
+    async updateRedis(user, fields) {
+
+      const key = `user:${user.id}`
+      const value = await redis.get(key)
+
+      if (!value) {
+        return
+      }
+
+      const userObject = util.parseObject(value)
+      Object.assign(userObject, fields)
+
+      await redis.set(key, util.stringifyObject(userObject))
+
+    }
+
     toExternal(user) {
       const result = { }
       Object.assign(result, user)
@@ -110,7 +104,7 @@ module.exports = app => {
      * @property {string?} data.verify_code 如果传了验证码，必须和 session 保存的一致
      * @property {string?} data.invite_code 如果传了邀请码，必须是可用状态的邀请码
      * @property {...} 其他 user info 字段
-     * @return {string} 新插入的 user id
+     * @return {number} 新插入的 user id
      */
     async signup(data) {
 
@@ -311,13 +305,8 @@ module.exports = app => {
         }
         const rows = await this.update(fields)
         if (rows === 1) {
-          eventEmitter.emit(
-            eventEmitter.USER_UPDATE,
-            {
-              user: currentUser,
-              fields,
-            }
-          )
+          await this.updateRedis(currentUser, fields)
+          return true
         }
         return false
       }
@@ -347,13 +336,8 @@ module.exports = app => {
         }
         const rows = await this.update(fields)
         if (rows === 1) {
-          eventEmitter.emit(
-            eventEmitter.USER_UPDATE,
-            {
-              user: currentUser,
-              fields,
-            }
-          )
+          await this.updateRedis(currentUser, fields)
+          return true
         }
         return false
       }
@@ -400,13 +384,8 @@ module.exports = app => {
       const rows = await this.update(fields)
 
       if (rows === 1) {
-        eventEmitter.emit(
-          eventEmitter.USER_UPDATE,
-          {
-            user: currentUser,
-            fields,
-          }
-        )
+        await this.updateRedis(currentUser, fields)
+        return true
       }
       return false
 
