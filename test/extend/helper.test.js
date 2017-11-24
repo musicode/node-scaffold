@@ -7,7 +7,7 @@ describe('test/extend/helper.test.js', () => {
 
     it('uuid should be a string', () => {
       const ctx = app.mockContext()
-      const uuid = ctx.helper.uuid()
+      const uuid = app.util.uuid()
       assert(typeof uuid === 'string')
       assert(uuid.length > 10)
     })
@@ -15,10 +15,10 @@ describe('test/extend/helper.test.js', () => {
     it('randomInt should be a number', () => {
       const ctx = app.mockContext()
       const length = 10
-      const randomInt = ctx.helper.randomInt(length)
+      const randomInt = app.util.randomInt(length)
       assert(typeof randomInt === 'number')
       assert(('' + randomInt).length === length)
-      assert(randomInt !== ctx.helper.randomInt(length))
+      assert(randomInt !== app.util.randomInt(length))
     })
 
     it('object parse/stringify', () => {
@@ -28,8 +28,8 @@ describe('test/extend/helper.test.js', () => {
         age: 10,
         married: false
       }
-      const str = ctx.helper.stringifyObject(object)
-      const newObject = ctx.helper.parseObject(str)
+      const str = app.util.stringifyObject(object)
+      const newObject = app.util.parseObject(str)
 
       assert(JSON.stringify(object) === JSON.stringify(newObject))
     })

@@ -56,21 +56,22 @@ module.exports = app => {
           '缺少验证码'
         )
       }
-return true
-      const value = await this.getExpire(
-        this.config.session.verifyCode
-      )
-      if (!value) {
-        this.throw(
-          PARAM_INVALID,
-          '未发送该验证码'
+      if (!app.config.system.ignoreVerifyCode) {
+        const value = await this.getExpire(
+          this.config.session.verifyCode
         )
-      }
-      if (value != verifyCode) {
-        this.throw(
-          PARAM_INVALID,
-          '验证码错误'
-        )
+        if (!value) {
+          this.throw(
+            PARAM_INVALID,
+            '未发送该验证码'
+          )
+        }
+        if (value != verifyCode) {
+          this.throw(
+            PARAM_INVALID,
+            '验证码错误'
+          )
+        }
       }
     }
 

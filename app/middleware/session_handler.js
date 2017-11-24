@@ -11,7 +11,7 @@ module.exports = (options, app) => {
     if (!accessToken) {
       accessToken = ctx.cookies.get('access_token')
       if (!accessToken) {
-        accessToken = ctx.helper.uuid()
+        accessToken = app.util.uuid()
         callback = async function () {
           ctx.output.access_token = accessToken
           // 如果对方有 cookie 功能

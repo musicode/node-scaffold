@@ -2,11 +2,11 @@
 
 module.exports = app => {
 
+  const { limit, config } = app
+
   class AuthController extends app.BaseController {
 
     async signup() {
-
-      const { limit } = app
 
       const input = this.filter(this.input, {
         nickname: 'trim',
@@ -50,7 +50,7 @@ module.exports = app => {
         verify_code: 'verify_code'
       }
 
-      if (app.config.signupByInvite) {
+      if (config.system.signupByInvite) {
         rules.invite_code = 'string'
       }
 

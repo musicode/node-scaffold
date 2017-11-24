@@ -17,7 +17,10 @@ module.exports = appInfo => {
   // use for cookie sign key, should change to your own and keep security
   config.keys = appInfo.name + '_1509871538031_1201'
 
-  config.signupByInvite = false
+  config.system = {
+    signupByInvite: false,
+    ignoreVerifyCode: true,
+  }
 
   // 全局中间件
   config.middleware = [

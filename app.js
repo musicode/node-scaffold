@@ -1,7 +1,7 @@
 'use strict'
 
 const code = require('./app/constant/code')
-const helper = require('./app/extend/helper')
+const util = require('./app/util')
 const limit = require('./app/limit')
 const moment = require('./app/moment')
 const validator = require('./app/validator')
@@ -144,7 +144,7 @@ module.exports = app => {
   app.BaseService = BaseService
 
   app.code = code
-  app.helper = helper
+  app.util = util
   app.limit = limit
   app.moment = moment
   app.eventEmitter = eventEmitter

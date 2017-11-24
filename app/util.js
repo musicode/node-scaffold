@@ -1,3 +1,4 @@
+'use strict'
 
 const uuidv1 = require('uuid/v1')
 
@@ -72,7 +73,7 @@ module.exports = {
 
         case 'boolean':
           type = TYPE_BOOLEAN
-          value = value ? 1 : 0;
+          value = value ? 1 : 0
           break
 
         case 'date':
@@ -81,7 +82,7 @@ module.exports = {
           break
 
         default:
-          throw new Error(`helper.stringifyObject: data.${key} is a ${type}.`)
+          throw new Error(`util.stringifyObject: data.${key} is a ${type}.`)
       }
       result.push(
         `${key}:${type}_${value}`

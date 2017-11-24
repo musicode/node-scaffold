@@ -5,7 +5,7 @@ const salt = 10
 
 module.exports = app => {
 
-  const { code, limit, redis, eventEmitter } = app
+  const { code, util, limit, redis, eventEmitter } = app
 
   eventEmitter
   .on(
@@ -21,11 +21,10 @@ module.exports = app => {
         return
       }
 
-      const { helper } = app
-      const userObject = helper.parseObject(value)
+      const userObject = util.parseObject(value)
       Object.assign(userObject, fields)
 
-      await redis.set(key, helper.stringifyObject(userObject))
+      await redis.set(key, util.stringifyObject(userObject))
 
     }
   )
@@ -63,13 +62,13 @@ module.exports = app => {
         userId = user.id
       }
 
-      const { helper, service } = this.ctx
+      const { service } = this.ctx
 
       const key = `user:${userId}`
       const value = await redis.get(key)
 
       if (value) {
-        return helper.parseObject(value)
+        return util.parseObject(value)
       }
 
       if (!user) {
@@ -85,7 +84,7 @@ module.exports = app => {
         }
       }
 
-      redis.set(key, helper.stringifyObject(user))
+      redis.set(key, util.stringifyObject(user))
 
       return user
     }
@@ -143,7 +142,7 @@ module.exports = app => {
       userId = await this.transaction(
         async () => {
 
-          const number = this.ctx.helper.randomInt(limit.USER_NUMBER_LENGTH)
+          const number = util.randomInt(limit.USER_NUMBER_LENGTH)
           const password = await this.createHash(data.password)
 
           const userId = await super.insert({
@@ -294,10 +293,11 @@ module.exports = app => {
 
       // 先判断是本人操作
       const currentUser = await account.session.checkCurrentUser()
+      // 判断验证码的有效性
+      await account.session.checkVerifyCode(data.verify_code)
 
       if (currentUser.mobile !== data.mobile) {
         await this.checkMobileAvailable(data.mobile)
-        await account.session.checkVerifyCode(data.verify_code)
         const fields = {
           id: currentUser.id,
           mobile: data.mobile,
