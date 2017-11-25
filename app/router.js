@@ -58,4 +58,26 @@ module.exports = app => {
     controller.api.v1.user.career.list
   )
 
+  app.get(
+    '/api/v1/user/education/create',
+    controller.api.v1.user.education.create
+  )
+
+  app.get(
+    '/api/v1/user/education/update',
+    controller.api.v1.user.education.update
+  )
+
+  app.get(
+    '/api/v1/user/education/delete',
+    controller.api.v1.user.education.delete
+  )
+
+  app.get(
+    '/api/v1/user/education/list',
+    controller.api.v1.user.education.list
+  )
+
+
+
 }

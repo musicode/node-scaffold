@@ -26,6 +26,12 @@ module.exports = {
   EDUCATION_COLLEGE_MAX_LENGTH: 20,
   EDUCATION_SPECIALITY_MAX_LENGTH: 20,
   EDUCATION_DESCRIPTION_MAX_LENGTH: 300,
+  EDUCATION_DEGREE_VALUES: [
+    '本科',
+    '硕士',
+    '博士',
+    '其他'
+  ]
 
 }
 
