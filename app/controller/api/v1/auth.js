@@ -31,13 +31,13 @@ module.exports = app => {
         ],
         company: {
           required: false,
-          empty: true,
+          allowEmpty: true,
           type: 'string',
           max: limit.CAREER_COMPANY_MAX_LENGTH,
         },
         job: {
           required: false,
-          empty: true,
+          allowEmpty: true,
           type: 'string',
           max: limit.CAREER_JOB_MAX_LENGTH,
         },

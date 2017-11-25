@@ -16,15 +16,19 @@ module.exports = app => {
       ]
     }
 
+    formatUserInfo(userInfo) {
+      if (userInfo.birthday === '0000-00-00') {
+        userInfo.birthday = ''
+      }
+    }
+
     async getUserInfoByUserId(userId) {
 
       const userInfo = await this.findOneBy({
         user_id: userId,
       })
 
-      if (userInfo.birthday === '0000-00-00') {
-        userInfo.birthday = ''
-      }
+      this.formatUserInfo(userInfo)
 
       return userInfo
 

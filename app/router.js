@@ -38,4 +38,24 @@ module.exports = app => {
     controller.api.v1.user.update
   )
 
+  app.get(
+    '/api/v1/user/career/create',
+    controller.api.v1.user.career.create
+  )
+
+  app.get(
+    '/api/v1/user/career/update',
+    controller.api.v1.user.career.update
+  )
+
+  app.get(
+    '/api/v1/user/career/delete',
+    controller.api.v1.user.career.delete
+  )
+
+  app.get(
+    '/api/v1/user/career/list',
+    controller.api.v1.user.career.list
+  )
+
 }

@@ -29,7 +29,8 @@ module.exports = app => {
     /**
      * 获取用户的完整信息
      *
-     * @param {string|Object} userId
+     * @param {number|Object} userId
+     * @return {Object}
      */
     async getUserById(userId) {
 
@@ -72,19 +73,35 @@ module.exports = app => {
       return user
     }
 
-    async updateRedis(user, fields) {
+    /**
+     * 通过 number 获取用户的完整信息
+     *
+     * 因为用户是通过 number 来发送请求的，所以这个接口比较常用
+     *
+     * @param {number} userNumber
+     * @return {Object}
+     */
+    async getUserByNumber(userNumber) {
 
-      const key = `user:${user.id}`
-      const value = await redis.get(key)
-
-      if (!value) {
-        return
+      if (!userNumber) {
+        this.throw(
+          code.PARAM_INVALID,
+          '缺少 user number'
+        )
       }
 
-      const userObject = util.parseObject(value)
-      Object.assign(userObject, fields)
+      const user = await this.findOneBy({
+        number: userNumber,
+      })
 
-      await redis.set(key, util.stringifyObject(userObject))
+      if (!user) {
+        this.throw(
+          code.RESOURCE_NOT_FOUND,
+          '用户不存在'
+        )
+      }
+
+      return await this.getUserById(user)
 
     }
 
@@ -317,7 +334,7 @@ module.exports = app => {
         }
         const rows = await this.update(fields, { id: currentUser.id })
         if (rows === 1) {
-          await this.updateRedis(currentUser, fields)
+          await this.updateRedis(`user:${currentUser.id}`, fields)
           return true
         }
         return false
@@ -347,7 +364,7 @@ module.exports = app => {
         }
         const rows = await this.update(fields, { id: currentUser.id })
         if (rows === 1) {
-          await this.updateRedis(currentUser, fields)
+          await this.updateRedis(`user:${currentUser.id}`, fields)
           return true
         }
         return false
@@ -394,7 +411,7 @@ module.exports = app => {
       const rows = await this.update(fields, { id: currentUser.id })
 
       if (rows === 1) {
-        await this.updateRedis(currentUser, fields)
+        await this.updateRedis(`user:${currentUser.id}`, fields)
         return true
       }
       return false
@@ -406,7 +423,7 @@ module.exports = app => {
      *
      * @param {number} userId
      */
-    viewUser(userId) {
+    async viewUser(userId) {
 
       const { account } = this.service
 

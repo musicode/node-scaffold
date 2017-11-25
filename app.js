@@ -121,7 +121,7 @@ module.exports = app => {
             where,
           }
         )
-        return result.affectedRows === 1
+        return result.affectedRows
       }
     }
 
@@ -138,6 +138,17 @@ module.exports = app => {
         handler,
         this.ctx
       )
+    }
+
+    async updateRedis(key, fields) {
+
+      const value = await redis.get(key)
+      if (value) {
+        const object = util.parseObject(value)
+        Object.assign(object, fields)
+        await redis.set(key, util.stringifyObject(object))
+      }
+
     }
 
     /**
