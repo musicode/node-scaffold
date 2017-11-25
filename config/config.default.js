@@ -20,6 +20,7 @@ module.exports = appInfo => {
   config.system = {
     signupByInvite: false,
     ignoreVerifyCode: true,
+    userViewByGuest: false,
   }
 
   // 全局中间件

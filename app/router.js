@@ -33,4 +33,9 @@ module.exports = app => {
     controller.api.v1.user.password.update
   )
 
+  app.get(
+    '/api/v1/user/update',
+    controller.api.v1.user.update
+  )
+
 }

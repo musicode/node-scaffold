@@ -52,6 +52,12 @@ module.exports = app => {
         user = await this.findOneBy({
           id: userId
         })
+        if (!user) {
+          this.throw(
+            code.RESOURCE_NOT_FOUND,
+            '该用户不存在'
+          )
+        }
       }
 
       const userInfo = await service.account.userInfo.getUserInfoByUserId(userId)
@@ -89,6 +95,13 @@ module.exports = app => {
       result.password = result.password ? true : false
       const { number } = result
       delete result.id
+
+      if (result.user_id) {
+        delete result.user_id
+      }
+      if (result.user_number) {
+        delete result.user_number
+      }
 
       result.id = number
 
@@ -300,10 +313,9 @@ module.exports = app => {
       if (currentUser.mobile !== data.mobile) {
         await this.checkMobileAvailable(data.mobile)
         const fields = {
-          id: currentUser.id,
           mobile: data.mobile,
         }
-        const rows = await this.update(fields)
+        const rows = await this.update(fields, { id: currentUser.id })
         if (rows === 1) {
           await this.updateRedis(currentUser, fields)
           return true
@@ -331,10 +343,9 @@ module.exports = app => {
       if (currentUser.email !== data.email) {
         await this.checkEmailAvailable(data.email)
         const fields = {
-          id: currentUser.id,
           email: data.email,
         }
-        const rows = await this.update(fields)
+        const rows = await this.update(fields, { id: currentUser.id })
         if (rows === 1) {
           await this.updateRedis(currentUser, fields)
           return true
@@ -378,10 +389,9 @@ module.exports = app => {
       const password = await this.createHash(data.password)
 
       const fields = {
-        id: currentUser.id,
         password,
       }
-      const rows = await this.update(fields)
+      const rows = await this.update(fields, { id: currentUser.id })
 
       if (rows === 1) {
         await this.updateRedis(currentUser, fields)
@@ -389,6 +399,71 @@ module.exports = app => {
       }
       return false
 
+    }
+
+    /**
+     * 浏览用户详细资料
+     *
+     * @param {number} userId
+     */
+    viewUser(userId) {
+
+      const { account } = this.service
+
+      const currentUser = await account.session.getCurrentUser()
+
+      await this.checkUserViewAuth(userId, currentUser)
+
+      const targetUser = await this.getUserById(userId)
+      const statInfo = await this.getUserStatInfoById(userId)
+
+      Object.assign(targetUser, statInfo)
+
+      return targetUser
+
+    }
+
+
+    /**
+     * 递增用户的浏览量
+     *
+     * @param {number} userId
+     */
+    async increaseUserViewCount(userId) {
+
+      const { account } = this.service
+
+      const currentUser = await account.session.getCurrentUser()
+
+      await this.checkUserViewAuth(userId, currentUser)
+
+      await redis.hincrby(`user_stat:${userId}`, 'view_cont', 1)
+
+    }
+
+    /**
+     * 用户的详细资料是否可以被当前登录用户浏览
+     *
+     * @param {number} userId
+     * @param {Object} currentUser
+     */
+    async checkUserViewAuth(userId, currentUser) {
+      if (!config.userViewByGuest && !currentUser) {
+        this.throw(
+          code.AUTH_UNSIGNIN,
+          '只有登录用户才可以浏览用户详细资料'
+        )
+      }
+
+    }
+
+    /**
+     * 获取用户的统计数据
+     *
+     * @param {number} userId
+     */
+    async getUserStatInfoById(userId) {
+      return await redis.hgetall(`user_stat:${userId}`)
     }
 
   }

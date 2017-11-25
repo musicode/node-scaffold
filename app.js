@@ -80,22 +80,28 @@ module.exports = app => {
 
     }
 
-    async insert(data) {
-
-      let params = { }
+    getFields(data) {
+      let fields = { }
 
       this.fields.forEach(
         field => {
           if (field in data) {
-            params[field] = data[field]
+            fields[field] = data[field]
           }
         }
       )
 
-      if (Object.keys(params).length) {
+      if (Object.keys(fields).length) {
+        return fields
+      }
+    }
+
+    async insert(data) {
+      let fields = this.getFields(data)
+      if (fields) {
         const result = await app.mysql.insert(
           this.tableName,
-          params
+          fields
         )
         if (result.affectedRows === 1) {
           return result.insertId
@@ -105,12 +111,18 @@ module.exports = app => {
     }
 
     async update(data, where) {
-      Object.assign(data, where)
-      const result = await app.mysql.update(
-        this.tableName,
-        data
-      )
-      return result.affectedRows
+      let fields = this.getFields(data)
+
+      if (fields) {
+        const result = await app.mysql.update(
+          this.tableName,
+          fields,
+          {
+            where,
+          }
+        )
+        return result.affectedRows === 1
+      }
     }
 
     async delete(where) {

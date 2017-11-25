@@ -30,6 +30,10 @@ module.exports = app => {
 
     }
 
+    async setUserInfoByUserId(data, userId) {
+      return await this.update(data, { user_id: userId })
+    }
+
   }
   return UserInfo
 }
