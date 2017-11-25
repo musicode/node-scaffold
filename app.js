@@ -142,11 +142,11 @@ module.exports = app => {
 
     async updateRedis(key, fields) {
 
-      const value = await redis.get(key)
+      const value = await app.redis.get(key)
       if (value) {
         const object = util.parseObject(value)
         Object.assign(object, fields)
-        await redis.set(key, util.stringifyObject(object))
+        await app.redis.set(key, util.stringifyObject(object))
       }
 
     }

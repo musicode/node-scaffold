@@ -2,7 +2,7 @@
 
 module.exports = app => {
 
-  const { limit, config } = app
+  const { limit } = app
 
   class CareerController extends app.BaseController {
 
@@ -97,7 +97,7 @@ module.exports = app => {
 
       const careerService = this.ctx.service.account.career
 
-      await careerService.deleteCareer(input.career_id)
+      await careerService.deleteCareerById(input.career_id)
 
     }
 

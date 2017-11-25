@@ -95,7 +95,11 @@ module.exports = app => {
     async updateCareerById(data, careerId) {
       await this.checkCareerOwner(careerId)
       const rows = await this.update(data, { id: careerId })
-      return rows === 1
+      if (rows === 1) {
+        await this.updateRedis(`career:${careerId}`, data)
+        return true
+      }
+      return false
     }
 
     /**
@@ -104,7 +108,7 @@ module.exports = app => {
      * @param {number} careerId
      * @return {boolean}
      */
-    async deleteCareer(careerId) {
+    async deleteCareerById(careerId) {
       await this.checkCareerOwner(careerId)
       const rows = await this.delete({ id: careerId })
       if (rows === 1) {
@@ -120,7 +124,9 @@ module.exports = app => {
     async getCareerListByUserId(userId) {
 
       const careerList = await this.findBy({
-        user_id: userId,
+        where: {
+          user_id: userId,
+        }
       })
 
       careerList.forEach(
