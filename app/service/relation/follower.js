@@ -42,13 +42,13 @@ module.exports = app => {
       let count = await redis.hget(key, 'follower_count')
       if (!count && count !== 0) {
         const list = await this.query(
-          'SELECT COUNT(*) AS count FROM ? WHERE user_id=? AND status=?',
+          'SELECT COUNT(*) AS count FROM ?? WHERE user_id=? AND status=?',
           [this.tableName, userId, STATUS_NORMAL]
         )
         count = list[0].count
         await redis.hset(key, 'follower_count', count)
       }
-      return count
+      return +count
     }
 
     /**
