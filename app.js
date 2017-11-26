@@ -59,6 +59,10 @@ module.exports = app => {
 
   class BaseService extends app.Service {
 
+    async query(sql) {
+      return await app.mysql.query(sql)
+    }
+
     async findOneBy(where) {
       return app.mysql.get(this.tableName, where)
     }

@@ -37,7 +37,45 @@ module.exports = app => {
      * @param {number} userId
      */
     async countByUserId(userId) {
-      return await redis.hget(`user_stat:${userId}`, 'followee_count') || 0
+      const key = `user_stat:${userId}`
+      let count = await redis.hget(key, 'followee_count')
+      if (!count && count !== 0) {
+        const list = await this.query(
+          'SELECT COUNT(*) AS count FROM ? WHERE user_id=? AND status=?',
+          [this.tableName, userId, STATUS_NORMAL]
+        )
+        count = list[0].count
+        await redis.hset(key, 'followee_count', count)
+      }
+      return count
+    }
+
+    /**
+     * 递增关注数
+     *
+     * @param {number} userId
+     */
+    async increaseCount(userId) {
+
+      // 防止出现 redis 挂了，取不到值又从 0 开始了
+      await this.countByUserId(userId)
+
+      await redis.hincrby(`user_stat:${userId}`, 'followee_count', 1)
+
+    }
+
+    /**
+     * 递减关注数
+     *
+     * @param {number} userId
+     */
+    async decreaseCount(userId) {
+
+      // 防止出现 redis 挂了，取不到值又从 0 开始了
+      await this.countByUserId(userId)
+
+      await redis.hincrby(`user_stat:${userId}`, 'followee_count', -1)
+
     }
 
     /**
@@ -125,8 +163,8 @@ module.exports = app => {
         )
       }
 
-      await redis.hincrby(`user_stat:${currentUser.id}`, 'followee_count', 1)
-      await redis.hincrby(`user_stat:${userId}`, 'follower_count', 1)
+      await this.increaseCount(currentUser.id)
+      await relation.follower.increaseCount(userId)
 
       const now = Date.now()
 
@@ -196,8 +234,8 @@ module.exports = app => {
         )
       }
 
-      await redis.hincrby(`user_stat:${currentUser.id}`, 'followee_count', -1)
-      await redis.hincrby(`user_stat:${userId}`, 'follower_count', -1)
+      await this.decreaseCount(currentUser.id)
+      await relation.follower.decreaseCount(userId)
 
       // 关注列表
       await redis.zrem(

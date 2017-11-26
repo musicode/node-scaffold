@@ -10,6 +10,9 @@ const STATUS_DELETED = 2
 // [TODO] redis 字段没有怎么恢复
 
 module.exports = app => {
+
+  const { code, redis, } = app
+
   class Follower extends app.BaseService {
 
     get tableName() {
@@ -35,7 +38,45 @@ module.exports = app => {
      * @param {number} userId
      */
     async countByUserId(userId) {
-      return await redis.hget(`user_stat:${userId}`, 'follower_count') || 0
+      const key = `user_stat:${userId}`
+      let count = await redis.hget(key, 'follower_count')
+      if (!count && count !== 0) {
+        const list = await this.query(
+          'SELECT COUNT(*) AS count FROM ? WHERE user_id=? AND status=?',
+          [this.tableName, userId, STATUS_NORMAL]
+        )
+        count = list[0].count
+        await redis.hset(key, 'follower_count', count)
+      }
+      return count
+    }
+
+    /**
+     * 递增粉丝数
+     *
+     * @param {number} userId
+     */
+    async increaseCount(userId) {
+
+      // 防止出现 redis 挂了，取不到值又从 0 开始了
+      await this.countByUserId(userId)
+
+      await redis.hincrby(`user_stat:${userId}`, 'follower_count', 1)
+
+    }
+
+    /**
+     * 递减粉丝数
+     *
+     * @param {number} userId
+     */
+    async decreaseCount(userId) {
+
+      // 防止出现 redis 挂了，取不到值又从 0 开始了
+      await this.countByUserId(userId)
+
+      await redis.hincrby(`user_stat:${userId}`, 'follower_count', -1)
+
     }
 
     /**
