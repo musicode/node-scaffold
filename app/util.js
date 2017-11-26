@@ -1,6 +1,7 @@
 'use strict'
 
 const uuidv1 = require('uuid/v1')
+const random = require('lodash/random')
 
 const TYPE_STRING = '1'
 const TYPE_NUMBER = '2'
@@ -21,6 +22,17 @@ module.exports = {
     let min = Math.pow(10, length - 1)
     let max = Math.pow(10, length) - 1
     return min + Math.floor(Math.random() * (max - min))
+  },
+
+  randomStr(length) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    const minIndex = 0
+    const maxIndex = chars.length - 1
+    let result = ''
+    for (let i = 0; i < length; i++) {
+      result += chars[random(minIndex, maxIndex)]
+    }
+    return result
   },
 
   parseObject(str) {

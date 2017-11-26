@@ -7,7 +7,7 @@ describe('test/service/career.test.js', () => {
 
     let user
 
-    it('ensure sign in', async () => {
+    it('register a new user', async () => {
 
       const ctx = app.mockContext()
       const { account } = ctx.service

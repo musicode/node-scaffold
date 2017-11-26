@@ -80,6 +80,10 @@ module.exports = app => {
 
     }
 
+    async countBy(where) {
+      return app.mysql.count(this.tableName, where)
+    }
+
     getFields(data) {
       let fields = { }
 

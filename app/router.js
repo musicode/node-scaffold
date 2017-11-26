@@ -78,6 +78,17 @@ module.exports = app => {
     controller.api.v1.user.education.list
   )
 
+  // =============================================
+  // 邀请码
+  // =============================================
+  app.get(
+    '/api/v1/inviteCode/create',
+    controller.api.v1.inviteCode.create
+  )
 
+  app.get(
+    '/api/v1/inviteCode/list',
+    controller.api.v1.inviteCode.list
+  )
 
 }

@@ -167,7 +167,7 @@ module.exports = app => {
 
       let inviteCode
       if (data.invite_code) {
-        inviteCode = await account.inviteCode.checkAvailable(data.invite_code)
+        inviteCode = await account.inviteCode.checkInviteCodeAvailable(data.invite_code)
       }
 
       userId = await this.transaction(
