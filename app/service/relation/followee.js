@@ -6,6 +6,8 @@ const STATUS_NORMAL = 0
 // 已删除
 const STATUS_DELETED = 1
 
+// [TODO] redis 字段没有怎么恢复
+
 module.exports = app => {
 
   const { code, redis, } = app

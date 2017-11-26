@@ -43,7 +43,59 @@ module.exports = app => {
 
     }
 
-    async update() {
+    async setEmail() {
+
+      const input = this.filter(this.input, {
+        email: 'trim',
+      })
+
+      this.validate(input, {
+        email: 'email',
+      })
+
+      const { account } = this.ctx.service
+
+      await account.user.setEmail(input)
+
+    }
+
+    async setMobile() {
+
+      const input = this.filter(this.input, {
+        mobile: 'trim',
+        verify_code: 'trim',
+      })
+
+      this.validate(input, {
+        mobile: 'mobile',
+        verify_code: 'verify_code',
+      })
+
+      const { account } = this.ctx.service
+
+      await account.user.setMobile(input)
+
+    }
+
+    async setPassword() {
+
+      const input = this.filter(this.input, {
+        password: 'trim',
+        old_password: 'trim',
+      })
+
+      this.validate(input, {
+        password: 'password',
+        old_password: 'password',
+      })
+
+      const { account } = this.ctx.service
+
+      await account.user.setPassword(input)
+
+    }
+
+    async setUserInfo() {
 
       const input = this.filter(this.input, {
         nickname: 'trim',

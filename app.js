@@ -148,9 +148,12 @@ module.exports = app => {
 
       const value = await app.redis.get(key)
       if (value) {
-        const object = util.parseObject(value)
-        Object.assign(object, fields)
-        await app.redis.set(key, util.stringifyObject(object))
+        fields = this.getFields(fields)
+        if (fields) {
+          const object = util.parseObject(value)
+          Object.assign(object, fields)
+          await app.redis.set(key, util.stringifyObject(object))
+        }
       }
 
     }

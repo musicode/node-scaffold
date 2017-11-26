@@ -7,6 +7,8 @@ const STATUS_BLACK = 1
 // 已删除
 const STATUS_DELETED = 2
 
+// [TODO] redis 字段没有怎么恢复
+
 module.exports = app => {
   class Follower extends app.BaseService {
 

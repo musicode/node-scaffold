@@ -4,8 +4,7 @@ module.exports = app => {
 
   class RelationController extends app.BaseController {
 
-    async follow() {
-
+    async checkUser() {
       const input = this.filter(this.input, {
         user_id: 'trim',
       })
@@ -14,9 +13,17 @@ module.exports = app => {
         user_id: 'string',
       })
 
-      const { account, relation } = this.ctx.service
+      const { account } = this.ctx.service
 
-      const user = await account.user.getUserByNumber(input.user_id)
+      return await account.user.getUserByNumber(input.user_id)
+
+    }
+
+    async follow() {
+
+      const { relation } = this.ctx.service
+
+      const user = await this.checkUser()
 
       await relation.followee.followUser(user.id)
 
@@ -24,17 +31,9 @@ module.exports = app => {
 
     async unfollow() {
 
-      const input = this.filter(this.input, {
-        user_id: 'trim',
-      })
+      const { relation } = this.ctx.service
 
-      this.validate(input, {
-        user_id: 'string',
-      })
-
-      const { account, relation } = this.ctx.service
-
-      const user = await account.user.getUserByNumber(input.user_id)
+      const user = await this.checkUser()
 
       await relation.followee.unfollowUser(user.id)
 
@@ -64,6 +63,27 @@ module.exports = app => {
       this.output.is_friend = isFolowee && isFolower
 
     }
+
+    async followeeCount() {
+
+      const { relation } = this.ctx.service
+
+      const user = await this.checkUser()
+
+      this.output.count = await relation.followee.countByUserId(user.id)
+
+    }
+
+    async followerCount() {
+
+      const { relation } = this.ctx.service
+
+      const user = await this.checkUser()
+
+      this.output.count = await relation.follower.countByUserId(user.id)
+
+    }
+
 
   }
 
