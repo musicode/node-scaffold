@@ -16,7 +16,7 @@ module.exports = app => {
       ]
     }
 
-    formatEducation(education) {
+    format(education) {
       if (education.end_date === '0000-00-00') {
         education.end_date = ''
       }
@@ -49,7 +49,7 @@ module.exports = app => {
         )
       }
 
-      this.formatEducation(education)
+      this.format(education)
 
       redis.set(key, util.stringifyObject(education))
 
@@ -133,7 +133,7 @@ module.exports = app => {
 
       educationList.forEach(
         education => {
-          this.formatEducation(education)
+          this.format(education)
         }
       )
 

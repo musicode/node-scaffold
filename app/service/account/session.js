@@ -4,7 +4,7 @@ const CURRENT_USER = Symbol('Context#currentUser')
 
 module.exports = app => {
 
-  const { code, config } = app
+  const { code, redis, config } = app
 
   class Session extends app.BaseService {
 
@@ -13,24 +13,24 @@ module.exports = app => {
     }
 
     async get(name) {
-      return await app.redis.hget(`session:${this.accessToken}`, name)
+      return await redis.hget(`session:${this.accessToken}`, name)
     }
 
     async set(name, value) {
-      await app.redis.hset(`session:${this.accessToken}`, name, value)
+      await redis.hset(`session:${this.accessToken}`, name, value)
     }
 
     async remove(name) {
       if (name) {
-        await app.redis.hdel(`session:${this.accessToken}`, name)
+        await redis.hdel(`session:${this.accessToken}`, name)
       }
       else {
-        await app.redis.del(`session:${this.accessToken}`)
+        await redis.del(`session:${this.accessToken}`)
       }
     }
 
     async getExpire(name) {
-      return await app.redis.get(`expire_session:${this.accessToken}:${name}`)
+      return await redis.get(`expire_session:${this.accessToken}:${name}`)
     }
 
     /**
@@ -47,8 +47,8 @@ module.exports = app => {
         )
       }
       const key = `expire_session:${this.accessToken}:${name}`
-      await app.redis.set(key, value)
-      await app.redis.expire(key, expireTime / 1000)
+      await redis.set(key, value)
+      await redis.expire(key, expireTime / 1000)
     }
 
     async checkVerifyCode(verifyCode) {

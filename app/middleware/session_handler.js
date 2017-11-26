@@ -3,6 +3,9 @@
 const noop = new Function()
 
 module.exports = (options, app) => {
+
+  const { util } = app
+
   return async function errorHandler(ctx, next) {
 
     let callback = noop
@@ -11,7 +14,7 @@ module.exports = (options, app) => {
     if (!accessToken) {
       accessToken = ctx.cookies.get('access_token')
       if (!accessToken) {
-        accessToken = app.util.uuid()
+        accessToken = util.uuid()
         callback = async function () {
           ctx.output.access_token = accessToken
           // 如果对方有 cookie 功能

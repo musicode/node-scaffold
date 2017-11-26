@@ -16,7 +16,7 @@ module.exports = app => {
       ]
     }
 
-    formatCareer(career) {
+    format(career) {
       if (career.end_date === '0000-00-00') {
         career.end_date = ''
       }
@@ -49,7 +49,7 @@ module.exports = app => {
         )
       }
 
-      this.formatCareer(career)
+      this.format(career)
 
       redis.set(key, util.stringifyObject(career))
 
@@ -131,7 +131,7 @@ module.exports = app => {
 
       careerList.forEach(
         career => {
-          this.formatCareer(career)
+          this.format(career)
         }
       )
 

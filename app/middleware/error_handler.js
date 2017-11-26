@@ -1,26 +1,23 @@
 'use strict'
 
-const code = require('../constant/code')
+module.exports = (options, app) => {
 
-module.exports = options => {
+  const { code } = app
+
   return async function errorHandler(ctx, next) {
+
+    const body = { }
+
     try {
       await next()
       if (ctx._matchedRoute) {
-        ctx.body = {
-          code: code.SUCCESS,
-          data: ctx.output,
-          msg: 'success',
-          ts: Date.now(),
-        }
+        body.code = code.SUCCESS
+        body.msg = 'success'
       }
       // 未匹配路由，表示 404 了
       else {
-        ctx.body = {
-          code: code.RESOURCE_NOT_FOUND,
-          msg: 'not found',
-          ts: Date.now(),
-        }
+        body.code = code.RESOURCE_NOT_FOUND
+        body.msg = 'not found'
       }
     }
     catch (err) {
@@ -28,12 +25,15 @@ module.exports = options => {
       // 框架会统一监听，并打印对应的错误日志
       ctx.app.emit('error', err, ctx)
       // 自定义错误时异常返回的格式
-      ctx.body = {
-        code: err.code || code.FAILURE,
-        data: ctx.output,
-        msg: err.message,
-        ts: Date.now(),
-      }
+      body.code = err.code || code.FAILURE
+      body.msg = err.message
+    }
+
+    body.data = ctx.output
+    body.ts = Date.now()
+
+    if (!ctx.body) {
+      ctx.body = body
     }
 
   }

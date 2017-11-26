@@ -19,7 +19,7 @@ module.exports = app => {
       ]
     }
 
-    formatUserInfo(userInfo) {
+    format(userInfo) {
       if (userInfo.birthday === '0000-00-00') {
         userInfo.birthday = ''
       }
@@ -31,7 +31,7 @@ module.exports = app => {
         user_id: userId,
       })
 
-      this.formatUserInfo(userInfo)
+      this.format(userInfo)
 
       return userInfo
 
