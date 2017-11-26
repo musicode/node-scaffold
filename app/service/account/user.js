@@ -26,6 +26,19 @@ module.exports = app => {
       return bcrypt.compare(password.toLowerCase(), hash)
     }
 
+    async checkUserExisted(userId) {
+      const user = await this.findOneBy({
+        id: userId,
+      })
+      if (!user) {
+        this.throw(
+          code.RESOURCE_NOT_FOUND,
+          '该用户不存在'
+        )
+      }
+      return user
+    }
+
     /**
      * 获取用户的完整信息
      *
@@ -50,15 +63,7 @@ module.exports = app => {
       }
 
       if (!user) {
-        user = await this.findOneBy({
-          id: userId
-        })
-        if (!user) {
-          this.throw(
-            code.RESOURCE_NOT_FOUND,
-            '该用户不存在'
-          )
-        }
+        user = await this.checkUserExisted(userId)
       }
 
       const userInfo = await service.account.userInfo.getUserInfoByUserId(userId)

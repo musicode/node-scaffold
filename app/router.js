@@ -91,4 +91,22 @@ module.exports = app => {
     controller.api.v1.inviteCode.list
   )
 
+  // =============================================
+  // 关注与粉丝
+  // =============================================
+  app.get(
+    '/api/v1/relation/follow',
+    controller.api.v1.relation.follow
+  )
+
+  app.get(
+    '/api/v1/relation/follow/undo',
+    controller.api.v1.relation.unfollow
+  )
+
+  app.get(
+    '/api/v1/relation/is',
+    controller.api.v1.relation.is
+  )
+
 }
