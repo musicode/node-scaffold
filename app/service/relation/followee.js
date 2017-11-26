@@ -26,9 +26,16 @@ module.exports = app => {
 
     /**
      * 获取某个用户的关注列表
+     *
+     * @param {number} userId
+     * @param {Object} options
      */
-    async findByUserId(userId) {
-
+    async findByUserId(userId, options) {
+      options.where = {
+        user_id: userId,
+        status: STATUS_NORMAL,
+      }
+      return await this.findBy(options)
     }
 
     /**
@@ -39,7 +46,7 @@ module.exports = app => {
     async countByUserId(userId) {
       const key = `user_stat:${userId}`
       let count = await redis.hget(key, 'followee_count')
-      if (!count && count !== 0) {
+      if (count == null) {
         const list = await this.query(
           'SELECT COUNT(*) AS count FROM ?? WHERE user_id=? AND status=?',
           [this.tableName, userId, STATUS_NORMAL]
@@ -86,8 +93,12 @@ module.exports = app => {
      * @return {boolean}
      */
     async hasFollow(userId, followeeId) {
-      const score = await redis.zscore(`followees:${userId}`, followeeId)
-      return score ? true : false
+      const result = await this.findOneBy({
+        user_id: userId,
+        followee_id: followeeId,
+        status: STATUS_NORMAL,
+      })
+      return result ? true : false
     }
 
     /**
@@ -168,20 +179,6 @@ module.exports = app => {
 
       const now = Date.now()
 
-      // 关注列表
-      await redis.zadd(
-        `followees:${currentUser.id}`,
-        now,
-        userId
-      )
-
-      // 粉丝列表
-      await redis.zadd(
-        `followers:${userId}`,
-        now,
-        currentUser.id
-      )
-
     }
 
     /**
@@ -236,18 +233,6 @@ module.exports = app => {
 
       await this.decreaseCount(currentUser.id)
       await relation.follower.decreaseCount(userId)
-
-      // 关注列表
-      await redis.zrem(
-        `followees:${currentUser.id}`,
-        userId
-      )
-
-      // 粉丝列表
-      await redis.zrem(
-        `followers:${userId}`,
-        currentUser.id
-      )
 
     }
 

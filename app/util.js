@@ -18,6 +18,16 @@ module.exports = {
     return Object.prototype.toString.call(value).toLowerCase().slice(8, -1)
   },
 
+  async each(array, handler) {
+    const { length } = array
+    for (let i = 0, result; i < length; i++) {
+      result = await handler(array[i], i)
+      if (result === false) {
+        break
+      }
+    }
+  },
+
   randomInt(length) {
     let min = Math.pow(10, length - 1)
     let max = Math.pow(10, length) - 1

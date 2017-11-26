@@ -117,6 +117,7 @@ module.exports = app => {
       result.password = result.password ? true : false
       const { number } = result
       delete result.id
+      delete result.number
 
       if (result.user_id) {
         delete result.user_id

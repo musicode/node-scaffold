@@ -27,9 +27,16 @@ module.exports = app => {
 
     /**
      * 获取某个用户的粉丝列表
+     *
+     * @param {number} userId
+     * @param {Object} options
      */
-    async findByUserId(userId) {
-
+    async findByUserId(userId, options) {
+      options.where = {
+        user_id: userId,
+        status: STATUS_NORMAL,
+      }
+      return await this.findBy(options)
     }
 
     /**
@@ -40,7 +47,7 @@ module.exports = app => {
     async countByUserId(userId) {
       const key = `user_stat:${userId}`
       let count = await redis.hget(key, 'follower_count')
-      if (!count && count !== 0) {
+      if (count == null) {
         const list = await this.query(
           'SELECT COUNT(*) AS count FROM ?? WHERE user_id=? AND status=?',
           [this.tableName, userId, STATUS_NORMAL]

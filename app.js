@@ -46,6 +46,23 @@ module.exports = app => {
     }
 
     /**
+     * 创建分页信息对象，返回列表型数据时需要用到这个方法
+     *
+     * @param {Object} input 输入参数
+     * @param {numbebr} totalSize 数据总条数
+     * @return {Object}
+     */
+    createPager(input, totalSize) {
+      let { page, page_size } = input
+      return {
+        page: page,
+        count: Math.ceil(totalSize / page_size),
+        page_size: page_size,
+        total_size: totalSize,
+      }
+    }
+
+    /**
      * 抛出一个逻辑异常
      *
      * @param {number} code
@@ -77,7 +94,7 @@ module.exports = app => {
       }
 
       if (options.sortBy && options.sortOrder) {
-        data.orders = [[options.sortOrder,  options.sortBy]]
+        data.orders = [[options.sortBy, options.sortOrder]]
       }
 
       return app.mysql.select(this.tableName, data)

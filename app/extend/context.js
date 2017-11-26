@@ -60,20 +60,4 @@ module.exports = {
     this[OUTPUT] = output
   },
 
-  /**
-   * 创建分页信息对象，返回列表型数据时需要用到这个方法
-   *
-   * @param {numbebr} totalSize 数据总条数
-   * @return {Object}
-   */
-  createPager(totalSize) {
-    let { page, page_size } = this.input
-    return {
-      page: page,
-      count: Math.ceil(totalSize / page_size),
-      page_size: page_size,
-      total_size: totalSize,
-    }
-  },
-
 }

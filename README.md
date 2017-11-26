@@ -1,6 +1,8 @@
 # www-rd
 
+eventEmitter 发出的事件，无法正常使用 async/await
 
+array.forEach 无法正常使用 async/await
 
 ## QuickStart
 

@@ -126,8 +126,18 @@ module.exports = app => {
   )
 
   app.get(
+    '/api/v1/relation/followee/list',
+    v1.relation.followeeList
+  )
+
+  app.get(
     '/api/v1/relation/follower/count',
     v1.relation.followerCount
+  )
+
+  app.get(
+    '/api/v1/relation/follower/list',
+    v1.relation.followerList
   )
 
 }

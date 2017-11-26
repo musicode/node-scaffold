@@ -2,6 +2,8 @@
 
 module.exports = app => {
 
+  const { util } = app
+
   class InviteCodeController extends app.BaseController {
 
     async create() {
@@ -22,7 +24,8 @@ module.exports = app => {
 
       const inviteCodeList = await account.inviteCode.getInviteCodeListByUserId(currentUser.id)
 
-      inviteCodeList.forEach(
+      await util.each(
+        inviteCodeList,
         async inviteCode => {
           let inviteCodeUsed = await account.inviteCodeUsed.getInviteCodeUsedByInviteCodeId(inviteCode.id)
           if (inviteCodeUsed) {
