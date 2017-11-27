@@ -42,7 +42,7 @@ module.exports = app => {
           if (targetId == currentUser.id) {
             this.throw(
               code.PARAM_INVALID,
-              '不能自己屏蔽自己'
+              '不能屏蔽自己'
             )
           }
           else {

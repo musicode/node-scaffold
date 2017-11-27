@@ -71,6 +71,31 @@ module.exports = app => {
     v1.privacy.setProfileAllowed
   )
 
+  app.get(
+    '/api/v1/privacy/blacklist/get',
+    v1.privacy.getBlacklist
+  )
+
+  app.get(
+    '/api/v1/privacy/blacklist/set',
+    v1.privacy.setBlacklist
+  )
+
+  app.get(
+    '/api/v1/privacy/blacklist/add',
+    v1.privacy.addToBlacklist
+  )
+
+  app.get(
+    '/api/v1/privacy/blacklist/remove',
+    v1.privacy.removeFromBlacklist
+  )
+
+  app.get(
+    '/api/v1/privacy/blacklist/has',
+    v1.privacy.hasBlacked
+  )
+
   // =============================================
   // 职业经历
   // =============================================
