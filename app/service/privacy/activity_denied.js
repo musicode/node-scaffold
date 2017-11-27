@@ -87,7 +87,11 @@ module.exports = app => {
      * @return {Array.<number>}
      */
     async getDeniedUserListByUserId(userId) {
-      const list = await this.findBy({ user_id: userId })
+      const list = await this.findBy({
+        where: {
+          user_id: userId,
+        }
+      })
       return list.map(
         item => {
           return item.target_id
