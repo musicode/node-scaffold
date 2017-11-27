@@ -80,13 +80,6 @@ describe('test/service/user.test.js', () => {
       assert(user.company === company)
       assert(user.job === job)
 
-      // userService.getUserById 会写入 redis，这里应该可以读到
-      let cacheStr = await app.redis.get(`user:${userId}`)
-      assert(typeof cacheStr === 'string')
-
-      // 和注册对象应该是一样的
-      assert(cacheStr === app.util.stringifyObject(user))
-
       // 再次注册该手机号应提示手机已注册
       try {
         await userService.signup({
@@ -164,6 +157,7 @@ describe('test/service/user.test.js', () => {
       currentUser = await account.session.getCurrentUser()
       assert(app.util.type(currentUser) === 'object')
 
+      let errorCount = 0
       try {
         await userService.signin({
           mobile: user1.mobile,
@@ -173,9 +167,12 @@ describe('test/service/user.test.js', () => {
       catch (err) {
         // 登录态无法再登录
         assert(err.code === app.code.RESOURCE_EXISTS)
+        errorCount++
         // 退出
         await userService.signout()
       }
+
+      assert(errorCount === 1)
 
       try {
         await userService.signin({
@@ -186,7 +183,10 @@ describe('test/service/user.test.js', () => {
       catch (err) {
         // 手机号未注册
         assert(err.code === app.code.RESOURCE_NOT_FOUND)
+        errorCount++
       }
+
+      assert(errorCount === 2)
 
       try {
         await userService.signin({
@@ -197,7 +197,10 @@ describe('test/service/user.test.js', () => {
       catch (err) {
         // 密码错误无法登入
         assert(err.code === app.code.AUTH_ERROR)
+        errorCount++
       }
+
+      assert(errorCount === 3)
 
     })
 
@@ -213,6 +216,8 @@ describe('test/service/user.test.js', () => {
         await userService.signout()
       }
 
+      let errorCount = 0
+
       try {
         // 缺少验证码
         await userService.setMobile({
@@ -221,7 +226,10 @@ describe('test/service/user.test.js', () => {
       }
       catch (err) {
         assert(err.code === app.code.AUTH_UNSIGNIN)
+        errorCount++
       }
+
+      assert(errorCount === 1)
 
       try {
         // 未登录
@@ -232,7 +240,10 @@ describe('test/service/user.test.js', () => {
       }
       catch (err) {
         assert(err.code === app.code.AUTH_UNSIGNIN)
+        errorCount++
       }
+
+      assert(errorCount === 2)
 
       // 登录才有权限修改自己的手机号
       currentUser = await userService.signin({
@@ -251,7 +262,10 @@ describe('test/service/user.test.js', () => {
       }
       catch (err) {
         assert(err.code === app.code.PARAM_INVALID)
+        errorCount++
       }
+
+      assert(errorCount === 3)
 
       let mobile = '1' + app.util.randomInt(10)
       let result = await userService.setMobile({
@@ -282,6 +296,8 @@ describe('test/service/user.test.js', () => {
         await userService.signout()
       }
 
+      let errorCount = 0
+
       try {
         // 未登录
         await userService.setPassword({
@@ -291,7 +307,10 @@ describe('test/service/user.test.js', () => {
       }
       catch (err) {
         assert(err.code === app.code.AUTH_UNSIGNIN)
+        errorCount++
       }
+
+      assert(errorCount === 1)
 
       // 登录才有权限修改自己的手机号
       currentUser = await userService.signin({
@@ -309,7 +328,10 @@ describe('test/service/user.test.js', () => {
       }
       catch (err) {
         assert(err.code === app.code.PARAM_INVALID)
+        errorCount++
       }
+
+      assert(errorCount === 2)
 
       try {
         // 旧密码错误
@@ -320,7 +342,10 @@ describe('test/service/user.test.js', () => {
       }
       catch (err) {
         assert(err.code === app.code.PARAM_INVALID)
+        errorCount++
       }
+
+      assert(errorCount === 3)
 
 
       let password = '123321123'
@@ -341,6 +366,67 @@ describe('test/service/user.test.js', () => {
 
     })
 
+    it('reset password', async () => {
+
+      const ctx = app.mockContext()
+      const { account } = ctx.service
+      const userService = account.user
+
+      // 重置对登录态没影响
+
+      let errorCount = 0
+
+      try {
+        // 缺少验证码
+        await userService.resetPassword({
+          mobile: user1.mobile,
+          password: user1.password,
+        })
+      }
+      catch (err) {
+        assert(err.code === app.code.PARAM_INVALID)
+        errorCount++
+      }
+
+      assert(errorCount === 1)
+
+      try {
+        // 手机号不存在
+        await userService.resetPassword({
+          mobile: '123123',
+          password: user1.password,
+          verify_code: '123123',
+        })
+      }
+      catch (err) {
+        assert(err.code === app.code.PARAM_INVALID)
+        errorCount++
+      }
+
+      assert(errorCount === 2)
+
+      let password = '123321123'
+
+      let result = await userService.resetPassword({
+        mobile: user1.mobile,
+        password: password,
+        verify_code: '123123',
+      })
+
+      assert(result === true)
+
+      let user = await userService.findOneBy({
+        mobile: user1.mobile,
+      })
+
+      let matched = await userService.checkPassword(password, user.password)
+
+      assert(matched === true)
+
+      user1.password = password
+
+    })
+
 
     it('set email', async () => {
 
@@ -354,6 +440,7 @@ describe('test/service/user.test.js', () => {
         await userService.signout()
       }
 
+      let errorCount = 0
       let email = app.util.randomInt(10) + '@qq.com'
 
       try {
@@ -364,7 +451,10 @@ describe('test/service/user.test.js', () => {
       }
       catch (err) {
         assert(err.code === app.code.AUTH_UNSIGNIN)
+        errorCount++
       }
+
+      assert(errorCount === 1)
 
       // 登录才有权限修改自己的手机号
       currentUser = await userService.signin({
@@ -400,7 +490,10 @@ describe('test/service/user.test.js', () => {
       }
       catch (err) {
         assert(err.code === app.code.PARAM_INVALID)
+        errorCount++
       }
+
+      assert(errorCount === 2)
 
     })
 

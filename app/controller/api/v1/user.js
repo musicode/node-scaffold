@@ -95,6 +95,26 @@ module.exports = app => {
 
     }
 
+    async resetPassword() {
+
+      const input = this.filter(this.input, {
+        mobile: 'trim',
+        password: 'trim',
+        verify_code: 'trim',
+      })
+
+      this.validate(input, {
+        mobile: 'mobile',
+        password: 'password',
+        verify_code: 'verify_code',
+      })
+
+      const { account } = this.ctx.service
+
+      await account.user.resetPassword(input)
+
+    }
+
     async setUserInfo() {
 
       const input = this.filter(this.input, {

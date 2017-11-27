@@ -45,6 +45,11 @@ module.exports = {
     return result
   },
 
+  toNumber(value, defaultValue = 0) {
+    value = + value
+    return isNaN(value) ? defaultValue : value
+  },
+
   parseObject(str) {
     const result = { }
     str.split(';').forEach(

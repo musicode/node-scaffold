@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs')
 
 module.exports = app => {
 
-  const { code, util, limit, redis, config } = app
+  const { code, util, limit, redis, config, eventEmitter } = app
 
   class User extends app.BaseService {
 
@@ -26,6 +26,12 @@ module.exports = app => {
       return bcrypt.compare(password.toLowerCase(), hash)
     }
 
+    /**
+     * 检查用户是否存在
+     *
+     * @param {number} userId
+     * @return {Object}
+     */
     async checkUserExisted(userId) {
       const user = await this.findOneBy({
         id: userId,
@@ -323,13 +329,15 @@ module.exports = app => {
      * @param {Object} data
      * @property {string} data.mobile
      * @property {string} data.verify_code
+     * @return {boolean}
      */
     async setMobile(data) {
 
       const { account } = this.service
 
-      // 先判断是本人操作
+      // 判断是本人操作
       const currentUser = await account.session.checkCurrentUser()
+
       // 判断验证码的有效性
       await account.session.checkVerifyCode(data.verify_code)
 
@@ -341,6 +349,13 @@ module.exports = app => {
         const rows = await this.update(fields, { id: currentUser.id })
         if (rows === 1) {
           await this.updateRedis(`user:${currentUser.id}`, fields)
+          eventEmitter.emit(
+            eventEmitter.USER_UDPATE,
+            {
+              userId: currentUser.id,
+              fields,
+            }
+          )
           return true
         }
         return false
@@ -355,6 +370,7 @@ module.exports = app => {
      *
      * @param {Object} data
      * @property {string} data.email
+     * @return {boolean}
      */
     async setEmail(data) {
 
@@ -371,6 +387,13 @@ module.exports = app => {
         const rows = await this.update(fields, { id: currentUser.id })
         if (rows === 1) {
           await this.updateRedis(`user:${currentUser.id}`, fields)
+          eventEmitter.emit(
+            eventEmitter.USER_UDPATE,
+            {
+              userId: currentUser.id,
+              fields,
+            }
+          )
           return true
         }
         return false
@@ -386,6 +409,7 @@ module.exports = app => {
      * @param {Object} data
      * @property {string} data.password
      * @property {string} data.old_password
+     * @return {boolean}
      */
     async setPassword(data) {
 
@@ -418,6 +442,61 @@ module.exports = app => {
 
       if (rows === 1) {
         await this.updateRedis(`user:${currentUser.id}`, fields)
+        eventEmitter.emit(
+          eventEmitter.USER_UDPATE,
+          {
+            userId: currentUser.id,
+            fields,
+          }
+        )
+        return true
+      }
+      return false
+
+    }
+
+    /**
+     * 找回密码
+     *
+     * @param {Object} data
+     * @property {string} data.mobile
+     * @property {string} data.password
+     * @property {string} data.verify_code
+     * @return {boolean}
+     */
+    async resetPassword(data) {
+
+      const { account } = this.service
+
+      await account.session.checkVerifyCode(data.verify_code)
+
+      const user = await this.findOneBy({
+        mobile: data.mobile,
+      })
+
+      if (!user) {
+        this.throw(
+          code.PARAM_INVALID,
+          '该用户不存在'
+        )
+      }
+
+      const password = await this.createHash(data.password)
+
+      const fields = {
+        password,
+      }
+      const rows = await this.update(fields, { id: user.id })
+
+      if (rows === 1) {
+        await this.updateRedis(`user:${user.id}`, fields)
+        eventEmitter.emit(
+          eventEmitter.USER_UDPATE,
+          {
+            userId: user.id,
+            fields,
+          }
+        )
         return true
       }
       return false
@@ -460,7 +539,20 @@ module.exports = app => {
 
       await this.checkUserViewAuth(userId, currentUser)
 
-      await redis.hincrby(`user_stat:${userId}`, 'view_cont', 1)
+      const key = `user_stat:${userId}`
+      await redis.hincrby(key, 'view_cont', 1)
+
+      const viewCount = await redis.hget(key, 'view_count')
+
+      eventEmitter.emit(
+        eventEmitter.USER_UDPATE,
+        {
+          userId,
+          fields: {
+            view_cont: viewCount,
+          }
+        }
+      )
 
     }
 
@@ -477,7 +569,6 @@ module.exports = app => {
           '只有登录用户才可以浏览用户详细资料'
         )
       }
-
     }
 
     /**
@@ -486,7 +577,13 @@ module.exports = app => {
      * @param {number} userId
      */
     async getUserStatInfoById(userId) {
-      return await redis.hgetall(`user_stat:${userId}`)
+      const userStatInfo = await redis.hgetall(`user_stat:${userId}`)
+      return {
+        view_count: util.toNumber(userStatInfo.view_count, 0),
+        like_count: util.toNumber(userStatInfo.like_count, 0),
+        write_count: util.toNumber(userStatInfo.write_count, 0),
+        follower_count: util.toNumber(userStatInfo.follower_count, 0),
+      }
     }
 
   }

@@ -120,6 +120,9 @@ module.exports = app => {
 
     /**
      * 获取用户的职业经历列表
+     *
+     * @param {number} userId
+     * @return {Array}
      */
     async getCareerListByUserId(userId) {
 

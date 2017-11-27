@@ -39,8 +39,26 @@ module.exports = app => {
   )
 
   app.get(
+    '/api/v1/user/password/reset',
+    v1.user.resetPassword
+  )
+
+  app.get(
     '/api/v1/user/update',
     v1.user.setUserInfo
+  )
+
+  // =============================================
+  // 隐私设置
+  // =============================================
+  app.get(
+    '/api/v1/privacy/activityDenied/get',
+    v1.privacy.getActivityDenied
+  )
+
+  app.get(
+    '/api/v1/privacy/activityDenied/set',
+    v1.privacy.setActivityDenied
   )
 
   // =============================================
