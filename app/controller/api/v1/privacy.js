@@ -56,6 +56,32 @@ module.exports = app => {
 
     }
 
+    async setProfileAllowed() {
+
+      const input = this.filter(this.input, {
+        allowed_type: 'number',
+      })
+
+      this.validate(input, {
+        allowed_type: 'number',
+      })
+
+      const { privacy } = this.ctx.service
+
+      await privacy.profileAllowed.setAllowedType(input.allowed_type)
+
+    }
+
+    async getProfileAllowed() {
+
+      const { account, privacy } = this.ctx.service
+
+      const currentUser = await account.session.checkCurrentUser()
+
+      this.output.allowed_type = await privacy.profileAllowed.getAllowedTypeByUserId(currentUser.id)
+
+    }
+
   }
 
   return PrivacyController

@@ -61,6 +61,16 @@ module.exports = app => {
     v1.privacy.setActivityDenied
   )
 
+  app.get(
+    '/api/v1/privacy/profileAllowed/get',
+    v1.privacy.getProfileAllowed
+  )
+
+  app.get(
+    '/api/v1/privacy/profileAllowed/set',
+    v1.privacy.setProfileAllowed
+  )
+
   // =============================================
   // 职业经历
   // =============================================
