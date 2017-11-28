@@ -48,6 +48,16 @@ module.exports = app => {
     v1.user.setUserInfo
   )
 
+  app.get(
+    '/api/v1/user/detail',
+    v1.user.detail
+  )
+
+  app.get(
+    '/api/v1/user/view',
+    v1.user.view
+  )
+
   // =============================================
   // 隐私设置
   // =============================================
