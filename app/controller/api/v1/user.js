@@ -23,7 +23,7 @@ module.exports = app => {
       const user = await account.user.checkUserExistedByNumber(input.user_id)
 
       try {
-        await account.user.viewUser(user.id)
+        this.output.user = await account.user.viewUser(user.id)
       }
       catch (err) {
         if (err.code === code.PERMISSION_DENIED) {

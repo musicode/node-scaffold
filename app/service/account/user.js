@@ -579,7 +579,7 @@ module.exports = app => {
       await this.checkUserViewAuth(userId, currentUser)
 
       const key = `user_stat:${userId}`
-      await redis.hincrby(key, 'view_cont', 1)
+      await redis.hincrby(key, 'view_count', 1)
 
       const viewCount = await redis.hget(key, 'view_count')
 
@@ -588,7 +588,7 @@ module.exports = app => {
         {
           userId,
           fields: {
-            view_cont: viewCount,
+            view_count: viewCount,
           }
         }
       )
@@ -607,10 +607,12 @@ module.exports = app => {
 
       const checkBlacklist = async () => {
         const hasBlacked = await privacy.blacklist.hasBlacked(userId, currentUser.id)
-        this.throw(
-          code.VISITOR_BLACKED,
-          '无权查看该用户的信息'
-        )
+        if (hasBlacked) {
+          this.throw(
+            code.VISITOR_BLACKED,
+            '无权查看该用户的信息'
+          )
+        }
       }
 
       if (currentUser) {
