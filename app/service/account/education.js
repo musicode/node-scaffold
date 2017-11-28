@@ -77,7 +77,10 @@ module.exports = app => {
 
       data.user_id = currentUser.id
 
-      return await this.insert(data)
+      const fields = this.getFields(data)
+      if (fields) {
+        return await this.insert(fields)
+      }
 
     }
 
@@ -96,10 +99,13 @@ module.exports = app => {
      */
     async updateEducationById(data, educationId) {
       await this.checkEducationOwner(educationId)
-      const rows = await this.update(data, { id: educationId })
-      if (rows === 1) {
-        await this.updateRedis(`education:${educationId}`, data)
-        return true
+      const fields = this.getFields(data)
+      if (fields) {
+        const rows = await this.update(fields, { id: educationId })
+        if (rows === 1) {
+          await this.updateRedis(`education:${educationId}`, fields)
+          return true
+        }
       }
       return false
     }

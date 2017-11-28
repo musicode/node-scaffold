@@ -122,32 +122,24 @@ module.exports = app => {
     }
 
     async insert(data) {
-      let fields = this.getFields(data)
-      if (fields) {
-        const result = await app.mysql.insert(
-          this.tableName,
-          fields
-        )
-        if (result.affectedRows === 1) {
-          return result.insertId
-        }
+      const result = await app.mysql.insert(
+        this.tableName,
+        data
+      )
+      if (result.affectedRows === 1) {
+        return result.insertId
       }
-
     }
 
     async update(data, where) {
-      let fields = this.getFields(data)
-
-      if (fields) {
-        const result = await app.mysql.update(
-          this.tableName,
-          fields,
-          {
-            where,
-          }
-        )
-        return result.affectedRows
-      }
+      const result = await app.mysql.update(
+        this.tableName,
+        data,
+        {
+          where,
+        }
+      )
+      return result.affectedRows
     }
 
     async delete(where) {
@@ -168,13 +160,11 @@ module.exports = app => {
     async updateRedis(key, fields) {
 
       const value = await app.redis.get(key)
+
       if (value) {
-        fields = this.getFields(fields)
-        if (fields) {
-          const object = util.parseObject(value)
-          Object.assign(object, fields)
-          await app.redis.set(key, util.stringifyObject(object))
-        }
+        const object = util.parseObject(value)
+        Object.assign(object, fields)
+        await app.redis.set(key, util.stringifyObject(object))
       }
 
     }

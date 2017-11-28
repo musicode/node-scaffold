@@ -195,7 +195,6 @@ module.exports = app => {
         )
       }
 
-
       let inviteCode
       if (data.invite_code) {
         inviteCode = await account.inviteCode.checkInviteCodeAvailable(data.invite_code)
@@ -207,14 +206,19 @@ module.exports = app => {
           const number = util.randomInt(limit.USER_NUMBER_LENGTH)
           const password = await this.createHash(data.password)
 
-          const userId = await super.insert({
+          const userId = await this.insert({
             number,
             password,
             mobile: data.mobile,
           })
 
           data.user_id = userId
-          await account.userInfo.insert(data)
+
+          const fields = account.userInfo.getFields(data)
+
+          if (fields) {
+            await account.userInfo.insert(fields)
+          }
 
           const { request } = this.ctx
           await account.register.insert({
@@ -243,6 +247,13 @@ module.exports = app => {
       }
 
       await account.session.set(currentUser, userId)
+
+      eventEmitter.emit(
+        eventEmitter.USER_ADD,
+        {
+          userId,
+        }
+      )
 
       return userId
 

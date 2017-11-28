@@ -176,9 +176,8 @@ module.exports = app => {
       })
 
       const { account } = this.ctx.service
-      const currentUser = await account.session.checkCurrentUser()
 
-      await account.userInfo.setUserInfoByUserId(input, currentUser.id)
+      await account.userInfo.setUserInfo(input)
 
     }
   }

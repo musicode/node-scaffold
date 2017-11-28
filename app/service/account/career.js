@@ -76,7 +76,10 @@ module.exports = app => {
 
       data.user_id = currentUser.id
 
-      return await this.insert(data)
+      const fields = this.getFields(data)
+      if (fields) {
+        return await this.insert(fields)
+      }
 
     }
 
@@ -94,10 +97,13 @@ module.exports = app => {
      */
     async updateCareerById(data, careerId) {
       await this.checkCareerOwner(careerId)
-      const rows = await this.update(data, { id: careerId })
-      if (rows === 1) {
-        await this.updateRedis(`career:${careerId}`, data)
-        return true
+      const fields = this.getFields(data)
+      if (fields) {
+        const rows = await this.update(fields, { id: careerId })
+        if (rows === 1) {
+          await this.updateRedis(`career:${careerId}`, fields)
+          return true
+        }
       }
       return false
     }

@@ -2,7 +2,7 @@
 
 module.exports = app => {
 
-  const { code } = app
+  const { code, eventEmitter } = app
 
   class UserInfo extends app.BaseService {
 
@@ -37,24 +37,31 @@ module.exports = app => {
 
     }
 
-    async setUserInfoByUserId(data, userId) {
+    async setUserInfo(data) {
 
       const { account } = this.ctx.service
 
-      const user = await account.checkUserExistedById(userId)
       const currentUser = await account.session.checkCurrentUser()
 
-      if (user.id !== currentUser.id) {
-        this.throw(
-          code.PERMISSION_DENIED,
-          '不能修改别人的资料'
-        )
-      }
-
-      const rows = await this.update(data, { user_id: userId })
-      if (rows === 1) {
-        await this.updateRedis(`user:${userId}`, data)
-        return true
+      const fields = this.getFields(data)
+      if (fields) {
+        if (fields.domain) {
+          // 小写化
+          fields.domain = fields.domain.toLowerCase()
+        }
+        const userId = currentUser.id
+        const rows = await this.update(fields, { user_id: userId })
+        if (rows === 1) {
+          await this.updateRedis(`user:${userId}`, fields)
+          eventEmitter.emit(
+            eventEmitter.USER_UDPATE,
+            {
+              userId,
+              fields,
+            }
+          )
+          return true
+        }
       }
 
       return false

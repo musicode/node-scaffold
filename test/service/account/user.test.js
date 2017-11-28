@@ -497,5 +497,57 @@ describe('test/service/user.test.js', () => {
 
     })
 
+    it('set user info', async () => {
+
+      const ctx = app.mockContext()
+      const { account } = ctx.service
+      const userService = account.user
+      const userInfoService = account.userInfo
+
+      // 确保从没登录测起
+      let currentUser = await account.session.getCurrentUser()
+      if (currentUser) {
+        await userService.signout()
+      }
+
+      let errorCount = 0
+
+      let data = {
+        domain: 'nOdE',
+        hahaha: '123',
+        nickname: 'newname',
+      }
+
+      try {
+        // 未登录
+        await userInfoService.setUserInfo(data)
+      }
+      catch (err) {
+        assert(err.code === app.code.AUTH_UNSIGNIN)
+        errorCount++
+      }
+
+      assert(errorCount === 1)
+
+      // 登录才有权限修改自己的手机号
+      currentUser = await userService.signin({
+        mobile: user1.mobile,
+        password: user1.password,
+      })
+
+      assert(app.util.type(currentUser) === 'object')
+
+      let result = await userInfoService.setUserInfo(data)
+
+      assert(result === true)
+
+      currentUser = await userService.getUserById(currentUser.id)
+
+      assert(currentUser.domain === data.domain.toLowerCase())
+      assert(currentUser.nickname === data.nickname)
+      assert(currentUser.hahaha === undefined)
+
+    })
+
   })
 })
