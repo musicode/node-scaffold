@@ -30,8 +30,11 @@ exports.RESOURCE_CONFLICT = 406
 // 无权限访问
 exports.PERMISSION_DENIED = 407
 
+// 被拉黑
+exports.VISITOR_BLACKED = 408
+
 // 客户端版本过低
-exports.CLIENT_NOT_SUPPORTED = 408
+exports.CLIENT_NOT_SUPPORTED = 409
 
 
 // 内部调用错误

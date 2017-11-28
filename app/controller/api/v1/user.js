@@ -2,7 +2,7 @@
 
 module.exports = app => {
 
-  const { limit, config } = app
+  const { code, limit, config } = app
 
   class UserController extends app.BaseController {
 
@@ -19,9 +19,25 @@ module.exports = app => {
       })
 
       const { account } = this.ctx.service
-      const user = await account.user.getUserById(input.user_id)
 
+      const user = await account.user.checkUserExistedByNumber(input.user_id)
 
+      try {
+        await account.user.viewUser(user.id)
+      }
+      catch (err) {
+        if (err.code === code.PERMISSION_DENIED) {
+          this.output.is_denied = true
+        }
+        else if (err.code === code.VISITOR_BLACKED) {
+          this.output.is_black = true
+        }
+        // 对客户端来说，统一告知没权限访问
+        this.throw(
+          code.PERMISSION_DENIED,
+          err.message
+        )
+      }
 
     }
 
@@ -39,7 +55,9 @@ module.exports = app => {
 
       const { account } = this.ctx.service
 
-      account.user.view(input.user_id)
+      const user = await account.user.checkUserExistedByNumber(input.user_id)
+
+      await account.user.increaseUserViewCount(user.id)
 
     }
 

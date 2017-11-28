@@ -1,5 +1,5 @@
 /**
- * 不让 TA 看我的动态
+ * 不看某人的动态
  */
 
 'use strict'
@@ -11,10 +11,10 @@ module.exports = app => {
 
   const { code, util, mysql } = app
 
-  class ActivityDenied extends app.BaseService {
+  class ActivityBlocked extends app.BaseService {
 
     get tableName() {
-      return 'privacy_activity_denied'
+      return 'privacy_activity_blocked'
     }
 
     get fields() {
@@ -24,11 +24,11 @@ module.exports = app => {
     }
 
     /**
-     * 设置不让谁看我的动态
+     * 设置不看谁的动态
      *
      * @param {Array.<number>} targetIds
      */
-    async setDeniedUserList(targetIds) {
+    async setBlockedUserList(targetIds) {
 
       const { account } = this.service
 
@@ -81,12 +81,12 @@ module.exports = app => {
     }
 
     /**
-     * 获取用户不让谁看他的动态
+     * 获取用户不看谁的动态
      *
      * @param {number} userId
      * @return {Array.<number>}
      */
-    async getDeniedUserListByUserId(userId) {
+    async getBlockedUserListByUserId(userId) {
       const list = await this.findBy({
         where: {
           user_id: userId,
@@ -100,5 +100,5 @@ module.exports = app => {
     }
 
   }
-  return ActivityDenied
+  return ActivityBlocked
 }

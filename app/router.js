@@ -51,6 +51,17 @@ module.exports = app => {
   // =============================================
   // 隐私设置
   // =============================================
+
+  app.get(
+    '/api/v1/privacy/profileAllowed/get',
+    v1.privacy.getProfileAllowed
+  )
+
+  app.get(
+    '/api/v1/privacy/profileAllowed/set',
+    v1.privacy.setProfileAllowed
+  )
+
   app.get(
     '/api/v1/privacy/activityDenied/get',
     v1.privacy.getActivityDenied
@@ -62,13 +73,13 @@ module.exports = app => {
   )
 
   app.get(
-    '/api/v1/privacy/profileAllowed/get',
-    v1.privacy.getProfileAllowed
+    '/api/v1/privacy/activityBlocked/get',
+    v1.privacy.getActivityBlocked
   )
 
   app.get(
-    '/api/v1/privacy/profileAllowed/set',
-    v1.privacy.setProfileAllowed
+    '/api/v1/privacy/activityBlocked/set',
+    v1.privacy.setActivityBlocked
   )
 
   app.get(

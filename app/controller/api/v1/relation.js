@@ -17,7 +17,7 @@ module.exports = app => {
 
       const { account } = this.ctx.service
 
-      return await account.user.getUserByNumber(input.user_id)
+      return await account.user.checkUserExistedByNumber(input.user_id)
 
     }
 
@@ -54,8 +54,8 @@ module.exports = app => {
       })
 
       const { account, relation } = this.ctx.service
-      const user = await account.user.getUserByNumber(input.user_id)
-      const target = await account.user.getUserByNumber(input.target_id)
+      const user = await account.user.checkUserExistedByNumber(input.user_id)
+      const target = await account.user.checkUserExistedByNumber(input.target_id)
 
       const isFolowee = await relation.followee.hasFollow(user.id, target.id)
       const isFolower = await relation.followee.hasFollow(target.id, user.id)
@@ -105,7 +105,7 @@ module.exports = app => {
 
       const { account, relation } = this.ctx.service
 
-      const user = await account.user.getUserByNumber(input.user_id)
+      const user = await account.user.checkUserExistedByNumber(input.user_id)
 
       const list = await relation.followee.findByUserId(
         user.id,
@@ -181,7 +181,7 @@ module.exports = app => {
 
       const { account, relation } = this.ctx.service
 
-      const user = await account.user.getUserByNumber(input.user_id)
+      const user = await account.user.checkUserExistedByNumber(input.user_id)
 
       const list = await relation.follower.findByUserId(
         user.id,

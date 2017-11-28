@@ -41,7 +41,7 @@ module.exports = app => {
 
       const { account } = this.ctx.service
 
-      const user = await account.checkUserExisted(userId)
+      const user = await account.checkUserExistedById(userId)
       const currentUser = await account.session.checkCurrentUser()
 
       if (user.id !== currentUser.id) {

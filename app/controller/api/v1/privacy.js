@@ -8,6 +8,32 @@ module.exports = app => {
 
   class PrivacyController extends app.BaseController {
 
+    async setProfileAllowed() {
+
+      const input = this.filter(this.input, {
+        allowed_type: 'number',
+      })
+
+      this.validate(input, {
+        allowed_type: 'number',
+      })
+
+      const { privacy } = this.ctx.service
+
+      await privacy.profileAllowed.setAllowedType(input.allowed_type)
+
+    }
+
+    async getProfileAllowed() {
+
+      const { account, privacy } = this.ctx.service
+
+      const currentUser = await account.session.checkCurrentUser()
+
+      this.output.allowed_type = await privacy.profileAllowed.getAllowedTypeByUserId(currentUser.id)
+
+    }
+
     async setActivityDenied() {
 
       const input = this.filter(this.input, {
@@ -15,20 +41,25 @@ module.exports = app => {
       })
 
       this.validate(input, {
-        user_ids: 'string',
+        user_ids: {
+          allowEmpty: true,
+          type: 'string',
+        },
       })
 
       const { account, privacy } = this.ctx.service
 
       const userIds = [ ]
 
-      await util.each(
-        input.user_ids.split(','),
-        async userId => {
-          const user = await account.user.getUserByNumber(userId)
-          userIds.push(user.id)
-        }
-      )
+      if (input.user_ids) {
+        await util.each(
+          input.user_ids.split(','),
+          async userId => {
+            const user = await account.user.checkUserExistedByNumber(userId)
+            userIds.push(user.id)
+          }
+        )
+      }
 
       await privacy.activityDenied.setDeniedUserList(userIds)
 
@@ -58,29 +89,58 @@ module.exports = app => {
 
     }
 
-    async setProfileAllowed() {
+    async setActivityBlocked() {
 
       const input = this.filter(this.input, {
-        allowed_type: 'number',
+        user_ids: 'trim',
       })
 
       this.validate(input, {
-        allowed_type: 'number',
+        user_ids: {
+          allowEmpty: true,
+          type: 'string',
+        },
       })
 
-      const { privacy } = this.ctx.service
+      const { account, privacy } = this.ctx.service
 
-      await privacy.profileAllowed.setAllowedType(input.allowed_type)
+      const userIds = [ ]
+
+      if (input.user_ids) {
+        await util.each(
+          input.user_ids.split(','),
+          async userId => {
+            const user = await account.user.checkUserExistedByNumber(userId)
+            userIds.push(user.id)
+          }
+        )
+      }
+
+      await privacy.activityBlocked.setBlockedUserList(userIds)
 
     }
 
-    async getProfileAllowed() {
+    async getActivityBlocked() {
 
       const { account, privacy } = this.ctx.service
 
       const currentUser = await account.session.checkCurrentUser()
 
-      this.output.allowed_type = await privacy.profileAllowed.getAllowedTypeByUserId(currentUser.id)
+      const userIds = await privacy.activityBlocked.getBlockedUserListByUserId(currentUser.id)
+
+      const userList = [ ]
+
+      await util.each(
+        userIds,
+        async userId => {
+          const user = await account.user.getUserById(userId)
+          userList.push(
+            account.user.toExternal(user)
+          )
+        }
+      )
+
+      this.output.list = userList
 
     }
 
@@ -96,7 +156,7 @@ module.exports = app => {
 
       const { account, privacy } = this.ctx.service
 
-      const user = await account.user.getUserByNumber(input.user_id)
+      const user = await account.user.checkUserExistedByNumber(input.user_id)
 
       await privacy.blacklist.addUserToBlacklist(user.id)
 
@@ -114,7 +174,7 @@ module.exports = app => {
 
       const { account, privacy } = this.ctx.service
 
-      const user = await account.user.getUserByNumber(input.user_id)
+      const user = await account.user.checkUserExistedByNumber(input.user_id)
 
       await privacy.blacklist.removeUserFromBlacklist(user.id)
 
@@ -132,7 +192,7 @@ module.exports = app => {
 
       const { account, privacy } = this.ctx.service
 
-      const user = await account.user.getUserByNumber(input.user_id)
+      const user = await account.user.checkUserExistedByNumber(input.user_id)
       const currentUser = await account.session.checkCurrentUser()
 
       this.output.has_blacked = await privacy.blacklist.hasBlacked(currentUser.id, user.id)
@@ -146,20 +206,25 @@ module.exports = app => {
       })
 
       this.validate(input, {
-        user_ids: 'string',
+        user_ids: {
+          allowEmpty: true,
+          type: 'string',
+        },
       })
 
       const { account, privacy } = this.ctx.service
 
       const userIds = [ ]
 
-      await util.each(
-        input.user_ids.split(','),
-        async userId => {
-          const user = await account.user.getUserByNumber(userId)
-          userIds.push(user.id)
-        }
-      )
+      if (input.user_ids) {
+        await util.each(
+          input.user_ids.split(','),
+          async userId => {
+            const user = await account.user.checkUserExistedByNumber(userId)
+            userIds.push(user.id)
+          }
+        )
+      }
 
       await privacy.blacklist.setBlacklist(userIds)
 

@@ -32,9 +32,28 @@ module.exports = app => {
      * @param {number} userId
      * @return {Object}
      */
-    async checkUserExisted(userId) {
+    async checkUserExistedById(userId) {
       const user = await this.findOneBy({
         id: userId,
+      })
+      if (!user) {
+        this.throw(
+          code.RESOURCE_NOT_FOUND,
+          '该用户不存在'
+        )
+      }
+      return user
+    }
+
+    /**
+     * 检查用户是否存在
+     *
+     * @param {number} userNumber
+     * @return {Object}
+     */
+    async checkUserExistedByNumber(userNumber) {
+      const user = await this.findOneBy({
+        number: userNumber,
       })
       if (!user) {
         this.throw(
@@ -69,7 +88,7 @@ module.exports = app => {
       }
 
       if (!user) {
-        user = await this.checkUserExisted(userId)
+        user = await this.checkUserExistedById(userId)
       }
 
       const userInfo = await service.account.userInfo.getUserInfoByUserId(userId)
@@ -302,7 +321,11 @@ module.exports = app => {
 
     }
 
-
+    /**
+     * 检测手机号是否未注册
+     *
+     * @param {string} mobile
+     */
     async checkMobileAvailable(mobile) {
       const existed = await this.findOneBy({ mobile })
       if (existed) {
@@ -313,6 +336,11 @@ module.exports = app => {
       }
     }
 
+    /**
+     * 检测邮箱是否未绑定
+     *
+     * @param {string} email
+     */
     async checkEmailAvailable(email) {
       const existed = await this.findOneBy({ email })
       if (existed) {
@@ -563,11 +591,31 @@ module.exports = app => {
      * @param {Object} currentUser
      */
     async checkUserViewAuth(userId, currentUser) {
-      if (!config.userViewByGuest && !currentUser) {
+
+      const { privacy, relation } = this.service
+
+      const checkBlacklist = async () => {
+        const hasBlacked = await privacy.blacklist.hasBlacked(userId, currentUser.id)
         this.throw(
-          code.AUTH_UNSIGNIN,
-          '只有登录用户才可以浏览用户详细资料'
+          code.VISITOR_BLACKED,
+          '您不能查看该用户的信息'
         )
+      }
+
+      if (currentUser) {
+        if (userId !== currentUser.id) {
+          await privacy.profileAllowed.checkAllowedType(currentUser.id, userId)
+          await checkBlacklist()
+        }
+      }
+      else {
+        if (!config.userViewByGuest) {
+          this.throw(
+            code.AUTH_UNSIGNIN,
+            '只有登录用户才可以浏览用户详细资料'
+          )
+        }
+        await privacy.profileAllowed.checkAllowedType(currentUser ? currentUser.id : null, userId)
       }
     }
 

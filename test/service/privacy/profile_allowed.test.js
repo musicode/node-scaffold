@@ -85,9 +85,9 @@ describe('test/service/profile_allowed.test.js', () => {
         assert(allowedType === value)
       }
 
-      await test(2)
-      await test(1)
-      await test(0)
+      await test(privacy.profileAllowed.FRIEND_ALLOWED)
+      await test(privacy.profileAllowed.FOLLOWER_ALLOWED)
+      await test(privacy.profileAllowed.ALL_ALLOWED)
 
     })
 

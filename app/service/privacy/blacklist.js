@@ -52,7 +52,7 @@ module.exports = app => {
         )
       }
 
-      await account.user.checkUserExisted(targetId)
+      await account.user.checkUserExistedById(targetId)
 
       await this.insert({
         user_id: currentUser.id,
@@ -112,7 +112,7 @@ module.exports = app => {
             )
           }
           else {
-            await account.user.checkUserExisted(targetId)
+            await account.user.checkUserExistedById(targetId)
           }
         }
       )

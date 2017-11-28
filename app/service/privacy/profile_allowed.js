@@ -24,6 +24,18 @@ module.exports = app => {
       ]
     }
 
+    get ALL_ALLOWED() {
+      return ALL_ALLOWED
+    }
+
+    get FOLLOWER_ALLOWED() {
+      return FOLLOWER_ALLOWED
+    }
+
+    get FRIEND_ALLOWED() {
+      return FRIEND_ALLOWED
+    }
+
     /**
      * 设置不让谁看我的动态
      *
@@ -78,6 +90,49 @@ module.exports = app => {
         user_id: userId,
       })
       return result ? result.allowed_type : ALL_ALLOWED
+    }
+
+    /**
+     * user 是否能访问 target
+     *
+     * @param {number?} userId
+     * @param {number} targetId
+     */
+    async checkAllowedType(userId, targetId) {
+
+      const { relation } = this.service
+
+      const allowedType = await this.getAllowedTypeByUserId(targetId)
+      if (allowedType === ALL_ALLOWED) {
+        return
+      }
+
+      // 不是所有人能看，那 userId 必须有值
+      if (!userId) {
+        this.throw(
+          code.PERMISSION_DENIED,
+          '只有登录用户才能查看信息'
+        )
+      }
+
+      const isFollowee = await relation.followee.hasFollow(userId, targetId)
+      if (allowedType === FOLLOWER_ALLOWED) {
+        if (!isFollowee) {
+          this.throw(
+            code.PERMISSION_DENIED,
+            '对方设置关注后才能查看信息'
+          )
+        }
+      }
+      else if (allowedType === FRIEND_ALLOWED) {
+        const isFollower = await relation.followee.hasFollow(targetId, userId)
+        if (!isFollowee || !isFollower) {
+          this.throw(
+            code.PERMISSION_DENIED,
+            '对方设置仅好友可见'
+          )
+        }
+      }
     }
 
   }
