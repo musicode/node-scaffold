@@ -605,20 +605,18 @@ module.exports = app => {
 
       const { privacy, relation } = this.service
 
-      const checkBlacklist = async () => {
-        const hasBlacked = await privacy.blacklist.hasBlacked(userId, currentUser.id)
-        if (hasBlacked) {
-          this.throw(
-            code.VISITOR_BLACKED,
-            '无权查看该用户的信息'
-          )
-        }
-      }
-
       if (currentUser) {
         if (userId !== currentUser.id) {
           await privacy.profileAllowed.checkAllowedType(currentUser.id, userId)
-          await checkBlacklist()
+
+          const hasBlacked = await privacy.blacklist.hasBlacked(userId, currentUser.id)
+          if (hasBlacked) {
+            this.throw(
+              code.VISITOR_BLACKED,
+              '无权查看该用户的信息'
+            )
+          }
+
         }
       }
       else {
