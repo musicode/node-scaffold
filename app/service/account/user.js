@@ -598,7 +598,7 @@ module.exports = app => {
         const hasBlacked = await privacy.blacklist.hasBlacked(userId, currentUser.id)
         this.throw(
           code.VISITOR_BLACKED,
-          '您不能查看该用户的信息'
+          '无权查看该用户的信息'
         )
       }
 
@@ -615,7 +615,20 @@ module.exports = app => {
             '只有登录用户才可以浏览用户详细资料'
           )
         }
-        await privacy.profileAllowed.checkAllowedType(currentUser ? currentUser.id : null, userId)
+        try {
+          await privacy.profileAllowed.checkAllowedType(currentUser ? currentUser.id : null, userId)
+        }
+        catch (err) {
+          if (err.code === code.PARAM_INVALID) {
+            this.throw(
+              code.AUTH_UNSIGNIN,
+              '登录后才能访问该用户的详细资料'
+            )
+          }
+          else {
+            throw err
+          }
+        }
       }
     }
 

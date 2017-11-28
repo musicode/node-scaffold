@@ -110,8 +110,8 @@ module.exports = app => {
       // 不是所有人能看，那 userId 必须有值
       if (!userId) {
         this.throw(
-          code.PERMISSION_DENIED,
-          '只有登录用户才能查看信息'
+          code.PARAM_INVALID,
+          'checkAllowedType 缺少 userId'
         )
       }
 
