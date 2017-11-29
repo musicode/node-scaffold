@@ -214,4 +214,53 @@ module.exports = app => {
     v1.relation.followerList
   )
 
+  // =============================================
+  // 文章
+  // =============================================
+
+  app.get(
+    '/api/v1/post/create',
+    v1.post.create
+  )
+
+  app.get(
+    '/api/v1/post/update',
+    v1.post.update
+  )
+
+  app.get(
+    '/api/v1/post/delete',
+    v1.post.delete
+  )
+
+  app.get(
+    '/api/v1/post/detail',
+    v1.post.detail
+  )
+
+  app.get(
+    '/api/v1/post/view',
+    v1.post.view
+  )
+
+  app.get(
+    '/api/v1/post/follow',
+    v1.post.follow
+  )
+
+  app.get(
+    '/api/v1/post/follow/undo',
+    v1.post.unfollow
+  )
+
+  app.get(
+    '/api/v1/post/like',
+    v1.post.like
+  )
+
+  app.get(
+    '/api/v1/post/like/undo',
+    v1.post.unlike
+  )
+
 }

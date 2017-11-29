@@ -18,12 +18,44 @@ module.exports = app => {
       ]
     }
 
+    get anonymous() {
+      return {
+        id: '',
+        avatar: '',
+        nickname: '匿名用户',
+        company: '',
+        job: '',
+        mobile: '',
+        email: '',
+      }
+    }
+
     async createHash(password) {
       return bcrypt.hash(password.toLowerCase(), 10)
     }
 
     async checkPassword(password, hash) {
       return bcrypt.compare(password.toLowerCase(), hash)
+    }
+
+    toExternal(user) {
+      const result = { }
+      Object.assign(result, user)
+
+      result.password = result.password ? true : false
+      const { number } = result
+      delete result.number
+
+      if (result.user_id) {
+        delete result.user_id
+      }
+      if (result.user_number) {
+        delete result.user_number
+      }
+
+      result.id = number
+
+      return result
     }
 
     /**
@@ -133,27 +165,6 @@ module.exports = app => {
 
       return await this.getUserById(user)
 
-    }
-
-    toExternal(user) {
-      const result = { }
-      Object.assign(result, user)
-
-      result.password = result.password ? true : false
-      const { number } = result
-      delete result.id
-      delete result.number
-
-      if (result.user_id) {
-        delete result.user_id
-      }
-      if (result.user_number) {
-        delete result.user_number
-      }
-
-      result.id = number
-
-      return result
     }
 
     /**
@@ -555,12 +566,12 @@ module.exports = app => {
 
       await this.checkUserViewAuth(userId, currentUser)
 
-      const targetUser = await this.getUserById(userId)
+      const user = await this.getUserById(userId)
       const statInfo = await this.getUserStatInfoById(userId)
 
-      Object.assign(targetUser, statInfo)
+      Object.assign(user, statInfo)
 
-      return targetUser
+      return user
 
     }
 
@@ -649,12 +660,12 @@ module.exports = app => {
      * @param {number} userId
      */
     async getUserStatInfoById(userId) {
-      const userStatInfo = await redis.hgetall(`user_stat:${userId}`)
+      const statInfo = await redis.hgetall(`user_stat:${userId}`)
       return {
-        view_count: util.toNumber(userStatInfo.view_count, 0),
-        like_count: util.toNumber(userStatInfo.like_count, 0),
-        write_count: util.toNumber(userStatInfo.write_count, 0),
-        follower_count: util.toNumber(userStatInfo.follower_count, 0),
+        view_count: util.toNumber(statInfo.view_count, 0),
+        like_count: util.toNumber(statInfo.like_count, 0),
+        write_count: util.toNumber(statInfo.write_count, 0),
+        follower_count: util.toNumber(statInfo.follower_count, 0),
       }
     }
 

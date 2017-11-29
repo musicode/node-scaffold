@@ -2,7 +2,11 @@
 
 module.exports = {
 
+  ANONYMOUS_YES: 1,
+  ANONYMOUS_NO: 0,
+
   USER_NUMBER_LENGTH: 6,
+  POST_NUMBER_LENGTH: 11,
 
   USER_GENDER_MALE: 1,
   USER_GENDER_FEMALE: 2,
@@ -31,7 +35,14 @@ module.exports = {
     '硕士',
     '博士',
     '其他'
-  ]
+  ],
+
+
+  POST_TITLE_MIN_LENGTH: 5,
+  POST_TITLE_MAX_LENGTH: 40,
+  POST_CONTENT_MIN_LENGTH: 20,
+  POST_CONTENT_MAX_LENGTH: 50000,
+
 
 }
 

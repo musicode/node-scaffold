@@ -50,6 +50,13 @@ module.exports = {
     return isNaN(value) ? defaultValue : value
   },
 
+  parseCover(html) {
+    const result = html.match(/<img[^>]+src="([^"]+)"/i)
+    if (result) {
+      return result[1]
+    }
+  },
+
   parseObject(str) {
     const result = { }
     str.split(';').forEach(
