@@ -17,6 +17,13 @@ module.exports = app => {
       ]
     }
 
+    async getContentByPostId(postId) {
+      const record = await this.findOneBy({
+        post_id: postId,
+      })
+      return record ? record.content : ''
+    }
+
   }
   return PostContent
 }

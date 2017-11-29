@@ -147,9 +147,9 @@ module.exports = app => {
 
       let post = await this.checkPost()
 
-      const { article } = this.ctx.service
+      const { trace } = this.ctx.service
 
-      await article.post.likePost(post.id)
+      await trace.like.likePost(post.id)
 
     }
 
@@ -157,9 +157,9 @@ module.exports = app => {
 
       let post = await this.checkPost()
 
-      const { article } = this.ctx.service
+      const { trace } = this.ctx.service
 
-      await article.post.unlikePost(post.id)
+      await trace.like.unlikePost(post.id)
 
     }
 

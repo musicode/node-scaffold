@@ -27,4 +27,8 @@ eventEmitter.USER_SIGN_OUT = 'user_sign_out'
 */
 eventEmitter.USER_UPDATE = 'user_update'
 
+
+eventEmitter.POST_LIKE = 'post_like'
+eventEmitter.POST_UNLIKE = 'post_unlike'
+
 module.exports = eventEmitter

@@ -90,6 +90,7 @@ module.exports = app => {
      * 检查文章是否是对外可用状态
      *
      * @param {number|Object} postId
+     * @return {Object}
      */
     async checkPostAvailable(postId) {
 
@@ -130,7 +131,7 @@ module.exports = app => {
         postId = post.id
       }
 
-      const { service } = this.ctx
+      const { article } = this.ctx.service
 
       const key = `post:${postId}`
       const value = await redis.get(key)
@@ -140,14 +141,10 @@ module.exports = app => {
       }
       else {
         post = await this.checkPostExistedById(postId)
-        redis.set(key, util.stringifyObject(post))
+        await redis.set(key, util.stringifyObject(post))
       }
 
-      const postContent = await service.article.postContent.findOneBy({
-        post_id: postId,
-      })
-
-      post.content = postContent.content
+      post.content = await article.postContent.getContentByPostId(postId)
 
       return post
     }
@@ -197,8 +194,6 @@ module.exports = app => {
 
       const { account, article } = this.service
 
-      const currentUser = await account.session.checkCurrentUser()
-
       if (!data.title) {
         this.throw(
           code.PARAM_INVALID,
@@ -211,6 +206,8 @@ module.exports = app => {
           '缺少 content'
         )
       }
+
+      const currentUser = await account.session.checkCurrentUser()
 
       const postId = await this.transaction(
         async () => {
@@ -347,6 +344,8 @@ module.exports = app => {
         }
       )
 
+      await this.updateRedis(`post:${postId}`, fields)
+
       eventEmitter.emit(
         eventEmitter.POST_UDPATE,
         {
@@ -388,40 +387,6 @@ module.exports = app => {
       const currentUser = await account.session.checkCurrentUser()
 
       await redis.hincrby(`post_stat:${postId}`, 'follow_count', -1)
-
-    }
-
-    /**
-     * 点赞文章
-     *
-     * @param {number} postId
-     */
-    async likePost(postId) {
-
-      const { account } = this.service
-
-      await this.checkPostAvailable(postId)
-
-      const currentUser = await account.session.checkCurrentUser()
-
-      await redis.hincrby(`post_stat:${postId}`, 'like_count', 1)
-
-    }
-
-    /**
-     * 取消点赞文章
-     *
-     * @param {number} postId
-     */
-    async unlikePost(postId) {
-
-      const { account } = this.service
-
-      await this.checkPostAvailable(postId)
-
-      const currentUser = await account.session.checkCurrentUser()
-
-      await redis.hincrby(`post_stat:${postId}`, 'like_count', -1)
 
     }
 
