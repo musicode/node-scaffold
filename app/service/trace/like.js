@@ -284,7 +284,7 @@ module.exports = app => {
       if (postId) {
         where.resource_id = postId
       }
-      return await this.coutBy(where)
+      return await this.countBy(where)
     }
 
     /**

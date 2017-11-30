@@ -78,7 +78,7 @@ describe('test/service/trace/like.test.js', () => {
       })
 
       // 文章总点赞数
-      let likeCount = await trace.like.getLikePostCount(post.id)
+      let likeCount = await trace.like.getLikePostCount(null, post.id)
       assert(likeCount === 0)
 
       // 作者收到提醒的数量
@@ -103,7 +103,7 @@ describe('test/service/trace/like.test.js', () => {
 
 
 
-      likeCount = await trace.like.getLikePostCount(post.id)
+      likeCount = await trace.like.getLikePostCount(null, post.id)
       assert(likeCount === 1)
 
       likeRemindCount = await trace.like.getLikePostRemindCount(user1.id)
@@ -143,7 +143,7 @@ describe('test/service/trace/like.test.js', () => {
 
       await trace.like.unlikePost(post.id)
 
-      likeCount = await trace.like.getLikePostCount(post.id)
+      likeCount = await trace.like.getLikePostCount(null, post.id)
       assert(likeCount === 0)
 
       likeRemindCount = await trace.like.getLikePostRemindCount(user1.id)
@@ -178,7 +178,7 @@ describe('test/service/trace/like.test.js', () => {
 
 
 
-      likeCount = await trace.like.getLikePostCount(post.id)
+      likeCount = await trace.like.getLikePostCount(null, post.id)
       assert(likeCount === 1)
 
       likeRemindCount = await trace.like.getLikePostRemindCount(user1.id)
