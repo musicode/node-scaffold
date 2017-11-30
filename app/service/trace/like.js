@@ -102,6 +102,39 @@ module.exports = app => {
     }
 
     /**
+     * 确保 like_count 存在
+     *
+     * @param {number} postId
+     * @param {number?} offset
+     */
+    async ensurePostLikeCount(postId, offset) {
+
+      const key = `post_stat:${postId}`
+      let likeCount = await redis.hget(key, 'like_count')
+      if (likeCount == null) {
+        likeCount = await this.countBy({
+          resource_id: postId,
+          resource_type: POST,
+          status: STATUS_ACTIVE,
+        })
+        if (offset) {
+          likeCount += offset
+        }
+        await redis.hset(key, 'like_count', likeCount)
+      }
+      else {
+        likeCount = util.toNumber(likeCount)
+        if (offset) {
+          likeCount += offset
+          await redis.hincrby(key, 'like_count', offset)
+        }
+      }
+
+      return likeCount
+
+    }
+
+    /**
      * 点赞文章
      *
      * @param {number} postId
@@ -151,7 +184,7 @@ module.exports = app => {
         )
       }
 
-      await redis.hincrby(`post_stat:${postId}`, 'like_count', 1)
+      await this.ensurePostLikeCount(postId, 1)
 
     }
 
@@ -186,7 +219,7 @@ module.exports = app => {
         )
       }
 
-      await redis.hincrby(`post_stat:${postId}`, 'like_count', -1)
+      await this.ensurePostLikeCount(postId, -1)
 
     }
 
@@ -240,8 +273,7 @@ module.exports = app => {
      * @return {number}
      */
     async getLikePostCount(postId) {
-      const count = await redis.hget(`post_stat:${postId}`, 'like_count')
-      return util.toNumber(count, 0)
+      return await this.ensurePostLikeCount(postId)
     }
 
     /**
