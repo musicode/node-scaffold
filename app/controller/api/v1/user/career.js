@@ -112,7 +112,7 @@ module.exports = app => {
       })
 
       const { account } = this.ctx.service
-      const user = await account.user.checkUserExistedByNumber(input.user_id)
+      const user = await account.user.checkUserAvailableByNumber(input.user_id)
 
       const careerList = await account.career.getCareerListByUserId(user.id)
 

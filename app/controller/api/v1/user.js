@@ -20,7 +20,7 @@ module.exports = app => {
 
       const { account } = this.ctx.service
 
-      const user = await account.user.checkUserExistedByNumber(input.user_id)
+      const user = await account.user.checkUserAvailableByNumber(input.user_id)
 
       try {
         this.output.user = await account.user.viewUser(user.id)
@@ -55,7 +55,7 @@ module.exports = app => {
 
       const { account } = this.ctx.service
 
-      const user = await account.user.checkUserExistedByNumber(input.user_id)
+      const user = await account.user.checkUserAvailableByNumber(input.user_id)
 
       await account.user.increaseUserViewCount(user.id)
 

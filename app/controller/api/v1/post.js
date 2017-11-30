@@ -18,7 +18,7 @@ module.exports = app => {
 
       const { article } = this.ctx.service
 
-      return await article.post.checkPostExistedByNumber(input.post_id)
+      return await article.post.checkPostAvailableByNumber(input.post_id, true)
 
     }
 
@@ -28,7 +28,7 @@ module.exports = app => {
 
       const { article } = this.ctx.service
 
-      post = await article.post.viewPost(post.id)
+      post = await article.post.viewPost(post)
 
       this.output.post = await article.post.toExternal(post)
 
@@ -40,7 +40,7 @@ module.exports = app => {
 
       const { article } = this.ctx.service
 
-      await article.post.increasePostViewCount(post.id)
+      await article.post.increasePostViewCount(post)
 
     }
 
@@ -72,7 +72,7 @@ module.exports = app => {
       const postService = this.ctx.service.article.post
 
       const postId = await postService.createPost(input)
-      const post = await postService.getPostById(postId)
+      const post = await postService.getFullPostById(postId)
 
       this.output.post = await postService.toExternal(post)
 
@@ -107,9 +107,9 @@ module.exports = app => {
 
       const postService = this.ctx.service.article.post
 
-      const post = await postService.checkPostExistedByNumber(input.post_id)
+      const post = await postService.checkPostAvailableByNumber(input.post_id)
 
-      await postService.updatePostById(input, post.id)
+      await postService.updatePostById(input, post)
 
     }
 
@@ -119,7 +119,7 @@ module.exports = app => {
 
       const { article } = this.ctx.service
 
-      await article.post.deletePost(post.id)
+      await article.post.deletePost(post)
 
     }
 
@@ -149,7 +149,7 @@ module.exports = app => {
 
       const { trace } = this.ctx.service
 
-      await trace.like.likePost(post.id)
+      await trace.like.likePost(post)
 
     }
 
@@ -159,7 +159,7 @@ module.exports = app => {
 
       const { trace } = this.ctx.service
 
-      await trace.like.unlikePost(post.id)
+      await trace.like.unlikePost(post)
 
     }
 
@@ -207,10 +207,8 @@ module.exports = app => {
 
       const { account, article, trace } = this.ctx.service
 
-      const post = await article.post.checkPostExistedByNumber(input.post_id)
-      const user = await account.user.checkUserExistedByNumber(input.user_id)
-
-      await article.post.checkPostAvailable(post)
+      const post = await article.post.checkPostAvailableByNumber(input.post_id)
+      const user = await account.user.checkUserAvailableByNumber(input.user_id)
 
       const options = {
         page: input.page,

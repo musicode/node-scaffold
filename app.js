@@ -4,6 +4,7 @@ const code = require('./app/constant/code')
 const util = require('./app/util')
 const limit = require('./app/limit')
 const moment = require('./app/moment')
+const bootstrap = require('./app/bootstrap')
 const validator = require('./app/validator')
 const eventEmitter = require('./app/eventEmitter')
 
@@ -189,5 +190,7 @@ module.exports = app => {
   app.limit = limit
   app.moment = moment
   app.eventEmitter = eventEmitter
+
+  bootstrap(app)
 
 }

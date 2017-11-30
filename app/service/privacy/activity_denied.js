@@ -46,7 +46,7 @@ module.exports = app => {
             )
           }
           else {
-            await account.user.checkUserExistedById(targetId)
+            await account.user.checkUserAvailableById(targetId)
           }
         }
       )

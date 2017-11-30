@@ -49,50 +49,13 @@ module.exports = app => {
     }
 
     /**
-     * 检查文章是否存在
-     *
-     * @param {number} postId
-     * @return {Object}
-     */
-    async checkPostExistedById(postId) {
-      const post = await this.findOneBy({
-        id: postId,
-      })
-      if (!post) {
-        this.throw(
-          code.RESOURCE_NOT_FOUND,
-          '该文章不存在'
-        )
-      }
-      return post
-    }
-
-    /**
-     * 检查文章是否存在
-     *
-     * @param {number} postNumber
-     * @return {Object}
-     */
-    async checkPostExistedByNumber(postNumber) {
-      const post = await this.findOneBy({
-        number: postNumber,
-      })
-      if (!post) {
-        this.throw(
-          code.RESOURCE_NOT_FOUND,
-          '该文章不存在'
-        )
-      }
-      return post
-    }
-
-    /**
      * 检查文章是否是对外可用状态
      *
-     * @param {number|Object} postId
+     * @param {number|Object} postId 文章 id
+     * @param {boolean} checkStatus 是否检查状态值
      * @return {Object}
      */
-    async checkPostAvailable(postId) {
+    async checkPostAvailableById(postId, checkStatus) {
 
       let post
       if (postId && postId.id) {
@@ -100,12 +63,14 @@ module.exports = app => {
         postId = post.id
       }
 
-      if (!post) {
-        post = await this.checkPostExistedById(postId)
+      if (!post && postId) {
+        post = await this.getPostById(postId)
       }
 
-      if (post.status === STATUS_ACTIVE
-        || post.status === STATUS_AUDIT_SUCCESS
+      if (post
+        && (!checkStatus
+        || post.status === STATUS_ACTIVE
+        || post.status === STATUS_AUDIT_SUCCESS)
       ) {
         return post
       }
@@ -114,10 +79,28 @@ module.exports = app => {
         code.RESOURCE_NOT_FOUND,
         '该文章不存在'
       )
+
     }
 
     /**
-     * 获取文章的完整信息
+     * 检查文章是否是对外可用状态
+     *
+     * @param {number} commentNumber 文章 number
+     * @param {boolean} checkStatus 是否检查状态值
+     * @return {Object}
+     */
+    async checkPostAvailableByNumber(postNumber, checkStatus) {
+
+      const post = await this.findOneBy({
+        number: postNumber,
+      })
+
+      return await this.checkPostAvailableById(post, checkStatus)
+
+    }
+
+    /**
+     * 获取文章
      *
      * @param {number|Object} postId
      * @return {Object}
@@ -130,21 +113,35 @@ module.exports = app => {
         postId = post.id
       }
 
+      if (!post) {
+        const key = `post:${postId}`
+        const value = await redis.get(key)
+
+        if (value) {
+          post = util.parseObject(value)
+        }
+        else {
+          post = await this.findOneBy({ id: postId })
+          await redis.set(key, util.stringifyObject(post))
+        }
+      }
+
+      return post
+    }
+
+    /**
+     * 获取文章的完整信息
+     *
+     * @param {number|Object} postId
+     * @return {Object}
+     */
+    async getFullPostById(postId) {
+
       const { article } = this.ctx.service
 
-      const key = `post:${postId}`
-      const value = await redis.get(key)
-
-      if (value) {
-        post = util.parseObject(value)
-      }
-      else {
-        post = await this.checkPostExistedById(postId)
-        await redis.set(key, util.stringifyObject(post))
-      }
-
+      const post = await this.getPostById(postId)
       const record = await article.postContent.findOneBy({
-        post_id: postId,
+        post_id: post.id,
       })
 
       post.content = record.content
@@ -153,37 +150,6 @@ module.exports = app => {
       }
 
       return post
-    }
-
-    /**
-     * 通过 number 获取文章的完整信息
-     *
-     * 因为用户是通过 number 来发送请求的，所以这个接口比较常用
-     *
-     * @param {number} postNumber
-     * @return {Object}
-     */
-    async getPostByNumber(postNumber) {
-
-      if (!postNumber) {
-        this.throw(
-          code.PARAM_INVALID,
-          '缺少 post number'
-        )
-      }
-
-      const post = await this.findOneBy({
-        number: postNumber,
-      })
-
-      if (!post) {
-        this.throw(
-          code.RESOURCE_NOT_FOUND,
-          '文章不存在'
-        )
-      }
-
-      return await this.getPostById(post)
 
     }
 
@@ -198,8 +164,6 @@ module.exports = app => {
      */
     async createPost(data) {
 
-      const { account, article } = this.service
-
       if (!data.title) {
         this.throw(
           code.PARAM_INVALID,
@@ -212,6 +176,8 @@ module.exports = app => {
           '缺少 content'
         )
       }
+
+      const { account, article } = this.service
 
       const currentUser = await account.session.checkCurrentUser()
 
@@ -240,11 +206,11 @@ module.exports = app => {
       if (postId == null) {
         this.throw(
           code.DB_INSERT_ERROR,
-          '发布文章失败'
+          '新增文章失败'
         )
       }
 
-      await redis.hincrby(`user_post:${currentUser.id}`, 'write_count', 1)
+      await account.user.increaseUserWriteCount(currentUser.id)
 
       return postId
 
@@ -257,7 +223,7 @@ module.exports = app => {
      * @property {string} data.title
      * @property {string} data.content
      * @property {boolean|number} data.anonymous
-     * @param {number} postId
+     * @param {number|Object} postId
      */
     async updatePostById(data, postId) {
 
@@ -265,7 +231,7 @@ module.exports = app => {
 
       const currentUser = await account.session.checkCurrentUser()
 
-      const post = await this.checkPostExistedById(postId)
+      const post = await this.checkPostAvailableById(postId)
 
       if (post.user_id !== currentUser.id) {
         this.throw(
@@ -282,7 +248,7 @@ module.exports = app => {
             await this.update(
               fields,
               {
-                id: postId,
+                id: post.id,
               }
             )
           }
@@ -300,7 +266,7 @@ module.exports = app => {
                 content,
               },
               {
-                post_id: postId,
+                post_id: post.id,
               }
             )
           }
@@ -309,11 +275,20 @@ module.exports = app => {
       )
 
       if (fields) {
-        await this.updateRedis(`post:${postId}`, fields)
+
+        const cache = { }
+        Object.assign(cache, fields)
+
+        if ('content' in cache) {
+          delete cache.content
+        }
+
+        await this.updateRedis(`post:${post.id}`, cache)
+
         eventEmitter.emit(
           eventEmitter.POST_UDPATE,
           {
-            postId,
+            postId: post.id,
             fields,
           }
         )
@@ -324,14 +299,14 @@ module.exports = app => {
     /**
      * 删除文章
      *
-     * @param {number} postId
+     * @param {number|Object} postId
      */
     async deletePost(postId) {
 
-      await this.checkPostAvailable(postId)
+      const post = await this.checkPostAvailableById(postId)
 
       // [TODO] redis 的恢复
-      const subCount = await redis.hget(`post_stat:${postId}`, 'sub_count')
+      const subCount = await redis.hget(`post_stat:${post.id}`, 'sub_count')
       if (subCount > 0) {
         this.throw(
           code.PERMISSION_DENIED,
@@ -346,16 +321,16 @@ module.exports = app => {
       await this.update(
         fields,
         {
-          id: postId,
+          id: post.id,
         }
       )
 
-      await this.updateRedis(`post:${postId}`, fields)
+      await this.updateRedis(`post:${post.id}`, fields)
 
       eventEmitter.emit(
         eventEmitter.POST_UDPATE,
         {
-          postId,
+          postId: post.id,
           fields,
         }
       )
@@ -363,43 +338,9 @@ module.exports = app => {
     }
 
     /**
-     * 关注文章
-     *
-     * @param {number} postId
-     */
-    async followPost(postId) {
-
-      const { account } = this.service
-
-      await this.checkPostAvailable(postId)
-
-      const currentUser = await account.session.checkCurrentUser()
-
-      await redis.hincrby(`post_stat:${postId}`, 'follow_count', 1)
-
-    }
-
-    /**
-     * 取消关注文章
-     *
-     * @param {number} postId
-     */
-    async unfollowPost(postId) {
-
-      const { account } = this.service
-
-      await this.checkPostAvailable(postId)
-
-      const currentUser = await account.session.checkCurrentUser()
-
-      await redis.hincrby(`post_stat:${postId}`, 'follow_count', -1)
-
-    }
-
-    /**
      * 浏览文章
      *
-     * @param {number} postId
+     * @param {number|Object} postId
      * @return {Object}
      */
     async viewPost(postId) {
@@ -408,10 +349,9 @@ module.exports = app => {
 
       const currentUser = await account.session.getCurrentUser()
 
-      await this.checkPostViewAuth(postId, currentUser)
+      const post = await this.checkPostViewAuth(postId, currentUser)
 
-      const post = await this.getPostById(postId)
-      const statInfo = await this.getPostStatInfoById(postId)
+      const statInfo = await this.getPostStatInfoById(post.id)
 
       Object.assign(post, statInfo)
 
@@ -422,7 +362,7 @@ module.exports = app => {
     /**
      * 递增文章浏览数
      *
-     * @param {number} postId
+     * @param {number|Object} postId
      */
     async increasePostViewCount(postId) {
 
@@ -430,9 +370,9 @@ module.exports = app => {
 
       const currentUser = await account.session.getCurrentUser()
 
-      await this.checkPostViewAuth(postId, currentUser)
+      const post = await this.checkPostViewAuth(postId, currentUser)
 
-      const key = `post_stat:${postId}`
+      const key = `post_stat:${post.id}`
       await redis.hincrby(key, 'view_count', 1)
 
       const viewCount = await redis.hget(key, 'view_count')
@@ -440,7 +380,7 @@ module.exports = app => {
       eventEmitter.emit(
         eventEmitter.POST_UDPATE,
         {
-          postId,
+          postId: post.id,
           fields: {
             view_count: viewCount,
           }
@@ -452,8 +392,9 @@ module.exports = app => {
     /**
      * 文章是否可以被当前登录用户浏览
      *
-     * @param {number} postId
+     * @param {number|Object} postId
      * @param {Object} currentUser
+     * @return {Object}
      */
     async checkPostViewAuth(postId, currentUser) {
       if (!currentUser) {
@@ -464,8 +405,17 @@ module.exports = app => {
           )
         }
       }
-      await this.checkPostAvailable(postId)
+      return await this.checkPostAvailableById(postId)
     }
+
+    async increasePostLikeCount(postId) {
+      await redis.hincrby(`post_stat:${postId}`, 'like_count', 1)
+    }
+
+    async decreasePostLikeCount(postId) {
+      await redis.hincrby(`post_stat:${postId}`, 'like_count', -1)
+    }
+
 
     /**
      * 获取文章的统计数据

@@ -55,7 +55,7 @@ module.exports = app => {
         await util.each(
           input.user_ids.split(','),
           async userId => {
-            const user = await account.user.checkUserExistedByNumber(userId)
+            const user = await account.user.checkUserAvailableByNumber(userId)
             userIds.push(user.id)
           }
         )
@@ -110,7 +110,7 @@ module.exports = app => {
         await util.each(
           input.user_ids.split(','),
           async userId => {
-            const user = await account.user.checkUserExistedByNumber(userId)
+            const user = await account.user.checkUserAvailableByNumber(userId)
             userIds.push(user.id)
           }
         )
@@ -156,7 +156,7 @@ module.exports = app => {
 
       const { account, privacy } = this.ctx.service
 
-      const user = await account.user.checkUserExistedByNumber(input.user_id)
+      const user = await account.user.checkUserAvailableByNumber(input.user_id)
 
       await privacy.blacklist.addUserToBlacklist(user.id)
 
@@ -174,7 +174,7 @@ module.exports = app => {
 
       const { account, privacy } = this.ctx.service
 
-      const user = await account.user.checkUserExistedByNumber(input.user_id)
+      const user = await account.user.checkUserAvailableByNumber(input.user_id)
 
       await privacy.blacklist.removeUserFromBlacklist(user.id)
 
@@ -192,7 +192,7 @@ module.exports = app => {
 
       const { account, privacy } = this.ctx.service
 
-      const user = await account.user.checkUserExistedByNumber(input.user_id)
+      const user = await account.user.checkUserAvailableByNumber(input.user_id)
       const currentUser = await account.session.checkCurrentUser()
 
       this.output.has_blacked = await privacy.blacklist.hasBlacked(currentUser.id, user.id)
@@ -220,7 +220,7 @@ module.exports = app => {
         await util.each(
           input.user_ids.split(','),
           async userId => {
-            const user = await account.user.checkUserExistedByNumber(userId)
+            const user = await account.user.checkUserAvailableByNumber(userId)
             userIds.push(user.id)
           }
         )

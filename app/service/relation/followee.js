@@ -111,7 +111,7 @@ module.exports = app => {
       const { account, relation } = this.service
 
       // 确定用户存在
-      await account.user.checkUserExistedById(userId)
+      await account.user.checkUserAvailableById(userId)
 
       // 确定自己已登录
       const currentUser = await account.session.checkCurrentUser()
@@ -191,7 +191,7 @@ module.exports = app => {
       const { account, relation } = this.service
 
       // 确定用户存在
-      await account.user.checkUserExistedById(userId)
+      await account.user.checkUserAvailableById(userId)
 
       // 确定自己已登录
       const currentUser = await account.session.checkCurrentUser()

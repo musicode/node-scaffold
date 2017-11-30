@@ -12,7 +12,7 @@ const STATUS_DELETED = 1
 
 module.exports = app => {
 
-  const { code, util, redis, } = app
+  const { code, util, } = app
 
   class Like extends app.BaseService {
 
@@ -102,54 +102,21 @@ module.exports = app => {
     }
 
     /**
-     * 确保 like_count 存在
-     *
-     * @param {number} postId
-     * @param {number?} offset
-     */
-    async ensurePostLikeCount(postId, offset) {
-
-      const key = `post_stat:${postId}`
-      let likeCount = await redis.hget(key, 'like_count')
-      if (likeCount == null) {
-        likeCount = await this.countBy({
-          resource_id: postId,
-          resource_type: POST,
-          status: STATUS_ACTIVE,
-        })
-        if (offset) {
-          likeCount += offset
-        }
-        await redis.hset(key, 'like_count', likeCount)
-      }
-      else {
-        likeCount = util.toNumber(likeCount)
-        if (offset) {
-          likeCount += offset
-          await redis.hincrby(key, 'like_count', offset)
-        }
-      }
-
-      return likeCount
-
-    }
-
-    /**
      * 点赞文章
      *
-     * @param {number} postId
+     * @param {number|Object} postId
      */
     async likePost(postId) {
 
       const { trace, article } = this.service
 
-      const { user_id } = await article.post.checkPostAvailable(postId)
+      const post = await article.post.checkPostAvailableById(postId)
 
       const isSuccess = await this.transaction(
         async () => {
 
           let traceId = await this._addLike({
-            resource_id: postId,
+            resource_id: post.id,
             resource_type: POST,
           })
 
@@ -169,7 +136,7 @@ module.exports = app => {
             trace_id: traceId,
             resource_type: record.resource_type,
             sender_id: record.creator_id,
-            receiver_id: user_id,
+            receiver_id: post.user_id,
           })
 
           return true
@@ -184,24 +151,26 @@ module.exports = app => {
         )
       }
 
-      await this.ensurePostLikeCount(postId, 1)
+      await article.post.increasePostLikeCount(post.id)
 
     }
 
     /**
      * 取消点赞文章
      *
-     * @param {number} postId
+     * @param {number|Object} postId
      */
     async unlikePost(postId) {
 
-      const { trace } = this.service
+      const { trace, article } = this.service
+
+      const post = await article.post.checkPostAvailableById(postId)
 
       const isSuccess = await this.transaction(
         async () => {
 
           const record = await this._removeLike({
-            resource_id: postId,
+            resource_id: post.id,
             resource_type: POST,
           })
 
@@ -219,7 +188,7 @@ module.exports = app => {
         )
       }
 
-      await this.ensurePostLikeCount(postId, -1)
+      await article.post.decreasePostLikeCount(post.id)
 
     }
 

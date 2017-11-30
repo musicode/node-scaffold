@@ -64,7 +64,7 @@ module.exports = app => {
      * @param {number} userId
      * @return {Object}
      */
-    async checkUserExistedById(userId) {
+    async checkUserAvailableById(userId) {
       const user = await this.findOneBy({
         id: userId,
       })
@@ -83,7 +83,7 @@ module.exports = app => {
      * @param {number} userNumber
      * @return {Object}
      */
-    async checkUserExistedByNumber(userNumber) {
+    async checkUserAvailableByNumber(userNumber) {
       const user = await this.findOneBy({
         number: userNumber,
       })
@@ -120,7 +120,7 @@ module.exports = app => {
       }
 
       if (!user) {
-        user = await this.checkUserExistedById(userId)
+        user = await this.checkUserAvailableById(userId)
       }
 
       const userInfo = await service.account.userInfo.getUserInfoByUserId(userId)
@@ -604,6 +604,15 @@ module.exports = app => {
         }
       )
 
+    }
+
+    /**
+     * 递增用户的创作量
+     *
+     * @param {number} userId
+     */
+    async increaseUserWriteCount(userId) {
+      await redis.hincrby(`user_stat:${userId}`, 'write_count', 1)
     }
 
     /**
