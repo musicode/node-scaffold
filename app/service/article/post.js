@@ -124,7 +124,6 @@ module.exports = app => {
      */
     async getPostById(postId) {
 
-      // [TODO] update_date 在 redis 的更新
       let post
       if (postId && postId.id) {
         post = postId
@@ -144,7 +143,14 @@ module.exports = app => {
         await redis.set(key, util.stringifyObject(post))
       }
 
-      post.content = await article.postContent.getContentByPostId(postId)
+      const record = await article.postContent.findOneBy({
+        post_id: postId,
+      })
+
+      post.content = record.content
+      if (record.update_time.getTime() > post.update_time.getTime()) {
+        post.update_time = record.update_time
+      }
 
       return post
     }

@@ -3,8 +3,6 @@
 
 module.exports = app => {
 
-  const { code, redis, } = app
-
   class PostContent extends app.BaseService {
 
     get tableName() {
@@ -15,13 +13,6 @@ module.exports = app => {
       return [
         'post_id', 'content',
       ]
-    }
-
-    async getContentByPostId(postId) {
-      const record = await this.findOneBy({
-        post_id: postId,
-      })
-      return record ? record.content : ''
     }
 
   }
