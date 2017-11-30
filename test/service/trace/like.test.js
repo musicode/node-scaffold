@@ -128,6 +128,20 @@ describe('test/service/trace/like.test.js', () => {
       hasLikeRemind = await trace.like.hasLikePostRemind(user2.id, post.id)
       assert(hasLikeRemind === false)
 
+      likeCount = await trace.like.getLikePostCount(post.id)
+      assert(likeCount === 0)
+
+      await trace.like.likePost(post.id)
+
+      likeCount = await trace.like.getLikePostCount(post.id)
+      assert(likeCount === 1)
+
+      hasLike = await trace.like.hasLikePost(user2.id, post.id)
+      assert(hasLike === true)
+
+      hasLikeRemind = await trace.like.hasLikePostRemind(user2.id, post.id)
+      assert(hasLikeRemind === true)
+
     })
 
 
