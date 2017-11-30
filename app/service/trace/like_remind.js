@@ -77,7 +77,7 @@ module.exports = app => {
           status: STATUS_DELETED,
         },
         {
-          id: traceId,
+          trace_id: traceId,
         }
       )
 

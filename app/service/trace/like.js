@@ -88,7 +88,7 @@ module.exports = app => {
 
       if (!record || record.status === STATUS_DELETED) {
         this.throw(
-          code.RESOURCE_EXISTS,
+          code.RESOURCE_NOT_FOUND,
           '未点赞，不能取消点赞'
         )
       }
@@ -172,9 +172,7 @@ module.exports = app => {
             resource_type: POST,
           })
 
-          await trace.likeRemind.removeLikeRemind({
-            trace_id: record.id,
-          })
+          await trace.likeRemind.removeLikeRemind(record.id)
 
           return true
 

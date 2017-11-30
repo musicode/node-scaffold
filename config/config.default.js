@@ -21,6 +21,7 @@ module.exports = appInfo => {
     signupByInvite: false,
     ignoreVerifyCode: true,
     userViewByGuest: false,
+    postViewByGuest: false,
   }
 
   // 全局中间件
