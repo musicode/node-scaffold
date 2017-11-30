@@ -49,7 +49,7 @@ module.exports = app => {
     }
 
     /**
-     * 检查用户是否存在
+     * 检查文章是否存在
      *
      * @param {number} postId
      * @return {Object}
@@ -68,7 +68,7 @@ module.exports = app => {
     }
 
     /**
-     * 检查用户是否存在
+     * 检查文章是否存在
      *
      * @param {number} postNumber
      * @return {Object}

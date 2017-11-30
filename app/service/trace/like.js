@@ -269,11 +269,45 @@ module.exports = app => {
     /**
      * 读取文章的点赞数
      *
+     * @param {number} creatorId
      * @param {number} postId
      * @return {number}
      */
-    async getLikePostCount(postId) {
-      return await this.ensurePostLikeCount(postId)
+    async getLikePostCount(creatorId, postId) {
+      const where = {
+        resource_type: POST,
+        status: STATUS_ACTIVE,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      if (postId) {
+        where.resource_id = postId
+      }
+      return await this.coutBy(where)
+    }
+
+    /**
+     * 获取文章的点赞列表
+     *
+     * @param {number} creatorId
+     * @param {number} postId
+     * @param {Object} options
+     * @return {Array}
+     */
+    async getLikePostList(creatorId, postId, options) {
+      const where = {
+        resource_type: POST,
+        status: STATUS_ACTIVE,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      if (postId) {
+        where.resource_id = postId
+      }
+      options.where = where
+      return await this.findBy(options)
     }
 
     /**

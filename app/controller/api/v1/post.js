@@ -163,6 +163,69 @@ module.exports = app => {
 
     }
 
+    async getLikeCount() {
+
+      let post = await this.checkPost()
+
+      const { trace } = this.ctx.service
+
+      await trace.like.getLikePostCount(post.id)
+
+    }
+
+    async getLikeList() {
+
+      const input = this.filter(this.input, {
+        post_id: 'number',
+        user_id: 'number',
+        page: 'number',
+        page_size: 'number',
+        sort_order: 'string',
+        sort_by: 'string',
+      })
+
+      this.validate(input, {
+        post_id: {
+          required: false,
+          type: 'number'
+        },
+        user_id: {
+          required: false,
+          type: 'number'
+        },
+        page: 'number',
+        page_size: number,
+        sort_order: {
+          required: false,
+          type: 'string'
+        },
+        sort_by: {
+          required: false,
+          type: 'string'
+        }
+      })
+
+      const { account, article, trace } = this.ctx.service
+
+      const post = await article.post.checkPostExistedByNumber(input.post_id)
+      const user = await account.user.checkUserExistedByNumber(input.user_id)
+
+      await article.post.checkPostAvailable(post)
+
+      const options = {
+        page: input.page,
+        pageSize: input.pageSize,
+        sortOrder: input.sort_order || 'desc',
+        sortBy: input.sort_by || 'update_time'
+      }
+      const list = await trace.like.getLikePostList(user.id, post.id, options)
+      const count = await trace.like.getLikePostCount(user.id, post.id)
+
+      this.output.list = list
+      this.output.pager = this.createPager(input, count)
+
+    }
+
   }
 
   return PostController
