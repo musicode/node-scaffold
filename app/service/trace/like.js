@@ -244,8 +244,49 @@ module.exports = app => {
       return util.toNumber(count, 0)
     }
 
+    /**
+     * 获取用户被点赞文章的提醒列表
+     *
+     * @param {number} receiverId
+     * @param {Object} options
+     * @return {Array}
+     */
+    async getLikePostRemindList(receiverId, options) {
+      const { trace } = this.service
+      return await trace.likeRemind.getLikeRemindList(receiverId, POST, options)
+    }
 
+    /**
+     * 获取用户被点赞文章的提醒数量
+     *
+     * @param {number} receiverId
+     * @return {number}
+     */
+    async getLikePostRemindCount(receiverId) {
+      const { trace } = this.service
+      return await trace.likeRemind.getLikeRemindCount(receiverId, POST)
+    }
 
+    /**
+     * 获取用户被点赞文章的未读提醒数量
+     *
+     * @param {number} receiverId
+     * @return {number}
+     */
+    async getLikePostUnreadRemindCount(receiverId) {
+      const { trace } = this.service
+      return await trace.likeRemind.getUnreadLikeRemindCount(receiverId, POST)
+    }
+
+    /**
+     * 标记已读
+     *
+     * @param {number} receiverId
+     */
+    async readLikePostRemind(receiverId) {
+      const { trace } = this.service
+      return await trace.likeRemind.readLikeRemind(receiverId, POST)
+    }
 
 
   }

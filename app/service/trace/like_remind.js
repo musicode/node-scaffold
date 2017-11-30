@@ -99,6 +99,100 @@ module.exports = app => {
 
     }
 
+    /**
+     * 获取用户被点赞的提醒列表
+     *
+     * @param {number} receiverId
+     * @param {number} resourceType
+     * @param {Object} options
+     * @return {Array}
+     */
+    async getLikeRemindList(receiverId, resourceType, options) {
+
+      const where = {
+        receiver_id: receiverId,
+        status: [ STATUS_UNREAD, STATUS_READED ],
+      }
+
+      if (resourceType != null) {
+        where.resource_type = resourceType
+      }
+
+      options.where = where
+
+      return await this.findBy(options)
+
+    }
+
+    /**
+     * 获取用户被点赞的提醒数量
+     *
+     * @param {number} receiverId
+     * @param {number} resourceType
+     * @return {number}
+     */
+    async getLikeRemindCount(receiverId, resourceType) {
+
+      const where = {
+        receiver_id: receiverId,
+        status: [ STATUS_UNREAD, STATUS_READED ],
+      }
+
+      if (resourceType != null) {
+        where.resource_type = resourceType
+      }
+
+      return await this.countBy(where)
+
+    }
+
+    /**
+     * 获取用户被点赞的未读提醒数量
+     *
+     * @param {number} receiverId
+     * @param {number} resourceType
+     * @return {number}
+     */
+    async getUnreadLikeRemindCount(receiverId, resourceType) {
+
+      const where = {
+        receiver_id: receiverId,
+        status: STATUS_UNREAD,
+      }
+
+      if (resourceType != null) {
+        where.resource_type = resourceType
+      }
+
+      return await this.countBy(where)
+
+    }
+
+    /**
+     * 标记已读
+     *
+     * @param {number} receiverId
+     * @param {number} resourceType
+     */
+    async readLikeRemind(receiverId, resourceType) {
+
+      const where = {
+        receiver_id: receiverId,
+        // [TODO]这里 ali-rds 有 bug，修复后需要加回来
+        // status: STATUS_UNREAD,
+      }
+
+      if (resourceType != null) {
+        where.resource_type = resourceType
+      }
+
+      await this.update(
+        {
+          status: STATUS_READED,
+        },
+        where
+      )
+    }
 
   }
   return LikeRemind

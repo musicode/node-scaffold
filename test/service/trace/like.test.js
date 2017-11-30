@@ -77,13 +77,54 @@ describe('test/service/trace/like.test.js', () => {
         password: user2.password,
       })
 
+      // 文章总点赞数
       let likeCount = await trace.like.getLikePostCount(post.id)
       assert(likeCount === 0)
 
+      // 作者收到提醒的数量
+      let likeRemindCount = await trace.like.getLikePostRemindCount(user1.id)
+      assert(likeRemindCount === 0)
+
+      // 作者收到未读提醒的数量
+      let likeUnreadRemindCount = await trace.like.getLikePostUnreadRemindCount(user1.id)
+      assert(likeUnreadRemindCount === 0)
+
+      // user2 是否点赞了 user1 的文章
+      let hasLike = await trace.like.hasLikePost(user2.id, post.id)
+      assert(hasLike === false)
+
+      // user2 是否点赞了 user1 的文章之后是否发送了提醒
+      let hasLikeRemind = await trace.like.hasLikePostRemind(user2.id, post.id)
+      assert(hasLikeRemind === false)
+
+
+
       await trace.like.likePost(post.id)
+
+
 
       likeCount = await trace.like.getLikePostCount(post.id)
       assert(likeCount === 1)
+
+      likeRemindCount = await trace.like.getLikePostRemindCount(user1.id)
+      assert(likeRemindCount === 1)
+
+      likeUnreadRemindCount = await trace.like.getLikePostUnreadRemindCount(user1.id)
+      assert(likeUnreadRemindCount === 1)
+
+      hasLike = await trace.like.hasLikePost(user2.id, post.id)
+      assert(hasLike === true)
+
+      hasLikeRemind = await trace.like.hasLikePostRemind(user2.id, post.id)
+      assert(hasLikeRemind === true)
+
+
+      // 标记已读
+      await trace.like.readLikePostRemind(user1.id)
+
+      likeUnreadRemindCount = await trace.like.getLikePostUnreadRemindCount(user1.id)
+      assert(likeUnreadRemindCount === 0)
+
 
       let errorCount = 0
 
@@ -98,18 +139,26 @@ describe('test/service/trace/like.test.js', () => {
 
       assert(errorCount === 1)
 
-      let hasLike = await trace.like.hasLikePost(user2.id, post.id)
-      assert(hasLike === true)
-
-      let hasLikeRemind = await trace.like.hasLikePostRemind(user2.id, post.id)
-      assert(hasLikeRemind === true)
-
 
 
       await trace.like.unlikePost(post.id)
 
       likeCount = await trace.like.getLikePostCount(post.id)
       assert(likeCount === 0)
+
+      likeRemindCount = await trace.like.getLikePostRemindCount(user1.id)
+      assert(likeRemindCount === 0)
+
+      likeUnreadRemindCount = await trace.like.getLikePostUnreadRemindCount(user1.id)
+      assert(likeUnreadRemindCount === 0)
+
+      hasLike = await trace.like.hasLikePost(user2.id, post.id)
+      assert(hasLike === false)
+
+      hasLikeRemind = await trace.like.hasLikePostRemind(user2.id, post.id)
+      assert(hasLikeRemind === false)
+
+
 
       // 不能再次取消关注
       try {
@@ -122,19 +171,21 @@ describe('test/service/trace/like.test.js', () => {
 
       assert(errorCount === 2)
 
-      hasLike = await trace.like.hasLikePost(user2.id, post.id)
-      assert(hasLike === false)
 
-      hasLikeRemind = await trace.like.hasLikePostRemind(user2.id, post.id)
-      assert(hasLikeRemind === false)
 
-      likeCount = await trace.like.getLikePostCount(post.id)
-      assert(likeCount === 0)
 
       await trace.like.likePost(post.id)
 
+
+
       likeCount = await trace.like.getLikePostCount(post.id)
       assert(likeCount === 1)
+
+      likeRemindCount = await trace.like.getLikePostRemindCount(user1.id)
+      assert(likeRemindCount === 1)
+
+      likeUnreadRemindCount = await trace.like.getLikePostUnreadRemindCount(user1.id)
+      assert(likeUnreadRemindCount === 1)
 
       hasLike = await trace.like.hasLikePost(user2.id, post.id)
       assert(hasLike === true)
