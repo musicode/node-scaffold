@@ -244,6 +244,16 @@ module.exports = app => {
   )
 
   app.get(
+    '/api/v1/post/follow/count',
+    v1.post.getFollowCount
+  )
+
+  app.get(
+    '/api/v1/post/follow/list',
+    v1.post.getFollowList
+  )
+
+  app.get(
     '/api/v1/post/like',
     v1.post.like
   )
@@ -251,6 +261,16 @@ module.exports = app => {
   app.get(
     '/api/v1/post/like/undo',
     v1.post.unlike
+  )
+
+  app.get(
+    '/api/v1/post/like/count',
+    v1.post.getLikeCount
+  )
+
+  app.get(
+    '/api/v1/post/like/list',
+    v1.post.getLikeList
   )
 
 }

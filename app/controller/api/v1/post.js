@@ -117,9 +117,9 @@ module.exports = app => {
 
       let post = await this.checkPost()
 
-      const { article } = this.ctx.service
+      const { trace } = this.ctx.service
 
-      await article.post.followPost(post.id)
+      await trace.follow.followPost(post)
 
     }
 
@@ -127,9 +127,70 @@ module.exports = app => {
 
       let post = await this.checkPost()
 
+      const { trace } = this.ctx.service
+
+~     await trace.follow.unfollowPost(post)
+
+    }
+
+    async getFollowCount() {
+
+      let post = await this.checkPost()
+
       const { article } = this.ctx.service
 
-      await article.post.unfollowPost(post.id)
+      await article.post.getPostFollowCount(post.id)
+
+    }
+
+    async getFollowList() {
+
+      const input = this.filter(this.input, {
+        post_id: 'number',
+        user_id: 'number',
+        page: 'number',
+        page_size: 'number',
+        sort_order: 'string',
+        sort_by: 'string',
+      })
+
+      this.validate(input, {
+        post_id: {
+          required: false,
+          type: 'number'
+        },
+        user_id: {
+          required: false,
+          type: 'number'
+        },
+        page: 'number',
+        page_size: number,
+        sort_order: {
+          required: false,
+          type: 'string'
+        },
+        sort_by: {
+          required: false,
+          type: 'string'
+        }
+      })
+
+      const { account, article, trace } = this.ctx.service
+
+      const post = await article.post.checkPostAvailableByNumber(input.post_id)
+      const user = await account.user.checkUserAvailableByNumber(input.user_id)
+
+      const options = {
+        page: input.page,
+        pageSize: input.pageSize,
+        sortOrder: input.sort_order || 'desc',
+        sortBy: input.sort_by || 'update_time'
+      }
+      const list = await trace.follow.getFollowPostList(user.id, post.id, options)
+      const count = await trace.follow.getFollowPostCount(user.id, post.id)
+
+      this.output.list = list
+      this.output.pager = this.createPager(input, count)
 
     }
 
@@ -157,9 +218,9 @@ module.exports = app => {
 
       let post = await this.checkPost()
 
-      const { trace } = this.ctx.service
+      const { article } = this.ctx.service
 
-      await trace.like.getLikePostCount(post.id)
+      await article.post.getPostLikeCount(post.id)
 
     }
 

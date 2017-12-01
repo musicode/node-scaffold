@@ -3,7 +3,7 @@ const { app, mock, assert } = require('egg-mock/bootstrap')
 
 describe('test/service/trace/like.test.js', () => {
 
-  describe('blacklist service', () => {
+  describe('like service', () => {
 
     let user1
     let user2
@@ -128,13 +128,16 @@ describe('test/service/trace/like.test.js', () => {
       // 标记已读
       await trace.like.readLikePostRemind(user1.id)
 
+      likeRemindCount = await trace.like.getLikePostRemindCount(user1.id)
+      assert(likeRemindCount === 1)
+
       likeUnreadRemindCount = await trace.like.getLikePostUnreadRemindCount(user1.id)
       assert(likeUnreadRemindCount === 0)
 
 
       let errorCount = 0
 
-      // 不能再次关注
+      // 不能再次点赞
       try {
         await trace.like.likePost(post.id)
       }
