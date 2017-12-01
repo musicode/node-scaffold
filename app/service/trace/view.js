@@ -5,7 +5,6 @@ const TYPE_QUESTION = 1
 const TYPE_DEMAND = 2
 const TYPE_POST = 3
 const TYPE_USER = 4
-const TYPE_REPLY = 5
 
 const STATUS_ACTIVE = 0
 const STATUS_DELETED = 1
@@ -14,10 +13,10 @@ module.exports = app => {
 
   const { code, util, } = app
 
-  class Follow extends app.BaseService {
+  class View extends app.BaseService {
 
     get tableName() {
-      return 'trace_follow'
+      return 'trace_view'
     }
 
     get fields() {
@@ -28,13 +27,13 @@ module.exports = app => {
     }
 
     /**
-     * 关注
+     * 浏览
      *
      * @param {Object} data
      * @property {string} data.resource_id
      * @property {string} data.resource_type
      */
-    async _addFollow(data) {
+    async _addView(data) {
 
       const { account } = this.service
 
@@ -47,12 +46,6 @@ module.exports = app => {
       })
 
       if (record) {
-        if (record.status === STATUS_ACTIVE) {
-          this.throw(
-            code.RESOURCE_EXISTS,
-            '已关注，不能再次关注'
-          )
-        }
         await this.update(
           {
             status: STATUS_ACTIVE,
@@ -71,14 +64,14 @@ module.exports = app => {
     }
 
     /**
-     * 取消关注
+     * 取消浏览
      *
      * @param {Object} data
      * @property {string} data.resource_id
      * @property {string} data.resource_type
      * @return {Object}
      */
-    async _removeFollow(data) {
+    async _removeView(data) {
 
       const { account } = this.service
 
@@ -93,7 +86,7 @@ module.exports = app => {
       if (!record || record.status === STATUS_DELETED) {
         this.throw(
           code.RESOURCE_NOT_FOUND,
-          '未关注，不能取消关注'
+          '未浏览，不能取消浏览'
         )
       }
 
@@ -106,11 +99,11 @@ module.exports = app => {
     }
 
     /**
-     * 关注文章
+     * 浏览文章
      *
      * @param {number|Object} postId
      */
-    async followPost(postId) {
+    async viewPost(postId) {
 
       const { account, trace, article } = this.service
 
@@ -119,7 +112,7 @@ module.exports = app => {
       const isSuccess = await this.transaction(
         async () => {
 
-          let traceId = await this._addFollow({
+          let traceId = await this._addView({
             resource_id: post.id,
             resource_type: TYPE_POST,
           })
@@ -136,7 +129,7 @@ module.exports = app => {
             })
           }
 
-          await trace.followRemind.addFollowRemind({
+          await trace.viewRemind.addViewRemind({
             trace_id: traceId,
             resource_type: record.resource_type,
             sender_id: record.creator_id,
@@ -151,20 +144,20 @@ module.exports = app => {
       if (!isSuccess) {
         this.throw(
           code.DB_INSERT_ERROR,
-          '关注失败'
+          '浏览失败'
         )
       }
 
-      await article.post.increasePostFollowCount(post.id)
+      await article.post.increasePostViewCount(post.id)
 
     }
 
     /**
-     * 取消关注文章
+     * 取消浏览文章
      *
      * @param {number|Object} postId
      */
-    async unfollowPost(postId) {
+    async unviewPost(postId) {
 
       const { account, trace, article } = this.service
 
@@ -173,12 +166,12 @@ module.exports = app => {
       const isSuccess = await this.transaction(
         async () => {
 
-          const record = await this._removeFollow({
+          const record = await this._removeView({
             resource_id: post.id,
             resource_type: TYPE_POST,
           })
 
-          await trace.followRemind.removeFollowRemind(record.id)
+          await trace.viewRemind.removeViewRemind(record.id)
 
           return true
 
@@ -188,22 +181,22 @@ module.exports = app => {
       if (!isSuccess) {
         this.throw(
           code.DB_UPDATE_ERROR,
-          '取消关注失败'
+          '取消浏览失败'
         )
       }
 
-      await article.post.decreasePostFollowCount(post.id)
+      await article.post.decreasePostViewCount(post.id)
 
     }
 
     /**
-     * 用户是否已关注文章
+     * 用户是否已浏览文章
      *
      * @param {number} userId
      * @param {number} postId
      * @return {boolean}
      */
-    async hasFollowPost(userId, postId) {
+    async hasViewPost(userId, postId) {
 
       const record = await this.findOneBy({
         resource_id: postId,
@@ -217,13 +210,13 @@ module.exports = app => {
     }
 
     /**
-     * 用户关注文章是否已提醒作者
+     * 用户浏览文章是否已提醒作者
      *
      * @param {number} userId
      * @param {number} postId
      * @return {boolean}
      */
-    async hasFollowPostRemind(userId, postId) {
+    async hasViewPostRemind(userId, postId) {
 
       const { trace } = this.service
 
@@ -234,7 +227,7 @@ module.exports = app => {
       })
 
       if (record) {
-        return await trace.followRemind.hasFollowRemind(record.id)
+        return await trace.viewRemind.hasViewRemind(record.id)
       }
 
       return false
@@ -242,13 +235,13 @@ module.exports = app => {
     }
 
     /**
-     * 读取文章的关注数
+     * 读取文章的浏览数
      *
      * @param {number} creatorId
      * @param {number} postId
      * @return {number}
      */
-    async getFollowPostCount(creatorId, postId) {
+    async getViewPostCount(creatorId, postId) {
       const where = {
         resource_type: TYPE_POST,
         status: STATUS_ACTIVE,
@@ -263,14 +256,14 @@ module.exports = app => {
     }
 
     /**
-     * 获取文章的关注列表
+     * 获取文章的浏览列表
      *
      * @param {number} creatorId
      * @param {number} postId
      * @param {Object} options
      * @return {Array}
      */
-    async getFollowPostList(creatorId, postId, options) {
+    async getViewPostList(creatorId, postId, options) {
       const where = {
         resource_type: TYPE_POST,
         status: STATUS_ACTIVE,
@@ -286,37 +279,37 @@ module.exports = app => {
     }
 
     /**
-     * 获取用户被关注文章的提醒列表
+     * 获取用户被浏览文章的提醒列表
      *
      * @param {number} receiverId
      * @param {Object} options
      * @return {Array}
      */
-    async getFollowPostRemindList(receiverId, options) {
+    async getViewPostRemindList(receiverId, options) {
       const { trace } = this.service
-      return await trace.followRemind.getFollowRemindList(receiverId, TYPE_POST, options)
+      return await trace.viewRemind.getViewRemindList(receiverId, TYPE_POST, options)
     }
 
     /**
-     * 获取用户被关注文章的提醒数量
+     * 获取用户被浏览文章的提醒数量
      *
      * @param {number} receiverId
      * @return {number}
      */
-    async getFollowPostRemindCount(receiverId) {
+    async getViewPostRemindCount(receiverId) {
       const { trace } = this.service
-      return await trace.followRemind.getFollowRemindCount(receiverId, TYPE_POST)
+      return await trace.viewRemind.getViewRemindCount(receiverId, TYPE_POST)
     }
 
     /**
-     * 获取用户被关注文章的未读提醒数量
+     * 获取用户被浏览文章的未读提醒数量
      *
      * @param {number} receiverId
      * @return {number}
      */
-    async getFollowPostUnreadRemindCount(receiverId) {
+    async getViewPostUnreadRemindCount(receiverId) {
       const { trace } = this.service
-      return await trace.followRemind.getUnreadFollowRemindCount(receiverId, TYPE_POST)
+      return await trace.viewRemind.getUnreadViewRemindCount(receiverId, TYPE_POST)
     }
 
     /**
@@ -324,11 +317,11 @@ module.exports = app => {
      *
      * @param {number} receiverId
      */
-    async readFollowPostRemind(receiverId) {
+    async readViewPostRemind(receiverId) {
       const { trace } = this.service
-      return await trace.followRemind.readFollowRemind(receiverId, TYPE_POST)
+      return await trace.viewRemind.readViewRemind(receiverId, TYPE_POST)
     }
 
   }
-  return Follow
+  return View
 }

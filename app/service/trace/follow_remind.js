@@ -40,14 +40,16 @@ module.exports = app => {
       // 如果已经存在该记录
       // 改成未读状态
       if (record) {
-        await this.update(
-          {
-            status: STATUS_UNREAD,
-          },
-          {
-            id: record.id,
-          }
-        )
+        if (record.status !== STATUS_UNREAD) {
+          await this.update(
+            {
+              status: STATUS_UNREAD,
+            },
+            {
+              id: record.id,
+            }
+          )
+        }
       }
       else {
         await this.insert(data)

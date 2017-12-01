@@ -674,6 +674,7 @@ module.exports = app => {
      * @param {number} userId
      */
     async increaseUserWriteCount(userId) {
+      // [TODO] 恢复比较麻烦
       await redis.hincrby(`user_stat:${userId}`, 'write_count', 1)
     }
 

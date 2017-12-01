@@ -157,7 +157,6 @@ module.exports = app => {
         )
       }
 
-
     }
 
   }

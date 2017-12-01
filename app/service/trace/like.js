@@ -53,9 +53,13 @@ module.exports = app => {
             '已点赞，不能再次点赞'
           )
         }
-        record.status = STATUS_ACTIVE
         await this.update(
-          record
+          {
+            status: STATUS_ACTIVE,
+          },
+          {
+            id: record.id,
+          }
         )
         return record.id
       }

@@ -390,9 +390,10 @@ module.exports = app => {
      * @param {number} postId
      */
     async increasePostLikeCount(postId) {
-      const likeCount = await redis.hget(`post_stat:${postId}`, 'like_count')
+      const key = `post_stat:${postId}`
+      const likeCount = await redis.hget(key, 'like_count')
       if (likeCount != null) {
-        await redis.hincrby(`post_stat:${postId}`, 'like_count', 1)
+        await redis.hincrby(key, 'like_count', 1)
       }
     }
 
@@ -402,9 +403,10 @@ module.exports = app => {
      * @param {number} postId
      */
     async decreasePostLikeCount(postId) {
-      const likeCount = await redis.hget(`post_stat:${postId}`, 'like_count')
+      const key = `post_stat:${postId}`
+      const likeCount = await redis.hget(key, 'like_count')
       if (likeCount != null) {
-        await redis.hincrby(`post_stat:${postId}`, 'like_count', -1)
+        await redis.hincrby(key, 'like_count', -1)
       }
     }
 
@@ -414,10 +416,11 @@ module.exports = app => {
      * @param {number} postId
      */
     async getPostLikeCount(postId) {
-      let likeCount = await redis.hget(`post_stat:${postId}`, 'like_count')
+      const key = `post_stat:${postId}`
+      let likeCount = await redis.hget(key, 'like_count')
       if (likeCount == null) {
         likeCount = await this.service.trace.like.getLikePostCount(null, postId)
-        await redis.hset(`post_stat:${postId}`, 'like_count', likeCount)
+        await redis.hset(key, 'like_count', likeCount)
       }
       else {
         likeCount = util.toNumber(likeCount, 0)
@@ -431,9 +434,10 @@ module.exports = app => {
      * @param {number} postId
      */
     async increasePostFollowCount(postId) {
-      const followCount = await redis.hget(`post_stat:${postId}`, 'follow_count')
+      const key = `post_stat:${postId}`
+      const followCount = await redis.hget(key, 'follow_count')
       if (followCount != null) {
-        await redis.hincrby(`post_stat:${postId}`, 'follow_count', 1)
+        await redis.hincrby(key, 'follow_count', 1)
       }
     }
 
@@ -443,9 +447,10 @@ module.exports = app => {
      * @param {number} postId
      */
     async decreasePostFollowCount(postId) {
-      const followCount = await redis.hget(`post_stat:${postId}`, 'follow_count')
+      const key = `post_stat:${postId}`
+      const followCount = await redis.hget(key, 'follow_count')
       if (followCount != null) {
-        await redis.hincrby(`post_stat:${postId}`, 'follow_count', -1)
+        await redis.hincrby(key, 'follow_count', -1)
       }
     }
 
@@ -455,10 +460,11 @@ module.exports = app => {
      * @param {number} postId
      */
     async getPostFollowCount(postId) {
-      let followCount = await redis.hget(`post_stat:${postId}`, 'follow_count')
+      const key = `post_stat:${postId}`
+      let followCount = await redis.hget(key, 'follow_count')
       if (followCount == null) {
         followCount = await this.service.trace.follow.getFollowPostCount(null, postId)
-        await redis.hset(`post_stat:${postId}`, 'follow_count', followCount)
+        await redis.hset(key, 'follow_count', followCount)
       }
       else {
         followCount = util.toNumber(followCount, 0)
@@ -472,16 +478,11 @@ module.exports = app => {
      * @param {number} postId
      */
     async increasePostViewCount(postId) {
-      await redis.hincrby(`post_stat:${postId}`, 'view_count', 1)
-    }
-
-    /**
-     * 递减文章的浏览量
-     *
-     * @param {number} postId
-     */
-    async decreasePostViewCount(postId) {
-      await redis.hincrby(`post_stat:${postId}`, 'view_count', -1)
+      const key = `post_stat:${postId}`
+      const viewCount = await redis.hget(key, 'view_count')
+      if (viewCount != null) {
+        await redis.hincrby(key, 'view_count', 1)
+      }
     }
 
     /**
@@ -490,8 +491,16 @@ module.exports = app => {
      * @param {number} postId
      */
     async getPostViewCount(postId) {
-      const viewCount = await redis.hget(`post_stat:${postId}`, 'view_count')
-      return util.toNumber(viewCount, 0)
+      const key = `post_stat:${postId}`
+      let viewCount = await redis.hget(key, 'view_count')
+      if (viewCount == null) {
+        viewCount = await this.service.trace.view.getViewPostCount(null, postId)
+        await redis.hset(key, 'view_count', viewCount)
+      }
+      else {
+        viewCount = util.toNumber(viewCount, 0)
+      }
+      return viewCount
     }
 
     /**
