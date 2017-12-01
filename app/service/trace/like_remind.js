@@ -7,7 +7,7 @@ const STATUS_DELETED = 2
 
 module.exports = app => {
 
-  const { code, redis, } = app
+  const { code, } = app
 
   class LikeRemind extends app.BaseService {
 

@@ -239,11 +239,6 @@ module.exports = app => {
   )
 
   app.get(
-    '/api/v1/post/view',
-    v1.post.view
-  )
-
-  app.get(
     '/api/v1/post/follow',
     v1.post.follow
   )

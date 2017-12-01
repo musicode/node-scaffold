@@ -108,7 +108,7 @@ module.exports = app => {
      */
     async likePost(postId) {
 
-      const { trace, article } = this.service
+      const { account, trace, article } = this.service
 
       const post = await article.post.checkPostAvailableById(postId)
 
@@ -151,6 +151,7 @@ module.exports = app => {
         )
       }
 
+      await account.user.increaseUserLikeCount(post.user_id)
       await article.post.increasePostLikeCount(post.id)
 
     }
@@ -162,7 +163,7 @@ module.exports = app => {
      */
     async unlikePost(postId) {
 
-      const { trace, article } = this.service
+      const { account, trace, article } = this.service
 
       const post = await article.post.checkPostAvailableById(postId)
 
@@ -188,6 +189,7 @@ module.exports = app => {
         )
       }
 
+      await account.user.decreaseUserLikeCount(post.user_id)
       await article.post.decreasePostLikeCount(post.id)
 
     }
@@ -322,7 +324,6 @@ module.exports = app => {
       const { trace } = this.service
       return await trace.likeRemind.readLikeRemind(receiverId, POST)
     }
-
 
   }
   return Like

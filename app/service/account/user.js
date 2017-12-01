@@ -567,9 +567,10 @@ module.exports = app => {
       await this.checkUserViewAuth(userId, currentUser)
 
       const user = await this.getUserById(userId)
-      const statInfo = await this.getUserStatInfoById(userId)
-
-      Object.assign(user, statInfo)
+      user.like_count = await this.getUserLikeCount(userId)
+      user.write_count = await this.getUserWriteCount(userId)
+      user.followee_count = await this.getUserFolloweeCount(userId)
+      user.follower_count = await this.getUserFollowerCount(userId)
 
       return user
 
@@ -606,6 +607,39 @@ module.exports = app => {
 
     }
 
+
+
+    /**
+     * 递增用户的被点赞量
+     *
+     * @param {number} userId
+     */
+    async increaseUserLikeCount(userId) {
+      await redis.hincrby(`user_stat:${userId}`, 'like_count', 1)
+    }
+
+    /**
+     * 递减用户的被点赞量
+     *
+     * @param {number} userId
+     */
+    async decreaseUserLikeCount(userId) {
+      await redis.hincrby(`user_stat:${userId}`, 'like_count', -1)
+    }
+
+    /**
+     * 获取用户的被点赞量
+     *
+     * @param {number} userId
+     * @return {number}
+     */
+    async getUserLikeCount(userId) {
+      const likeCount = await redis.hget(`user_stat:${userId}`, 'like_count')
+      return util.toNumber(likeCount, 0)
+    }
+
+
+
     /**
      * 递增用户的创作量
      *
@@ -614,6 +648,90 @@ module.exports = app => {
     async increaseUserWriteCount(userId) {
       await redis.hincrby(`user_stat:${userId}`, 'write_count', 1)
     }
+
+    /**
+     * 递减用户的创作量
+     *
+     * @param {number} userId
+     */
+    async decreaseUserWriteCount(userId) {
+      await redis.hincrby(`user_stat:${userId}`, 'write_count', -1)
+    }
+
+    /**
+     * 获取用户的创作量
+     *
+     * @param {number} userId
+     * @return {number}
+     */
+    async getUserWriteCount(userId) {
+      const writeCount = await redis.hget(`user_stat:${userId}`, 'write_count')
+      return util.toNumber(writeCount, 0)
+    }
+
+
+
+    /**
+     * 递增用户的关注量
+     *
+     * @param {number} userId
+     */
+    async increaseUserFolloweeCount(userId) {
+      await redis.hincrby(`user_stat:${userId}`, 'followee_count', 1)
+    }
+
+    /**
+     * 递减用户的关注量
+     *
+     * @param {number} userId
+     */
+    async decreaseUserFolloweeCount(userId) {
+      await redis.hincrby(`user_stat:${userId}`, 'followee_count', -1)
+    }
+
+    /**
+     * 获取用户的关注量
+     *
+     * @param {number} userId
+     * @return {number}
+     */
+    async getUserFolloweeCount(userId) {
+      const followeeCount = await redis.hget(`user_stat:${userId}`, 'followee_count')
+      return util.toNumber(followeeCount, 0)
+    }
+
+
+
+    /**
+     * 递增用户的粉丝量
+     *
+     * @param {number} userId
+     */
+    async increaseUserFollowerCount(userId) {
+      await redis.hincrby(`user_stat:${userId}`, 'follower_count', 1)
+    }
+
+    /**
+     * 递减用户的粉丝量
+     *
+     * @param {number} userId
+     */
+    async decreaseUserFollowerCount(userId) {
+      await redis.hincrby(`user_stat:${userId}`, 'follower_count', -1)
+    }
+
+    /**
+     * 获取用户的粉丝量
+     *
+     * @param {number} userId
+     * @return {number}
+     */
+    async getUserFollowerCount(userId) {
+      const followerCount = await redis.hget(`user_stat:${userId}`, 'follower_count')
+      return util.toNumber(followerCount, 0)
+    }
+
+
 
     /**
      * 用户的详细资料是否可以被当前登录用户浏览
@@ -663,20 +781,6 @@ module.exports = app => {
       }
     }
 
-    /**
-     * 获取用户的统计数据
-     *
-     * @param {number} userId
-     */
-    async getUserStatInfoById(userId) {
-      const statInfo = await redis.hgetall(`user_stat:${userId}`)
-      return {
-        view_count: util.toNumber(statInfo.view_count, 0),
-        like_count: util.toNumber(statInfo.like_count, 0),
-        write_count: util.toNumber(statInfo.write_count, 0),
-        follower_count: util.toNumber(statInfo.follower_count, 0),
-      }
-    }
 
   }
   return User

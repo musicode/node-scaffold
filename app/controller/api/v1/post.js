@@ -34,16 +34,6 @@ module.exports = app => {
 
     }
 
-    async view() {
-
-      let post = await this.checkPost()
-
-      const { article } = this.ctx.service
-
-      await article.post.increasePostViewCount(post)
-
-    }
-
     async create() {
 
       const input = this.filter(this.input, {

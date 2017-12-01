@@ -212,6 +212,13 @@ module.exports = app => {
 
       await account.user.increaseUserWriteCount(currentUser.id)
 
+      eventEmitter.emit(
+        eventEmitter.POST_ADD,
+        {
+          postId: postId
+        }
+      )
+
       return postId
 
     }
@@ -303,6 +310,8 @@ module.exports = app => {
      */
     async deletePost(postId) {
 
+      const { account } = this.service
+
       const post = await this.checkPostAvailableById(postId)
 
       // [TODO] redis 的恢复
@@ -327,6 +336,8 @@ module.exports = app => {
 
       await this.updateRedis(`post:${post.id}`, fields)
 
+      await account.user.decreaseUserWriteCount(post.user_id)
+
       eventEmitter.emit(
         eventEmitter.POST_UDPATE,
         {
@@ -347,89 +358,142 @@ module.exports = app => {
 
       const { account } = this.service
 
-      const currentUser = await account.session.getCurrentUser()
-
-      const post = await this.checkPostViewAuth(postId, currentUser)
-
-      const statInfo = await this.getPostStatInfoById(post.id)
-
-      Object.assign(post, statInfo)
-
-      return post
-
-    }
-
-    /**
-     * 递增文章浏览数
-     *
-     * @param {number|Object} postId
-     */
-    async increasePostViewCount(postId) {
-
-      const { account } = this.service
-
-      const currentUser = await account.session.getCurrentUser()
-
-      const post = await this.checkPostViewAuth(postId, currentUser)
-
-      const key = `post_stat:${post.id}`
-      await redis.hincrby(key, 'view_count', 1)
-
-      const viewCount = await redis.hget(key, 'view_count')
-
-      eventEmitter.emit(
-        eventEmitter.POST_UDPATE,
-        {
-          postId: post.id,
-          fields: {
-            view_count: viewCount,
-          }
-        }
-      )
-
-    }
-
-    /**
-     * 文章是否可以被当前登录用户浏览
-     *
-     * @param {number|Object} postId
-     * @param {Object} currentUser
-     * @return {Object}
-     */
-    async checkPostViewAuth(postId, currentUser) {
-      if (!currentUser) {
-        if (config.postViewByGuest) {
+      if (!config.postViewByGuest) {
+        const currentUser = await account.session.getCurrentUser()
+        if (!currentUser) {
           this.throw(
             code.AUTH_UNSIGNIN,
             '只有登录用户才可以浏览文章'
           )
         }
       }
-      return await this.checkPostAvailableById(postId)
+
+      let post = await this.checkPostAvailableById(postId)
+      post = await this.getFullPostById(post)
+
+      await this.increasePostViewCount(post.id)
+
+      post.sub_count = await this.getPostSubCount(post.id)
+      post.view_count = await this.getPostViewCount(post.id)
+      post.like_count = await this.getPostLikeCount(post.id)
+      post.follow_count = await this.getPostFollowCount(post.id)
+
+      return post
+
     }
 
+
+
+    /**
+     * 递增文章的被点赞量
+     *
+     * @param {number} postId
+     */
     async increasePostLikeCount(postId) {
       await redis.hincrby(`post_stat:${postId}`, 'like_count', 1)
     }
 
+    /**
+     * 递减文章的被点赞量
+     *
+     * @param {number} postId
+     */
     async decreasePostLikeCount(postId) {
       await redis.hincrby(`post_stat:${postId}`, 'like_count', -1)
     }
 
-
     /**
-     * 获取文章的统计数据
+     * 获取文章的被点赞量
      *
      * @param {number} postId
      */
-    async getPostStatInfoById(postId) {
-      const statInfo = await redis.hgetall(`post_stat:${postId}`)
-      return {
-        view_count: util.toNumber(statInfo.view_count, 0),
-        like_count: util.toNumber(statInfo.like_count, 0),
-        follow_count: util.toNumber(statInfo.follow_count, 0),
-        sub_count: util.toNumber(statInfo.sub_count, 0),
-      }
+    async getPostLikeCount(postId) {
+      const likeCount = await redis.hget(`post_stat:${postId}`, 'like_count')
+      return util.toNumber(likeCount, 0)
+    }
+
+    /**
+     * 递增文章的关注量
+     *
+     * @param {number} postId
+     */
+    async increasePostFollowCount(postId) {
+      await redis.hincrby(`post_stat:${postId}`, 'follow_count', 1)
+    }
+
+    /**
+     * 递减文章的关注量
+     *
+     * @param {number} postId
+     */
+    async decreasePostFollowCount(postId) {
+      await redis.hincrby(`post_stat:${postId}`, 'follow_count', -1)
+    }
+
+    /**
+     * 获取文章的关注量
+     *
+     * @param {number} postId
+     */
+    async getPostFollowCount(postId) {
+      const followCount = await redis.hget(`post_stat:${postId}`, 'follow_count')
+      return util.toNumber(followCount, 0)
+    }
+
+    /**
+     * 递增文章的浏览量
+     *
+     * @param {number} postId
+     */
+    async increasePostViewCount(postId) {
+      await redis.hincrby(`post_stat:${postId}`, 'view_count', 1)
+    }
+
+    /**
+     * 递减文章的浏览量
+     *
+     * @param {number} postId
+     */
+    async decreasePostViewCount(postId) {
+      await redis.hincrby(`post_stat:${postId}`, 'view_count', -1)
+    }
+
+    /**
+     * 获取文章的浏览量
+     *
+     * @param {number} postId
+     */
+    async getPostViewCount(postId) {
+      const viewCount = await redis.hget(`post_stat:${postId}`, 'view_count')
+      return util.toNumber(viewCount, 0)
+    }
+
+    /**
+     * 递增文章的评论量
+     *
+     * @param {number} postId
+     */
+    async increasePostSubCount(postId) {
+      await redis.hincrby(`post_stat:${postId}`, 'sub_count', 1)
+    }
+
+    /**
+     * 递减文章的评论量
+     *
+     * @param {number} postId
+     */
+    async decreasePostSubCount(postId) {
+      await redis.hincrby(`post_stat:${postId}`, 'sub_count', -1)
+    }
+
+    /**
+     * 获取文章的评论量
+     *
+     * @param {number} postId
+     */
+    async getPostSubCount(postId) {
+      const subCount = await redis.hget(`post_stat:${postId}`, 'sub_count')
+      return util.toNumber(subCount, 0)
     }
 
   }
