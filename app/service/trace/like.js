@@ -1,11 +1,11 @@
 
 'use strict'
 
-const QUESTION = 1
-const DEMAND = 2
-const POST = 3
-const USER = 4
-const REPLY = 5
+const TYPE_QUESTION = 1
+const TYPE_DEMAND = 2
+const TYPE_POST = 3
+const TYPE_USER = 4
+const TYPE_REPLY = 5
 
 const STATUS_ACTIVE = 0
 const STATUS_DELETED = 1
@@ -117,7 +117,7 @@ module.exports = app => {
 
           let traceId = await this._addLike({
             resource_id: post.id,
-            resource_type: POST,
+            resource_type: TYPE_POST,
           })
 
           let record
@@ -172,7 +172,7 @@ module.exports = app => {
 
           const record = await this._removeLike({
             resource_id: post.id,
-            resource_type: POST,
+            resource_type: TYPE_POST,
           })
 
           await trace.likeRemind.removeLikeRemind(record.id)
@@ -199,12 +199,13 @@ module.exports = app => {
      *
      * @param {number} userId
      * @param {number} postId
+     * @return {boolean}
      */
     async hasLikePost(userId, postId) {
 
       const record = await this.findOneBy({
         resource_id: postId,
-        resource_type: POST,
+        resource_type: TYPE_POST,
         creator_id: userId,
         status: STATUS_ACTIVE,
       })
@@ -218,6 +219,7 @@ module.exports = app => {
      *
      * @param {number} userId
      * @param {number} postId
+     * @return {boolean}
      */
     async hasLikePostRemind(userId, postId) {
 
@@ -225,7 +227,7 @@ module.exports = app => {
 
       const record = await this.findOneBy({
         resource_id: postId,
-        resource_type: POST,
+        resource_type: TYPE_POST,
         creator_id: userId,
       })
 
@@ -246,7 +248,7 @@ module.exports = app => {
      */
     async getLikePostCount(creatorId, postId) {
       const where = {
-        resource_type: POST,
+        resource_type: TYPE_POST,
         status: STATUS_ACTIVE,
       }
       if (creatorId) {
@@ -268,7 +270,7 @@ module.exports = app => {
      */
     async getLikePostList(creatorId, postId, options) {
       const where = {
-        resource_type: POST,
+        resource_type: TYPE_POST,
         status: STATUS_ACTIVE,
       }
       if (creatorId) {
@@ -290,7 +292,7 @@ module.exports = app => {
      */
     async getLikePostRemindList(receiverId, options) {
       const { trace } = this.service
-      return await trace.likeRemind.getLikeRemindList(receiverId, POST, options)
+      return await trace.likeRemind.getLikeRemindList(receiverId, TYPE_POST, options)
     }
 
     /**
@@ -301,7 +303,7 @@ module.exports = app => {
      */
     async getLikePostRemindCount(receiverId) {
       const { trace } = this.service
-      return await trace.likeRemind.getLikeRemindCount(receiverId, POST)
+      return await trace.likeRemind.getLikeRemindCount(receiverId, TYPE_POST)
     }
 
     /**
@@ -312,7 +314,7 @@ module.exports = app => {
      */
     async getLikePostUnreadRemindCount(receiverId) {
       const { trace } = this.service
-      return await trace.likeRemind.getUnreadLikeRemindCount(receiverId, POST)
+      return await trace.likeRemind.getUnreadLikeRemindCount(receiverId, TYPE_POST)
     }
 
     /**
@@ -322,7 +324,7 @@ module.exports = app => {
      */
     async readLikePostRemind(receiverId) {
       const { trace } = this.service
-      return await trace.likeRemind.readLikeRemind(receiverId, POST)
+      return await trace.likeRemind.readLikeRemind(receiverId, TYPE_POST)
     }
 
   }

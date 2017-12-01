@@ -100,6 +100,9 @@ describe('test/service/article/post.test.js', () => {
         password: user.password,
       })
 
+      let writeCount = await account.user.getUserWriteCount(user.id)
+      assert(writeCount === 0)
+
       let postId = await article.post.createPost({
         title,
         content,
@@ -108,12 +111,33 @@ describe('test/service/article/post.test.js', () => {
 
       assert(app.util.type(postId) === 'number')
 
+      writeCount = await account.user.getUserWriteCount(user.id)
+      assert(writeCount === 1)
+
       let post = await article.post.getPostById(postId)
       assert(app.util.type(post) === 'object')
+      assert(post.id === postId)
+
+      post = await article.post.getPostById(post)
+      assert(app.util.type(post) === 'object')
+      assert(post.id === postId)
+
+      post = await article.post.checkPostAvailableById(postId)
+      assert(app.util.type(post) === 'object')
+      assert(post.id === postId)
+
+      post = await article.post.checkPostAvailableById(post)
+      assert(app.util.type(post) === 'object')
+      assert(post.id === postId)
 
       assert(post.title === title)
-      assert(post.content === content)
+      assert(post.content === undefined)
       assert(post.anonymous === anonymous)
+
+      post = await article.post.getFullPostById(post)
+      assert(app.util.type(post) === 'object')
+      assert(post.content === content)
+
 
       let newTitle = 'newtitle'
       let newContent = '213123213213123213213123213213123213213123213'
@@ -134,17 +158,39 @@ describe('test/service/article/post.test.js', () => {
       assert(app.util.type(post) === 'object')
 
       assert(post.title === newTitle)
-      assert(post.content === newContent)
+      assert(post.content === undefined)
       assert(post.anonymous === anonymous)
 
 
-      await article.post.deletePost(postId)
+
+
+      newTitle = 'newtitle11'
+      newContent = '213123213213123213213123213213123213213123213123'
+
+      // 支持 post 对象，节省一次查询
+      await article.post.updatePostById({ title: newTitle, content: newContent }, post)
 
       post = await article.post.getPostById(postId)
       assert(app.util.type(post) === 'object')
 
+      assert(post.title === newTitle)
+      assert(post.content === undefined)
+      assert(post.anonymous === anonymous)
+
+
+
+
+
+      await article.post.deletePost(postId)
+
+      writeCount = await account.user.getUserWriteCount(user.id)
+      assert(writeCount === 0)
+
+      post = await article.post.checkPostAvailableById(postId)
+      assert(app.util.type(post) === 'object')
+
       try {
-        await article.post.checkPostAvailable(postId)
+        await article.post.checkPostAvailableById(postId, true)
       }
       catch (err) {
         assert(err.code === app.code.RESOURCE_NOT_FOUND)
@@ -152,6 +198,37 @@ describe('test/service/article/post.test.js', () => {
       }
 
       assert(errorCount === 5)
+
+
+      postId = await article.post.createPost({
+        title,
+        content,
+        anonymous,
+      })
+
+      writeCount = await account.user.getUserWriteCount(user.id)
+      assert(writeCount === 1)
+
+      post = await article.post.checkPostAvailableById(postId)
+      assert(app.util.type(post) === 'object')
+
+
+      // 支持 post 对象删除，节省一次查询
+      await article.post.deletePost(post)
+
+      writeCount = await account.user.getUserWriteCount(user.id)
+      assert(writeCount === 0)
+
+      try {
+        await article.post.checkPostAvailableById(postId, true)
+      }
+      catch (err) {
+        assert(err.code === app.code.RESOURCE_NOT_FOUND)
+        errorCount++
+      }
+
+      assert(errorCount === 6)
+
 
     })
 
