@@ -61,20 +61,30 @@ module.exports = app => {
     /**
      * 检查用户是否存在
      *
-     * @param {number} userId
+     * @param {number|Object} userId
      * @return {Object}
      */
     async checkUserAvailableById(userId) {
-      const user = await this.findOneBy({
-        id: userId,
-      })
+
+      let user
+      if (userId && userId.id) {
+        user = userId
+        userId = user.id
+      }
+
+      if (!user && userId) {
+        user = await this.getUserById(userId)
+      }
+
       if (!user) {
         this.throw(
           code.RESOURCE_NOT_FOUND,
           '该用户不存在'
         )
       }
+
       return user
+
     }
 
     /**
@@ -87,17 +97,11 @@ module.exports = app => {
       const user = await this.findOneBy({
         number: userNumber,
       })
-      if (!user) {
-        this.throw(
-          code.RESOURCE_NOT_FOUND,
-          '该用户不存在'
-        )
-      }
-      return user
+      return await this.checkUserAvailableById(user)
     }
 
     /**
-     * 获取用户的完整信息
+     * 获取用户
      *
      * @param {number|Object} userId
      * @return {Object}
@@ -110,7 +114,7 @@ module.exports = app => {
         userId = user.id
       }
 
-      const { service } = this.ctx
+      const { account } = this.service
 
       const key = `user:${userId}`
       const value = await redis.get(key)
@@ -120,50 +124,36 @@ module.exports = app => {
       }
 
       if (!user) {
-        user = await this.checkUserAvailableById(userId)
+        user = await this.findOneBy({
+          id: userId,
+        })
       }
 
-      const userInfo = await service.account.userInfo.getUserInfoByUserId(userId)
+      await redis.set(key, util.stringifyObject(user))
+
+      return user
+    }
+
+    /**
+     * 获取用户的完整信息
+     *
+     * @param {number|Object} userId
+     * @return {Object}
+     */
+    async getFullUserById(userId) {
+
+      const { account } = this.service
+
+      const user = await this.getUserById(userId)
+
+      const userInfo = await account.userInfo.getUserInfoByUserId(userId)
       for (let key in userInfo) {
         if (!user[key]) {
           user[key] = userInfo[key]
         }
       }
 
-      redis.set(key, util.stringifyObject(user))
-
-      return user
-    }
-
-    /**
-     * 通过 number 获取用户的完整信息
-     *
-     * 因为用户是通过 number 来发送请求的，所以这个接口比较常用
-     *
-     * @param {number} userNumber
-     * @return {Object}
-     */
-    async getUserByNumber(userNumber) {
-
-      if (!userNumber) {
-        this.throw(
-          code.PARAM_INVALID,
-          '缺少 user number'
-        )
-      }
-
-      const user = await this.findOneBy({
-        number: userNumber,
-      })
-
-      if (!user) {
-        this.throw(
-          code.RESOURCE_NOT_FOUND,
-          '用户不存在'
-        )
-      }
-
-      return await this.getUserById(user)
+      return post
 
     }
 
@@ -556,25 +546,64 @@ module.exports = app => {
     /**
      * 浏览用户详细资料
      *
-     * @param {number} userId
+     * @param {number|Object} userId
      */
     async viewUser(userId) {
 
-      const { account } = this.service
+      const { account, privacy, relation } = this.service
 
+      let user = await this.checkUserAvailableById(userId)
       const currentUser = await account.session.getCurrentUser()
 
-      await this.checkUserViewAuth(userId, currentUser)
+      if (currentUser) {
+        if (user.id !== currentUser.id) {
+          await privacy.profileAllowed.checkAllowedType(currentUser.id, user.id)
 
-      const user = await this.getUserById(userId)
-      user.like_count = await this.getUserLikeCount(userId)
-      user.write_count = await this.getUserWriteCount(userId)
-      user.followee_count = await this.getUserFolloweeCount(userId)
-      user.follower_count = await this.getUserFollowerCount(userId)
+          const hasBlacked = await privacy.blacklist.hasBlacked(user.id, currentUser.id)
+          if (hasBlacked) {
+            this.throw(
+              code.VISITOR_BLACKED,
+              '无权查看该用户的信息'
+            )
+          }
+
+        }
+      }
+      else {
+        if (!config.userViewByGuest) {
+          this.throw(
+            code.AUTH_UNSIGNIN,
+            '只有登录用户才可以浏览用户详细资料'
+          )
+        }
+        try {
+          await privacy.profileAllowed.checkAllowedType(currentUser ? currentUser.id : null, user.id)
+        }
+        catch (err) {
+          if (err.code === code.PARAM_INVALID) {
+            this.throw(
+              code.AUTH_UNSIGNIN,
+              '登录后才能访问该用户的详细资料'
+            )
+          }
+          else {
+            throw err
+          }
+        }
+      }
+
+      await this.increaseUserViewCount(user.id)
+
+      user = await this.getFullUserById(user.id)
+      user.like_count = await this.getUserLikeCount(user.id)
+      user.write_count = await this.getUserWriteCount(user.id)
+      user.followee_count = await this.getUserFolloweeCount(user.id)
+      user.follower_count = await this.getUserFollowerCount(user.id)
 
       return user
 
     }
+
 
 
     /**
@@ -583,28 +612,27 @@ module.exports = app => {
      * @param {number} userId
      */
     async increaseUserViewCount(userId) {
+      await redis.hincrby(`user_stat:${userId}`, 'view_count', 1)
+    }
 
-      const { account } = this.service
+    /**
+     * 递减用户的浏览量
+     *
+     * @param {number} userId
+     */
+    async decreaseUserViewCount(userId) {
+      await redis.hincrby(`user_stat:${userId}`, 'view_count', -1)
+    }
 
-      const currentUser = await account.session.getCurrentUser()
-
-      await this.checkUserViewAuth(userId, currentUser)
-
-      const key = `user_stat:${userId}`
-      await redis.hincrby(key, 'view_count', 1)
-
-      const viewCount = await redis.hget(key, 'view_count')
-
-      eventEmitter.emit(
-        eventEmitter.USER_UDPATE,
-        {
-          userId,
-          fields: {
-            view_count: viewCount,
-          }
-        }
-      )
-
+    /**
+     * 获取用户的浏览量
+     *
+     * @param {number} userId
+     * @return {number}
+     */
+    async getUserViewCount(userId) {
+      const viewCount = await redis.hget(`user_stat:${userId}`, 'view_count')
+      return util.toNumber(viewCount, 0)
     }
 
 
@@ -730,57 +758,6 @@ module.exports = app => {
       const followerCount = await redis.hget(`user_stat:${userId}`, 'follower_count')
       return util.toNumber(followerCount, 0)
     }
-
-
-
-    /**
-     * 用户的详细资料是否可以被当前登录用户浏览
-     *
-     * @param {number} userId
-     * @param {Object} currentUser
-     */
-    async checkUserViewAuth(userId, currentUser) {
-
-      const { privacy, relation } = this.service
-
-      if (currentUser) {
-        if (userId !== currentUser.id) {
-          await privacy.profileAllowed.checkAllowedType(currentUser.id, userId)
-
-          const hasBlacked = await privacy.blacklist.hasBlacked(userId, currentUser.id)
-          if (hasBlacked) {
-            this.throw(
-              code.VISITOR_BLACKED,
-              '无权查看该用户的信息'
-            )
-          }
-
-        }
-      }
-      else {
-        if (!config.userViewByGuest) {
-          this.throw(
-            code.AUTH_UNSIGNIN,
-            '只有登录用户才可以浏览用户详细资料'
-          )
-        }
-        try {
-          await privacy.profileAllowed.checkAllowedType(currentUser ? currentUser.id : null, userId)
-        }
-        catch (err) {
-          if (err.code === code.PARAM_INVALID) {
-            this.throw(
-              code.AUTH_UNSIGNIN,
-              '登录后才能访问该用户的详细资料'
-            )
-          }
-          else {
-            throw err
-          }
-        }
-      }
-    }
-
 
   }
   return User

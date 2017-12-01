@@ -41,26 +41,6 @@ module.exports = app => {
 
     }
 
-    async view() {
-
-      const input = this.filter(this.input, {
-        user_id: ['trim', 'number'],
-      })
-
-      this.validate(input, {
-        user_id: {
-          type: 'number',
-        }
-      })
-
-      const { account } = this.ctx.service
-
-      const user = await account.user.checkUserAvailableByNumber(input.user_id)
-
-      await account.user.increaseUserViewCount(user.id)
-
-    }
-
     async setEmail() {
 
       const input = this.filter(this.input, {
