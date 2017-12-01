@@ -59,34 +59,6 @@ module.exports = app => {
     }
 
     /**
-     * 递增粉丝数
-     *
-     * @param {number} userId
-     */
-    async increaseCount(userId) {
-
-      // 防止出现 redis 挂了，取不到值又从 0 开始了
-      await this.countByUserId(userId)
-
-      await redis.hincrby(`user_stat:${userId}`, 'follower_count', 1)
-
-    }
-
-    /**
-     * 递减粉丝数
-     *
-     * @param {number} userId
-     */
-    async decreaseCount(userId) {
-
-      // 防止出现 redis 挂了，取不到值又从 0 开始了
-      await this.countByUserId(userId)
-
-      await redis.hincrby(`user_stat:${userId}`, 'follower_count', -1)
-
-    }
-
-    /**
      * 给 user 添加新的粉丝
      *
      * @param {number} userId
