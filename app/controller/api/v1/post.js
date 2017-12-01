@@ -56,14 +56,8 @@ module.exports = app => {
         },
         page: 'number',
         page_size: number,
-        sort_order: {
-          required: false,
-          type: 'string'
-        },
-        sort_by: {
-          required: false,
-          type: 'string'
-        }
+        sort_by: 'sort_by',
+        sort_order: 'sort_order',
       })
 
       const { account, article } = this.ctx.service
@@ -224,14 +218,8 @@ module.exports = app => {
         },
         page: 'number',
         page_size: number,
-        sort_order: {
-          required: false,
-          type: 'string'
-        },
-        sort_by: {
-          required: false,
-          type: 'string'
-        }
+        sort_by: 'sort_by',
+        sort_order: 'sort_order',
       })
 
       const { account, article, trace } = this.ctx.service
@@ -305,14 +293,8 @@ module.exports = app => {
         },
         page: 'number',
         page_size: number,
-        sort_order: {
-          required: false,
-          type: 'string'
-        },
-        sort_by: {
-          required: false,
-          type: 'string'
-        }
+        sort_by: 'sort_by',
+        sort_order: 'sort_order',
       })
 
       const { account, article, trace } = this.ctx.service

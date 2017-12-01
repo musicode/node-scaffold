@@ -90,16 +90,8 @@ module.exports = app => {
         user_id: 'string',
         page: 'number',
         page_size: 'number',
-        sort_by: {
-          required: false,
-          allowEmpty: true,
-          type: 'string',
-        },
-        sort_order: {
-          required: false,
-          allowEmpty: true,
-          type: 'string',
-        },
+        sort_by: 'sort_by',
+        sort_order: 'sort_order',
       })
 
 
@@ -166,16 +158,8 @@ module.exports = app => {
         user_id: 'string',
         page: 'number',
         page_size: 'number',
-        sort_by: {
-          required: false,
-          allowEmpty: true,
-          type: 'string',
-        },
-        sort_order: {
-          required: false,
-          allowEmpty: true,
-          type: 'string',
-        },
+        sort_by: 'sort_by',
+        sort_order: 'sort_order',
       })
 
 
@@ -215,7 +199,6 @@ module.exports = app => {
 
       this.output.list = list
       this.output.pager = this.createPager(input, count)
-
 
     }
 

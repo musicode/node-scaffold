@@ -3,6 +3,7 @@
 const Parameter = require('parameter')
 
 const validator = new Parameter()
+const util = require('./util')
 
 validator.addRule(
   'mobile',
@@ -14,10 +15,27 @@ validator.addRule(
 )
 
 validator.addRule(
-  'verify_code',
+  'sort_by',
   (rule, value) => {
-    if (typeof value !== 'string' || !/\d{6}/.test(value)) {
-      return '必须是 6 位数字'
+    if (value) {
+      if (util.type(value) !== 'string') {
+        return 'sort_by must be a string.'
+      }
+    }
+  }
+)
+
+validator.addRule(
+  'sort_order',
+  (rule, value) => {
+    if (value) {
+      if (util.type(value) !== 'string') {
+        return 'sort_order must be a string.'
+      }
+      value = value.toLowerCase()
+      if (value !== 'asc' && value !== 'desc') {
+        return 'sort_order must be "asc" or "desc".'
+      }
     }
   }
 )
