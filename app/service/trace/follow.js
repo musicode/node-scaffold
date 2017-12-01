@@ -114,7 +114,7 @@ module.exports = app => {
 
       const { account, trace, article } = this.service
 
-      const post = await article.post.checkPostAvailableById(postId)
+      const post = await article.post.getPostById(postId)
 
       const isSuccess = await this.transaction(
         async () => {
@@ -168,7 +168,7 @@ module.exports = app => {
 
       const { account, trace, article } = this.service
 
-      const post = await article.post.checkPostAvailableById(postId)
+      const post = await article.post.getPostById(postId)
 
       const isSuccess = await this.transaction(
         async () => {

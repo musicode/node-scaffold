@@ -153,7 +153,7 @@ module.exports = app => {
         }
       }
 
-      return post
+      return user
 
     }
 
@@ -552,7 +552,7 @@ module.exports = app => {
 
       const { account, privacy, relation } = this.service
 
-      let user = await this.checkUserAvailableById(userId)
+      let user = await this.getUserById(userId)
       const currentUser = await account.session.getCurrentUser()
 
       if (currentUser) {

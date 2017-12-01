@@ -147,7 +147,18 @@ describe('test/service/trace/view.test.js', () => {
 
       assert(errorCount === 0)
 
-      // 浏览量怎么累计？
+      // 浏览量怎么累计是个问题
+      // 这里 trace_view 表不会每次浏览都 insert
+      // 因此他的数据总量是不会变的
+
+      viewCount = await trace.view.getViewPostCount(null, post.id)
+      assert(viewCount === 1)
+
+      // 但是对于资源来说，计数器是需要累加的
+
+      viewCount = await article.post.getPostViewCount(post.id)
+      assert(viewCount === 2)
+
     })
 
 

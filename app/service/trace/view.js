@@ -46,55 +46,22 @@ module.exports = app => {
       })
 
       if (record) {
-        await this.update(
-          {
-            status: STATUS_ACTIVE,
-          },
-          {
-            id: record.id,
-          }
-        )
-        return record.id
+        if (record.status !== STATUS_ACTIVE) {
+          await this.update(
+            {
+              status: STATUS_ACTIVE,
+            },
+            {
+              id: record.id,
+            }
+          )
+          return record.id
+        }
       }
       else {
         data.creator_id = currentUser.id
         return await this.insert(data)
       }
-
-    }
-
-    /**
-     * 取消浏览
-     *
-     * @param {Object} data
-     * @property {string} data.resource_id
-     * @property {string} data.resource_type
-     * @return {Object}
-     */
-    async _removeView(data) {
-
-      const { account } = this.service
-
-      const currentUser = await account.session.checkCurrentUser()
-
-      const record = await this.findOneBy({
-        resource_id: data.resource_id,
-        resource_type: data.resource_type,
-        creator_id: currentUser.id,
-      })
-
-      if (!record || record.status === STATUS_DELETED) {
-        this.throw(
-          code.RESOURCE_NOT_FOUND,
-          '未浏览，不能取消浏览'
-        )
-      }
-
-      record.status = STATUS_DELETED
-
-      await this.update(record)
-
-      return record
 
     }
 
@@ -107,7 +74,7 @@ module.exports = app => {
 
       const { account, trace, article } = this.service
 
-      const post = await article.post.checkPostAvailableById(postId)
+      const post = await article.post.getPostById(postId)
 
       const isSuccess = await this.transaction(
         async () => {
@@ -123,18 +90,20 @@ module.exports = app => {
             record = traceId
             traceId = record.id
           }
-          else {
+          else if (traceId) {
             record = await this.findOneBy({
               id: traceId,
             })
           }
 
-          await trace.viewRemind.addViewRemind({
-            trace_id: traceId,
-            resource_type: record.resource_type,
-            sender_id: record.creator_id,
-            receiver_id: post.user_id,
-          })
+          if (record) {
+            await trace.viewRemind.addViewRemind({
+              trace_id: traceId,
+              resource_type: record.resource_type,
+              sender_id: record.creator_id,
+              receiver_id: post.user_id,
+            })
+          }
 
           return true
 
@@ -149,43 +118,6 @@ module.exports = app => {
       }
 
       await article.post.increasePostViewCount(post.id)
-
-    }
-
-    /**
-     * 取消浏览文章
-     *
-     * @param {number|Object} postId
-     */
-    async unviewPost(postId) {
-
-      const { account, trace, article } = this.service
-
-      const post = await article.post.checkPostAvailableById(postId)
-
-      const isSuccess = await this.transaction(
-        async () => {
-
-          const record = await this._removeView({
-            resource_id: post.id,
-            resource_type: TYPE_POST,
-          })
-
-          await trace.viewRemind.removeViewRemind(record.id)
-
-          return true
-
-        }
-      )
-
-      if (!isSuccess) {
-        this.throw(
-          code.DB_UPDATE_ERROR,
-          '取消浏览失败'
-        )
-      }
-
-      await article.post.decreasePostViewCount(post.id)
 
     }
 

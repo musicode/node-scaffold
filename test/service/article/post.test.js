@@ -143,7 +143,7 @@ describe('test/service/article/post.test.js', () => {
       let newContent = '213123213213123213213123213213123213213123213'
 
       try {
-        await article.post.updatePostById({ title: newTitle, content: newContent }, '123')
+        await article.post.updatePostById({ title: newTitle, content: newContent }, 'asdasd123')
       }
       catch (err) {
         assert(err.code === app.code.RESOURCE_NOT_FOUND)

@@ -75,6 +75,12 @@ describe('test/service/user.test.js', () => {
 
       assert(user != null)
       assert(user.mobile === mobile)
+      assert(user.nickname === undefined)
+      assert(user.gender === undefined)
+      assert(user.company === undefined)
+      assert(user.job === undefined)
+
+      user = await userService.getFullUserById(userId)
       assert(user.nickname === nickname)
       assert(user.gender === gender)
       assert(user.company === company)
@@ -544,8 +550,6 @@ describe('test/service/user.test.js', () => {
       currentUser = await userService.getUserById(currentUser.id)
 
       assert(currentUser.domain === data.domain.toLowerCase())
-      assert(currentUser.nickname === data.nickname)
-      assert(currentUser.hahaha === undefined)
 
     })
 

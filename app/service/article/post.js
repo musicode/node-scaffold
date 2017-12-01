@@ -382,6 +382,43 @@ module.exports = app => {
 
     }
 
+    /**
+     * 获得文章列表
+     *
+     * @param {Object} where
+     * @param {Object} options
+     * @return {Array}
+     */
+    async getPostList(where, options) {
+      if ('status' in where) {
+        if (where.status < 0) {
+          delete where.status
+        }
+      }
+      else {
+        where.status = [ STATUS_ACTIVE, STATUS_AUDIT_SUCCESS ]
+      }
+      options.where = where
+      return await this.findBy(options)
+    }
+
+    /**
+     * 获得文章数量
+     *
+     * @param {Object} where
+     * @return {number}
+     */
+    async getPostCount(where) {
+      if ('status' in where) {
+        if (where.status < 0) {
+          delete where.status
+        }
+      }
+      else {
+        where.status = [ STATUS_ACTIVE, STATUS_AUDIT_SUCCESS ]
+      }
+      return await this.countBy(where)
+    }
 
 
     /**
@@ -478,11 +515,9 @@ module.exports = app => {
      * @param {number} postId
      */
     async increasePostViewCount(postId) {
-      const key = `post_stat:${postId}`
-      const viewCount = await redis.hget(key, 'view_count')
-      if (viewCount != null) {
-        await redis.hincrby(key, 'view_count', 1)
-      }
+      // 这里不管有没有，必须递增
+      // 因为靠数据库恢复不了
+      await redis.hincrby(`post_stat:${postId}`, 'view_count', 1)
     }
 
     /**
@@ -491,16 +526,10 @@ module.exports = app => {
      * @param {number} postId
      */
     async getPostViewCount(postId) {
-      const key = `post_stat:${postId}`
-      let viewCount = await redis.hget(key, 'view_count')
-      if (viewCount == null) {
-        viewCount = await this.service.trace.view.getViewPostCount(null, postId)
-        await redis.hset(key, 'view_count', viewCount)
-      }
-      else {
-        viewCount = util.toNumber(viewCount, 0)
-      }
-      return viewCount
+      // 这里不管有没有，必须读 redis
+      // 因为靠数据库恢复不了
+      let viewCount = await redis.hget(`post_stat:${postId}`, 'view_count')
+      return util.toNumber(viewCount, 0)
     }
 
     /**

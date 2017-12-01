@@ -34,6 +34,65 @@ module.exports = app => {
 
     }
 
+    async list() {
+
+      const input = this.filter(this.input, {
+        user_id: 'number',
+        status: 'number',
+        page: 'number',
+        page_size: 'number',
+        sort_order: 'string',
+        sort_by: 'string',
+      })
+
+      this.validate(input, {
+        user_id: {
+          required: false,
+          type: 'number'
+        },
+        status: {
+          required: false,
+          type: 'number'
+        },
+        page: 'number',
+        page_size: number,
+        sort_order: {
+          required: false,
+          type: 'string'
+        },
+        sort_by: {
+          required: false,
+          type: 'string'
+        }
+      })
+
+      const { account, article } = this.ctx.service
+
+      const where = { }
+
+      if (input.user_id) {
+        const user = await account.user.checkUserAvailableByNumber(input.user_id)
+        where.user_id = user.id
+      }
+
+      if (util.type(input.status) === 'number') {
+        where.status = input.status
+      }
+
+      const options = {
+        page: input.page,
+        pageSize: input.page_size,
+        sortOrder: input.sort_order || 'desc',
+        sortBy: input.sort_by || 'create_time'
+      }
+      const list = await article.post.getPostList(where, options)
+      const count = await article.post.getPostCount(where)
+
+      this.output.list = list
+      this.output.pager = this.createPager(input, count)
+
+    }
+
     async create() {
 
       const input = this.filter(this.input, {
@@ -182,7 +241,7 @@ module.exports = app => {
 
       const options = {
         page: input.page,
-        pageSize: input.pageSize,
+        pageSize: input.page_size,
         sortOrder: input.sort_order || 'desc',
         sortBy: input.sort_by || 'update_time'
       }
@@ -263,7 +322,7 @@ module.exports = app => {
 
       const options = {
         page: input.page,
-        pageSize: input.pageSize,
+        pageSize: input.page_size,
         sortOrder: input.sort_order || 'desc',
         sortBy: input.sort_by || 'update_time'
       }

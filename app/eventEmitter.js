@@ -28,6 +28,9 @@ eventEmitter.USER_SIGN_OUT = 'user_sign_out'
 eventEmitter.USER_UPDATE = 'user_update'
 
 
+eventEmitter.POST_ADD = 'post_add'
+eventEmitter.POST_UPDATE = 'post_update'
+
 eventEmitter.POST_LIKE = 'post_like'
 eventEmitter.POST_UNLIKE = 'post_unlike'
 
