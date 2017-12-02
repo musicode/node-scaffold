@@ -2,10 +2,11 @@
 'use strict'
 
 const TYPE_QUESTION = 1
-const TYPE_DEMAND = 2
-const TYPE_POST = 3
-const TYPE_USER = 4
-const TYPE_REPLY = 5
+const TYPE_REPLY = 2
+const TYPE_DEMAND = 3
+const TYPE_CONSULT = 4
+const TYPE_POST = 5
+const TYPE_COMMENT = 6
 
 const STATUS_ACTIVE = 0
 const STATUS_DELETED = 1
@@ -25,6 +26,46 @@ module.exports = app => {
         'resource_id', 'resource_type', 'resource_parent_id',
         'creator_id', 'anonymous', 'status',
       ]
+    }
+
+    async toExternal(like) {
+
+      const { account, article } = this.service
+      const { resource_id, resource_type, resource_parent_id, creator_id } = like
+
+      let type, resource, resourceService
+      if (resource_type == TYPE_QUESTION) {
+          type = 'question'
+      }
+      else if (resource_type == TYPE_REPLY) {
+          type = 'reply'
+      }
+      else if (resource_type == TYPE_DEMAND) {
+          type = 'demand'
+      }
+      else if (resource_type == TYPE_CONSULT) {
+          type = 'consult'
+      }
+      else if (resource_type == TYPE_POST) {
+          type = 'post'
+          resource = await article.post.getPostById(resource_id)
+          resource = await article.post.toExternal(resource)
+      }
+      else if (resource_type == TYPE_COMMENT) {
+          type = 'comment'
+      }
+
+      let creator = await account.user.getUserById(creator_id)
+      creator = await account.user.toExternal(creator)
+
+      return {
+          id: like.id,
+          type,
+          resource,
+          creator,
+          create_time: like.create_time.getTime()
+      }
+
     }
 
     /**
@@ -97,9 +138,14 @@ module.exports = app => {
         )
       }
 
-      record.status = STATUS_DELETED
-
-      await this.update(record)
+      await this.update(
+        {
+          status: STATUS_DELETED,
+        },
+        {
+          id: record.id,
+        }
+      )
 
       return record
 

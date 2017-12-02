@@ -34,4 +34,14 @@ eventEmitter.POST_UPDATE = 'post_update'
 eventEmitter.POST_LIKE = 'post_like'
 eventEmitter.POST_UNLIKE = 'post_unlike'
 
+
+eventEmitter
+.on(
+  eventEmitter.POST_ADD,
+  data => {
+    const { postId, service } = data
+
+  }
+)
+
 module.exports = eventEmitter

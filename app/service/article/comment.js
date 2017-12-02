@@ -7,7 +7,6 @@ const STATUS_AUDIT_FAIL = 2
 const STATUS_DELETED = 3
 
 module.exports = app => {
-
   class Comment extends app.BaseService {
 
     get tableName() {
@@ -20,27 +19,60 @@ module.exports = app => {
       ]
     }
 
-    /**
-     * 通过 id 获取评论
-     *
-     * @param {number|Object} commentId
-     * @return {Object}
-     */
-    async getCommentById(commentId) {
+    async toExternal(comment) {
 
-      let comment
-      if (commentId && commentId.id) {
-        comment = commentId
-        commentId = comment.id
+      if (!('content' in comment)) {
+        comment = await this.getFullCommentById(comment)
       }
 
-      if (!comment) {
-        comment = await this.findOneBy({
-          id: commentId,
-        })
+      const result = { }
+      Object.assign(result, comment)
+
+      const { id, number, user_id, post_id, parent_id } = result
+      delete result.number
+      delete result.user_id
+      delete result.post_id
+
+      result.id = number
+
+      const { account, article, trace, } = this.service
+      if (result.anonymous === limit.ANONYMOUS_YES) {
+        result.user = account.user.anonymous
+      }
+      else {
+        const user = await account.user.getFullUserById(user_id)
+        result.user = await account.user.toExternal(user)
       }
 
-      return comment
+      if (parent_id) {
+        const parentComment = await this.getCommentById(parent_id)
+        result.parent_id = parentComment.number
+
+        if (parentComment.anonymous === limit.ANONYMOUS_YES) {
+          result.parent_user = account.user.anonymous
+        }
+        else {
+          const parentUser = await account.user.getFullUserById(parentComment.user_id)
+          result.parent_user = await account.user.toExternal(parentUser)
+        }
+      }
+
+      const post = await article.post.getFullPostById(post_id)
+      result.post = await article.post.toExternal(post)
+
+      const currentUser = await account.session.getCurrentUser()
+      if (currentUser) {
+        if (currentUser.id === user_id) {
+          result.can_update = true
+          const subCount = await this.getCommentSubCount(id)
+          result.can_delete = subCount === 0
+        }
+      }
+
+      result.create_time = result.create_time.getTime()
+      result.update_time = result.update_time.getTime()
+
+      return result
 
     }
 
@@ -96,6 +128,54 @@ module.exports = app => {
     }
 
     /**
+     * 通过 id 获取评论
+     *
+     * @param {number|Object} commentId
+     * @return {Object}
+     */
+    async getCommentById(commentId) {
+
+      let comment
+      if (commentId && commentId.id) {
+        comment = commentId
+        commentId = comment.id
+      }
+
+      if (!comment) {
+        comment = await this.findOneBy({ id: commentId })
+      }
+
+      return comment
+
+    }
+
+    /**
+     * 获取评论的完整信息
+     *
+     * @param {number|Object} commentId
+     * @return {Object}
+     */
+    async getFullCommentById(commentId) {
+
+      const { article } = this.ctx.service
+
+      const comment = await this.getCommentById(commentId)
+      const record = await article.commentContent.findOneBy({
+        comment_id: comment.id,
+      })
+
+      comment.sub_count = await this.getCommentSubCount(comment.id)
+
+      comment.content = record.content
+      if (record.update_time.getTime() > comment.update_time.getTime()) {
+        comment.update_time = record.update_time
+      }
+
+      return comment
+
+    }
+
+    /**
      * 创建评论
      *
      * @param {Object} data
@@ -106,12 +186,15 @@ module.exports = app => {
      */
     async createComment(data) {
 
+      const { account, article } = this.service
+
       if (!data.post_id) {
         this.throw(
           code.PARAM_INVALID,
           '缺少 post_id'
         )
       }
+
       if (!data.content) {
         this.throw(
           code.PARAM_INVALID,
@@ -119,17 +202,18 @@ module.exports = app => {
         )
       }
 
-      const { account, article } = this.service
-
       const currentUser = await account.session.checkCurrentUser();
 
       const commentId = await this.transaction(
         async () => {
 
+          const anonymous = data.anonymous ? limit.ANONYMOUS_YES : limit.ANONYMOUS_NO
+
           const row = {
             number: util.randomInt(limit.COMMENT_NUMBER_LENGTH),
             user_id: currentUser.id,
-            anonymous: data.anonymous ? limit.ANONYMOUS_YES : limit.ANONYMOUS_NO,
+            post_id: data.post_id,
+            anonymous,
           }
 
           if (data.parent_id) {
@@ -138,12 +222,12 @@ module.exports = app => {
 
           const commentId = await this.insert(row)
 
-          data.comment_id = commentId
-
           await article.commentContent.insert({
             comment_id: commentId,
             content: data.content,
           })
+
+          await trace.create.createComment(commentId, anonymous, data.post_id, data.parent_id)
 
           return commentId
 
@@ -157,6 +241,231 @@ module.exports = app => {
         )
       }
 
+      await article.post.increasePostSubCount(data.post_id)
+
+      if (data.parent_id) {
+        await this.increaseCommentSubCount(data.parent_id)
+      }
+
+      eventEmitter.emit(
+        eventEmitter.COMMENT_ADD,
+        {
+          commentId,
+          service: this.service,
+        }
+      )
+
+    }
+
+
+    /**
+     * 修改评论
+     *
+     * @param {Object} data
+     * @property {string} data.content
+     * @property {boolean|number} data.anonymous
+     * @param {number|Object} commentId
+     */
+    async updateCommentById(data, commentId) {
+
+      const { account, article, trace } = this.service
+
+      const currentUser = await account.session.checkCurrentUser()
+
+      const comment = await this.getCommentById(commentId)
+
+      if (comment.user_id !== currentUser.id) {
+        this.throw(
+          code.PERMISSION_DENIED,
+          '没有权限修改该评论'
+        )
+      }
+
+      let fields = this.getFields(data)
+      await this.transaction(
+        async () => {
+
+          let anonymous
+          if (fields) {
+            if ('anonymous' in fields) {
+              anonymous = fields.anonymous ? limit.ANONYMOUS_YES : limit.ANONYMOUS_NO
+              if (anonymous !== comment.anonymous) {
+                fields.anonymous = anonymous
+              }
+              else {
+                delete fields.anonymous
+                anonymous = null
+              }
+            }
+            await this.update(
+              fields,
+              {
+                id: comment.id,
+              }
+            )
+          }
+
+          const { content } = data
+          if (content) {
+
+            if (!fields) {
+              fields = { }
+            }
+            fields.content = content
+
+            await article.commentContent.update(
+              {
+                content,
+              },
+              {
+                comment_id: comment.id,
+              }
+            )
+          }
+
+          if (anonymous != null) {
+            await trace.create.createComment(comment.id, anonymous, comment.post_id, comment.parent_id)
+          }
+
+        }
+      )
+
+      if (fields) {
+
+        const cache = { }
+        Object.assign(cache, fields)
+
+        if ('content' in cache) {
+          delete cache.content
+        }
+
+        cache.update_time = new Date()
+
+        await this.updateRedis(`comment:${comment.id}`, cache)
+
+        eventEmitter.emit(
+          eventEmitter.COMMENT_UDPATE,
+          {
+            commentId: comment.id,
+            service: this.service,
+          }
+        )
+      }
+
+    }
+
+    /**
+     * 删除评论
+     *
+     * @param {number|Object} commentId
+     */
+    async deleteComment(commentId) {
+
+      const { account, trace } = this.service
+
+      const currentUser = await account.session.checkCurrentUser()
+
+      const comment = await this.getCommentById(commentId)
+
+      if (comment.user_id !== currentUser.id) {
+        this.throw(
+          code.PERMISSION_DENIED,
+          '不能删除别人的评论'
+        )
+      }
+
+      const subCount = await this.getCommentSubCount(comment.id)
+      if (subCount > 0) {
+        this.throw(
+          code.PERMISSION_DENIED,
+          '已有评论的评论不能删除'
+        )
+      }
+
+      const fields = {
+        status: STATUS_DELETED,
+      }
+
+      const isSuccess = await this.transaction(
+        async () => {
+
+          await this.update(
+            fields,
+            {
+              id: comment.id,
+            }
+          )
+
+          await trace.create.uncreateComment(comment.id)
+
+          return true
+
+        }
+      )
+
+      if (!isSuccess) {
+        this.throw(
+          code.DB_UPDATE_ERROR,
+          '删除评论失败'
+        )
+      }
+
+      await this.updateRedis(`comment:${comment.id}`, fields)
+
+      await article.post.increasePostSubCount(comment.post_id)
+
+      if (comment.parent_id) {
+        await this.increaseCommentSubCount(comment.parent_id)
+      }
+
+      eventEmitter.emit(
+        eventEmitter.COMMENT_UDPATE,
+        {
+          commentId: comment.id,
+          service: this.service,
+        }
+      )
+
+    }
+
+    /**
+     * 获得评论列表
+     *
+     * @param {Object} where
+     * @param {Object} options
+     * @return {Array}
+     */
+    async getCommentList(where, options) {
+      this._formatWhere(where)
+      options.where = where
+      return await this.findBy(options)
+    }
+
+    /**
+     * 获得评论数量
+     *
+     * @param {Object} where
+     * @return {number}
+     */
+    async getCommentCount(where) {
+      this._formatWhere(where)
+      return await this.countBy(where)
+    }
+
+    /**
+     * 格式化查询条件
+     *
+     * @param {Object} where
+     */
+    _formatWhere(where) {
+      if ('status' in where) {
+        if (where.status < 0) {
+          delete where.status
+        }
+      }
+      else {
+        where.status = [ STATUS_ACTIVE, STATUS_AUDIT_SUCCESS ]
+      }
     }
 
   }

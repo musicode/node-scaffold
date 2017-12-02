@@ -27,6 +27,43 @@ module.exports = app => {
       ]
     }
 
+    async toExternal(follow) {
+
+      const { account, article } = this.service
+      const { resource_id, resource_type, creator_id } = follow
+
+      let type, resource, resourceService
+      if (resource_type == TYPE_QUESTION) {
+          type = 'question'
+      }
+      else if (resource_type == TYPE_DEMAND) {
+          type = 'demand'
+      }
+      else if (resource_type == TYPE_POST) {
+          type = 'post'
+          resource = await article.post.getPostById(resource_id)
+          resource = await article.post.toExternal(resource)
+      }
+      else if (resource_type == USER) {
+          type = 'comment'
+      }
+      else if (resource_type == TYPE_REPLY) {
+        type = 'reply'
+      }
+
+      let creator = await account.user.getUserById(creator_id)
+      creator = await account.user.toExternal(creator)
+
+      return {
+          id: follow.id,
+          type,
+          resource,
+          creator,
+          create_time: follow.create_time.getTime()
+      }
+
+    }
+
     /**
      * 关注
      *
@@ -97,9 +134,14 @@ module.exports = app => {
         )
       }
 
-      record.status = STATUS_DELETED
-
-      await this.update(record)
+      await this.update(
+        {
+          status: STATUS_DELETED,
+        },
+        {
+          id: record.id,
+        }
+      )
 
       return record
 

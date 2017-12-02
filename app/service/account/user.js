@@ -54,6 +54,8 @@ module.exports = app => {
       }
 
       result.id = number
+      result.create_time = result.create_time.getTime()
+      result.update_time = result.update_time.getTime()
 
       return result
     }

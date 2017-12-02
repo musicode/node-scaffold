@@ -1,7 +1,9 @@
 'use strict'
 
+const striptags = require('striptags')
 const uuidv1 = require('uuid/v1')
 const random = require('lodash/random')
+const truncate = require('lodash/truncate')
 
 const TYPE_STRING = '1'
 const TYPE_NUMBER = '2'
@@ -50,10 +52,45 @@ module.exports = {
     return isNaN(value) ? defaultValue : value
   },
 
+  renderSummary(str, maxLength) {
+
+    str = str.replace(/<img [^>]+>/gi, '[图片]')
+    str = striptags(str)
+    str = str
+      .replace(/(?:&nbsp;|&#160;|\n)/g, ' ')
+      .replace(/(?:&lt;|&#60;)/g, '<')
+      .replace(/(?:&gt;|&#62;)/g, '>')
+      .replace(/(?:&amp;|&#38;)/g, '&')
+      .replace(/(?:&quot;|&#34;)/g, '"')
+      .replace(/(?:&apos;|&#39;)/g, "'")
+      .replace(/(?:&cent;|&#162;)/g, '￠')
+      .replace(/(?:&pound;|&#163;)/g, '£')
+      .replace(/(?:&yen;|&#165;)/g, '¥')
+      .replace(/(?:&sect;|&#167;)/g, '§')
+      .replace(/(?:&copy;|&#169;)/g, '©')
+      .replace(/(?:&reg;|&#174;)/g, '®')
+      .replace(/(?:&times;|&#215;)/g, '×')
+      .replace(/(?:&divide;|&#247;)/g, '÷')
+      .trim()
+
+    return maxLength > 0
+      ? truncate(
+          str,
+          {
+            length: maxLength,
+            omission: '...'
+          }
+        )
+      : str
+
+  },
+
   parseCover(html) {
-    const result = html.match(/<img[^>]+src="([^"]+)"/i)
-    if (result) {
-      return result[1]
+    if (html) {
+      const result = html.match(/<img[^>]+src="([^"]+)"/i)
+      if (result) {
+        return result[ 1 ]
+      }
     }
   },
 

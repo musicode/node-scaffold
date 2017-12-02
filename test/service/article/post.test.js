@@ -49,11 +49,12 @@ describe('test/service/article/post.test.js', () => {
       }
 
       let errorCount = 0
+
       let title = '123456789'
       let content = 'hahahahahahahahahahhaahhahahahahahahahahahahahahahahhaahhahahahaha'
       let anonymous = app.limit.ANONYMOUS_YES
 
-      // 参数必须要有 title/content
+      // 参数必须要有 content
       try {
         await article.post.createPost({
           title,
@@ -67,6 +68,7 @@ describe('test/service/article/post.test.js', () => {
 
       assert(errorCount === 1)
 
+      // 参数必须要有 title
       try {
         await article.post.createPost({
           content,
@@ -100,8 +102,26 @@ describe('test/service/article/post.test.js', () => {
         password: user.password,
       })
 
+      // 创作数量
       let writeCount = await account.user.getUserWriteCount(user.id)
       assert(writeCount === 0)
+
+      // 文章数量
+      let postCount = await article.post.getPostCount({
+        user_id: currentUser.id,
+      })
+      assert(postCount === 0)
+
+      let postList = await article.post.getPostList(
+        {
+          user_id: currentUser.id,
+        },
+        {
+          page: 0,
+          page_size: 10000,
+        }
+      )
+      assert(postList.length === 0)
 
       let postId = await article.post.createPost({
         title,
@@ -114,52 +134,96 @@ describe('test/service/article/post.test.js', () => {
       writeCount = await account.user.getUserWriteCount(user.id)
       assert(writeCount === 1)
 
+      postCount = await article.post.getPostCount({
+        user_id: currentUser.id,
+      })
+      assert(postCount === 1)
+
+      postList = await article.post.getPostList(
+        {
+          user_id: currentUser.id,
+        },
+        {
+          page: 0,
+          page_size: 10000,
+        }
+      )
+      assert(postList.length === 1)
+
+
       let post = await article.post.getPostById(postId)
       assert(app.util.type(post) === 'object')
       assert(post.id === postId)
+      assert(post.content === undefined)
 
       post = await article.post.getPostById(post)
       assert(app.util.type(post) === 'object')
       assert(post.id === postId)
+      assert(post.content === undefined)
 
       post = await article.post.checkPostAvailableById(postId)
       assert(app.util.type(post) === 'object')
       assert(post.id === postId)
+      assert(post.content === undefined)
 
       post = await article.post.checkPostAvailableById(post)
       assert(app.util.type(post) === 'object')
       assert(post.id === postId)
+      assert(post.content === undefined)
 
       assert(post.title === title)
-      assert(post.content === undefined)
       assert(post.anonymous === anonymous)
 
       post = await article.post.getFullPostById(post)
       assert(app.util.type(post) === 'object')
       assert(post.content === content)
+      assert(post.create_time.getTime() === post.update_time.getTime())
 
 
+
+      // 修改文章
       let newTitle = 'newtitle'
       let newContent = '213123213213123213213123213213123213213123213'
 
-      try {
-        await article.post.updatePostById({ title: newTitle, content: newContent }, 'asdasd123')
-      }
-      catch (err) {
-        assert(err.code === app.code.RESOURCE_NOT_FOUND)
-        errorCount++
-      }
+      await new Promise(resolve => {
 
-      assert(errorCount === 4)
+        setTimeout(
+          async () => {
 
-      await article.post.updatePostById({ title: newTitle, content: newContent }, postId)
+            await article.post.updatePostById({ title: newTitle, content: newContent }, postId)
 
-      post = await article.post.getPostById(postId)
-      assert(app.util.type(post) === 'object')
+            post = await article.post.getPostById(postId)
+            assert(app.util.type(post) === 'object')
 
-      assert(post.title === newTitle)
-      assert(post.content === undefined)
-      assert(post.anonymous === anonymous)
+            assert(post.title === newTitle)
+            assert(post.content === undefined)
+            assert(post.anonymous === anonymous)
+
+            const createTime = post.create_time
+            const updateTime = post.update_time
+
+            assert(createTime.getTime() < updateTime.getTime())
+
+
+            setTimeout(
+              async () => {
+
+                let content = '123haha'
+                await article.post.updatePostById({ content }, postId)
+
+                post = await article.post.getFullPostById(postId)
+                assert(post.content === content)
+                assert(updateTime.getTime() < post.update_time.getTime())
+
+                resolve()
+
+              },
+              1000
+            )
+          },
+          1000
+        )
+      })
 
 
 
@@ -186,6 +250,23 @@ describe('test/service/article/post.test.js', () => {
       writeCount = await account.user.getUserWriteCount(user.id)
       assert(writeCount === 0)
 
+      postCount = await article.post.getPostCount({
+        user_id: currentUser.id,
+      })
+      assert(postCount === 0)
+
+      postList = await article.post.getPostList(
+        {
+          user_id: currentUser.id,
+        },
+        {
+          page: 0,
+          page_size: 10000,
+        }
+      )
+      assert(postList.length === 0)
+
+
       post = await article.post.checkPostAvailableById(postId)
       assert(app.util.type(post) === 'object')
 
@@ -197,7 +278,7 @@ describe('test/service/article/post.test.js', () => {
         errorCount++
       }
 
-      assert(errorCount === 5)
+      assert(errorCount === 4)
 
 
       postId = await article.post.createPost({
@@ -209,6 +290,22 @@ describe('test/service/article/post.test.js', () => {
       writeCount = await account.user.getUserWriteCount(user.id)
       assert(writeCount === 1)
 
+      postCount = await article.post.getPostCount({
+        user_id: currentUser.id,
+      })
+      assert(postCount === 1)
+
+      postList = await article.post.getPostList(
+        {
+          user_id: currentUser.id,
+        },
+        {
+          page: 0,
+          page_size: 10000,
+        }
+      )
+      assert(postList.length === 1)
+
       post = await article.post.checkPostAvailableById(postId)
       assert(app.util.type(post) === 'object')
 
@@ -219,6 +316,22 @@ describe('test/service/article/post.test.js', () => {
       writeCount = await account.user.getUserWriteCount(user.id)
       assert(writeCount === 0)
 
+      postCount = await article.post.getPostCount({
+        user_id: currentUser.id,
+      })
+      assert(postCount === 0)
+
+      postList = await article.post.getPostList(
+        {
+          user_id: currentUser.id,
+        },
+        {
+          page: 0,
+          page_size: 10000,
+        }
+      )
+      assert(postList.length === 0)
+
       try {
         await article.post.checkPostAvailableById(postId, true)
       }
@@ -227,7 +340,7 @@ describe('test/service/article/post.test.js', () => {
         errorCount++
       }
 
-      assert(errorCount === 6)
+      assert(errorCount === 5)
 
 
     })

@@ -89,13 +89,13 @@ module.exports = app => {
 
       const data = { where: options.where }
 
-      if (options.page && options.pageSize) {
-        data.offset = (options.page - 1) * options.pageSize
-        data.limit = options.pageSize
+      if (options.page && options.page_size) {
+        data.offset = (options.page - 1) * options.page_size
+        data.limit = options.page_size
       }
 
-      if (options.sortBy && options.sortOrder) {
-        data.orders = [[options.sortBy, options.sortOrder]]
+      if (options.sort_by && options.sort_order) {
+        data.orders = [[options.sort_by, options.sort_order]]
       }
 
       return app.mysql.select(this.tableName, data)

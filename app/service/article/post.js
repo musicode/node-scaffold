@@ -24,25 +24,45 @@ module.exports = app => {
 
     async toExternal(post) {
 
+      if (!('content' in post)) {
+        post = await this.getFullPostById(post)
+      }
+
       const result = { }
       Object.assign(result, post)
 
-      const { number, user_id } = result
+      const { id, number, user_id } = result
       delete result.number
       delete result.user_id
 
       result.id = number
 
-      const { account } = this.service
+      result.cover = util.parseCover(result.content)
+
+      const { account, trace, } = this.service
       if (result.anonymous === limit.ANONYMOUS_YES) {
         result.user = account.user.anonymous
       }
       else {
-        const user = await account.user.getUserById(user_id)
+        const user = await account.user.getFullUserById(user_id)
         result.user = account.user.toExternal(user)
       }
 
-      result.cover = util.parseCover(result.content)
+      const currentUser = await account.session.getCurrentUser()
+      if (currentUser) {
+        result.has_like = await trace.like.hasLikePost(currentUser.id, id)
+        result.has_follow = await trace.follow.hasFollowPost(currentUser.id, id)
+
+        if (currentUser.id === user_id) {
+          result.can_update = true
+          const subCount = await this.getPostSubCount(id)
+          result.can_delete = subCount === 0
+        }
+
+      }
+
+      result.create_time = result.create_time.getTime()
+      result.update_time = result.update_time.getTime()
 
       return result
 
@@ -100,7 +120,7 @@ module.exports = app => {
     }
 
     /**
-     * 获取文章
+     * 获取 id 获取文章
      *
      * @param {number|Object} postId
      * @return {Object}
@@ -144,6 +164,11 @@ module.exports = app => {
         post_id: post.id,
       })
 
+      post.sub_count = await this.getPostSubCount(post.id)
+      post.view_count = await this.getPostViewCount(post.id)
+      post.like_count = await this.getPostLikeCount(post.id)
+      post.follow_count = await this.getPostFollowCount(post.id)
+
       post.content = record.content
       if (record.update_time.getTime() > post.update_time.getTime()) {
         post.update_time = record.update_time
@@ -177,26 +202,27 @@ module.exports = app => {
         )
       }
 
-      const { account, article } = this.service
+      const { account, article, trace } = this.service
 
       const currentUser = await account.session.checkCurrentUser()
 
       const postId = await this.transaction(
         async () => {
 
+          const anonymous = data.anonymous ? limit.ANONYMOUS_YES : limit.ANONYMOUS_NO
           const postId = await this.insert({
             number: util.randomInt(limit.POST_NUMBER_LENGTH),
             title: data.title,
             user_id: currentUser.id,
-            anonymous: data.anonymous ? limit.ANONYMOUS_YES : limit.ANONYMOUS_NO,
+            anonymous,
           })
-
-          data.post_id = postId
 
           await article.postContent.insert({
             post_id: postId,
             content: data.content,
           })
+
+          await trace.create.createPost(postId, anonymous)
 
           return postId
 
@@ -215,7 +241,8 @@ module.exports = app => {
       eventEmitter.emit(
         eventEmitter.POST_ADD,
         {
-          postId: postId
+          postId,
+          service: this.service,
         }
       )
 
@@ -234,11 +261,11 @@ module.exports = app => {
      */
     async updatePostById(data, postId) {
 
-      const { account, article } = this.service
+      const { account, article, trace } = this.service
 
       const currentUser = await account.session.checkCurrentUser()
 
-      const post = await this.checkPostAvailableById(postId)
+      const post = await this.getPostById(postId)
 
       if (post.user_id !== currentUser.id) {
         this.throw(
@@ -251,7 +278,18 @@ module.exports = app => {
       await this.transaction(
         async () => {
 
+          let anonymous
           if (fields) {
+            if ('anonymous' in fields) {
+              anonymous = fields.anonymous ? limit.ANONYMOUS_YES : limit.ANONYMOUS_NO
+              if (anonymous !== post.anonymous) {
+                fields.anonymous = anonymous
+              }
+              else {
+                delete fields.anonymous
+                anonymous = null
+              }
+            }
             await this.update(
               fields,
               {
@@ -278,6 +316,10 @@ module.exports = app => {
             )
           }
 
+          if (anonymous != null) {
+            await trace.create.createPost(postId, anonymous)
+          }
+
         }
       )
 
@@ -290,12 +332,15 @@ module.exports = app => {
           delete cache.content
         }
 
+        cache.update_time = new Date()
+
         await this.updateRedis(`post:${post.id}`, cache)
 
         eventEmitter.emit(
           eventEmitter.POST_UDPATE,
           {
             postId: post.id,
+            service: this.service,
             fields,
           }
         )
@@ -310,12 +355,20 @@ module.exports = app => {
      */
     async deletePost(postId) {
 
-      const { account } = this.service
+      const { account, trace } = this.service
 
-      const post = await this.checkPostAvailableById(postId)
+      const currentUser = await account.session.checkCurrentUser()
 
-      // [TODO] redis 的恢复
-      const subCount = await redis.hget(`post_stat:${post.id}`, 'sub_count')
+      const post = await this.getPostById(postId)
+
+      if (post.user_id !== currentUser.id) {
+        this.throw(
+          code.PERMISSION_DENIED,
+          '不能删除别人的文章'
+        )
+      }
+
+      const subCount = await this.getPostSubCount(post.id)
       if (subCount > 0) {
         this.throw(
           code.PERMISSION_DENIED,
@@ -327,12 +380,29 @@ module.exports = app => {
         status: STATUS_DELETED,
       }
 
-      await this.update(
-        fields,
-        {
-          id: post.id,
+      const isSuccess = await this.transaction(
+        async () => {
+
+          await this.update(
+            fields,
+            {
+              id: post.id,
+            }
+          )
+
+          await trace.create.uncreatePost(post.id)
+
+          return true
+
         }
       )
+
+      if (!isSuccess) {
+        this.throw(
+          code.DB_UPDATE_ERROR,
+          '删除文章失败'
+        )
+      }
 
       await this.updateRedis(`post:${post.id}`, fields)
 
@@ -368,17 +438,9 @@ module.exports = app => {
         }
       }
 
-      let post = await this.checkPostAvailableById(postId)
-      post = await this.getFullPostById(post)
+      const post = await this.getPostById(postId)
 
-      await this.increasePostViewCount(post.id)
-
-      post.sub_count = await this.getPostSubCount(post.id)
-      post.view_count = await this.getPostViewCount(post.id)
-      post.like_count = await this.getPostLikeCount(post.id)
-      post.follow_count = await this.getPostFollowCount(post.id)
-
-      return post
+      return await this.getFullPostById(post)
 
     }
 
@@ -390,14 +452,7 @@ module.exports = app => {
      * @return {Array}
      */
     async getPostList(where, options) {
-      if ('status' in where) {
-        if (where.status < 0) {
-          delete where.status
-        }
-      }
-      else {
-        where.status = [ STATUS_ACTIVE, STATUS_AUDIT_SUCCESS ]
-      }
+      this._formatWhere(where)
       options.where = where
       return await this.findBy(options)
     }
@@ -409,6 +464,16 @@ module.exports = app => {
      * @return {number}
      */
     async getPostCount(where) {
+      this._formatWhere(where)
+      return await this.countBy(where)
+    }
+
+    /**
+     * 格式化查询条件
+     *
+     * @param {Object} where
+     */
+    _formatWhere(where) {
       if ('status' in where) {
         if (where.status < 0) {
           delete where.status
@@ -417,7 +482,6 @@ module.exports = app => {
       else {
         where.status = [ STATUS_ACTIVE, STATUS_AUDIT_SUCCESS ]
       }
-      return await this.countBy(where)
     }
 
 

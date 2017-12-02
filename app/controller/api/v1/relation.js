@@ -103,9 +103,9 @@ module.exports = app => {
         user.id,
         {
           page: input.page,
-          pageSize: input.page_size,
-          sortBy: input.sort_by || 'update_time',
-          sortOrder: input.sort_order || 'desc'
+          page_size: input.page_size,
+          sort_by: input.sort_by || 'update_time',
+          sort_order: input.sort_order || 'desc'
         }
       )
 
@@ -171,9 +171,9 @@ module.exports = app => {
         user.id,
         {
           page: input.page,
-          pageSize: input.page_size,
-          sortBy: input.sort_by || 'update_time',
-          sortOrder: input.sort_order || 'desc'
+          page_size: input.page_size,
+          sort_by: input.sort_by || 'update_time',
+          sort_order: input.sort_order || 'desc'
         }
       )
 
