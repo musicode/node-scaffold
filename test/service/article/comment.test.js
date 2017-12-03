@@ -197,6 +197,34 @@ describe('test/service/article/comment.test.js', () => {
 
 
 
+      let parentId = commentId
+      // 评论评论
+      commentId = await article.comment.createComment({
+        post_id: postId,
+        parent_id: parentId,
+        content,
+        anonymous,
+      })
+
+      assert(app.util.type(commentId) === 'number')
+
+      commentCount = await article.comment.getCommentCount({
+        post_id: postId,
+      })
+      assert(commentCount === 2)
+
+      let subCount = await article.post.getPostSubCount(postId)
+      assert(commentCount === 2)
+
+      commentCount = await article.comment.getCommentCount({
+        parent_id: parentId,
+      })
+      assert(commentCount === 1)
+
+      subCount = await article.comment.getCommentSubCount(postId)
+      assert(commentCount === 1)
+
+
       try {
         await article.post.deletePost(postId)
       }
@@ -206,7 +234,57 @@ describe('test/service/article/comment.test.js', () => {
       }
       assert(errorCount === 1)
 
+
+      try {
+        await article.comment.deleteComment(parentId)
+      }
+      catch (err) {
+        assert(err.code === app.code.PERMISSION_DENIED)
+        errorCount++
+      }
+      assert(errorCount === 2)
+
+
       await article.comment.deleteComment(commentId)
+
+
+      writeCount = await account.user.getUserWriteCount(currentUser.id)
+      assert(writeCount === 1)
+
+      commentCount = await article.comment.getCommentCount({
+        post_id: postId,
+      })
+      assert(commentCount === 1)
+
+      commentList = await article.comment.getCommentList(
+        {
+          post_id: postId,
+        },
+        {
+          page: 0,
+          page_size: 10000,
+        }
+      )
+      assert(commentList.length === 1)
+
+
+      comment = await article.comment.checkCommentAvailableById(commentId)
+      assert(app.util.type(comment) === 'object')
+
+      try {
+        await article.comment.checkCommentAvailableById(commentId, true)
+      }
+      catch (err) {
+        assert(err.code === app.code.RESOURCE_NOT_FOUND)
+        errorCount++
+      }
+      assert(errorCount === 3)
+
+
+
+
+
+      await article.comment.deleteComment(parentId)
 
 
       writeCount = await account.user.getUserWriteCount(currentUser.id)
@@ -228,18 +306,6 @@ describe('test/service/article/comment.test.js', () => {
       )
       assert(commentList.length === 0)
 
-
-      comment = await article.comment.checkCommentAvailableById(commentId)
-      assert(app.util.type(comment) === 'object')
-
-      try {
-        await article.comment.checkCommentAvailableById(commentId, true)
-      }
-      catch (err) {
-        assert(err.code === app.code.RESOURCE_NOT_FOUND)
-        errorCount++
-      }
-      assert(errorCount === 2)
 
 
       await article.post.deletePost(postId)
