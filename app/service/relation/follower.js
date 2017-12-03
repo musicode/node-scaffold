@@ -7,11 +7,9 @@ const STATUS_BLACK = 1
 // 已删除
 const STATUS_DELETED = 2
 
-// [TODO] redis 字段没有怎么恢复
-
 module.exports = app => {
 
-  const { code, redis, } = app
+  const { code } = app
 
   class Follower extends app.BaseService {
 
@@ -26,36 +24,28 @@ module.exports = app => {
     }
 
     /**
+     * 获取某个用户的粉丝数量
+     *
+     * @param {number} userId
+     * @param {Object} options
+     */
+    async getFollowerCount(userId) {
+      const { account } = this.service
+      return await account.user.getUserFollowerCount(userId)
+    }
+
+    /**
      * 获取某个用户的粉丝列表
      *
      * @param {number} userId
      * @param {Object} options
      */
-    async findByUserId(userId, options) {
+    async getFollowerList(userId, options) {
       options.where = {
         user_id: userId,
         status: STATUS_NORMAL,
       }
       return await this.findBy(options)
-    }
-
-    /**
-     * 获取某个用户的粉丝数量
-     *
-     * @param {number} userId
-     */
-    async countByUserId(userId) {
-      const key = `user_stat:${userId}`
-      let count = await redis.hget(key, 'follower_count')
-      if (count == null) {
-        const list = await this.query(
-          'SELECT COUNT(*) AS count FROM ?? WHERE user_id=? AND status=?',
-          [this.tableName, userId, STATUS_NORMAL]
-        )
-        count = list[0].count
-        await redis.hset(key, 'follower_count', count)
-      }
-      return +count
     }
 
     /**

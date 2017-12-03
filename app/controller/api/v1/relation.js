@@ -72,7 +72,7 @@ module.exports = app => {
 
       const user = await this.checkUser()
 
-      this.output.count = await relation.followee.countByUserId(user.id)
+      this.output.count = await relation.followee.getFolloweeCount(user.id)
 
     }
 
@@ -99,7 +99,7 @@ module.exports = app => {
 
       const user = await account.user.checkUserAvailableByNumber(input.user_id)
 
-      const list = await relation.followee.findByUserId(
+      const list = await relation.followee.getFolloweeList(
         user.id,
         {
           page: input.page,
@@ -127,7 +127,7 @@ module.exports = app => {
         }
       )
 
-      const count = await relation.followee.countByUserId(user.id)
+      const count = await relation.follower.getFollowerCount(user.id)
 
       this.output.list = list
       this.output.pager = this.createPager(input, count)
@@ -140,7 +140,7 @@ module.exports = app => {
 
       const user = await this.checkUser()
 
-      this.output.count = await relation.follower.countByUserId(user.id)
+      this.output.count = await relation.follower.getFollowerCount(user.id)
 
     }
 
@@ -167,7 +167,7 @@ module.exports = app => {
 
       const user = await account.user.checkUserAvailableByNumber(input.user_id)
 
-      const list = await relation.follower.findByUserId(
+      const list = await relation.follower.getFollowerList(
         user.id,
         {
           page: input.page,
@@ -195,7 +195,43 @@ module.exports = app => {
         }
       )
 
-      const count = await relation.follower.countByUserId(user.id)
+      const count = await relation.follower.getFollowerCount(user.id)
+
+      this.output.list = list
+      this.output.pager = this.createPager(input, count)
+
+    }
+
+    async friendCount() {
+
+      const { relation } = this.ctx.service
+
+      const user = await this.checkUser()
+
+      this.output.count = await relation.friend.getFriendCount(user.id)
+
+    }
+
+    async friendList() {
+
+      const { account, relation } = this.ctx.service
+
+      const user = await this.checkUser()
+
+      const list = await relation.friend.getFriendList(user.id)
+
+      await util.each(
+        list,
+        async (item, index) => {
+
+          const friend = await account.user.getFullUserById(item.friend_id)
+
+          list[ index ] = await account.user.toExternal(friend)
+
+        }
+      )
+
+      const count = await relation.friend.getFriendCount(user.id)
 
       this.output.list = list
       this.output.pager = this.createPager(input, count)

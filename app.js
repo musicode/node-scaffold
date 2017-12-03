@@ -81,6 +81,10 @@ module.exports = app => {
       return await app.mysql.query(sql, args)
     }
 
+    async queryOne(sql, args) {
+      return await app.mysql.queryOne(sql, args)
+    }
+
     async findOneBy(where) {
       return app.mysql.get(this.tableName, where)
     }

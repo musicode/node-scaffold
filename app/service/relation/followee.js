@@ -6,11 +6,9 @@ const STATUS_NORMAL = 0
 // 已删除
 const STATUS_DELETED = 1
 
-// [TODO] redis 字段没有怎么恢复
-
 module.exports = app => {
 
-  const { code, redis, } = app
+  const { code } = app
 
   class Followee extends app.BaseService {
 
@@ -25,36 +23,28 @@ module.exports = app => {
     }
 
     /**
+     * 获取某个用户的关注数量
+     *
+     * @param {number} userId
+     * @param {Object} options
+     */
+    async getFolloweeCount(userId) {
+      const { account } = this.service
+      return await account.user.getUserFolloweeCount(userId)
+    }
+
+    /**
      * 获取某个用户的关注列表
      *
      * @param {number} userId
      * @param {Object} options
      */
-    async findByUserId(userId, options) {
+    async getFolloweeList(userId, options) {
       options.where = {
         user_id: userId,
         status: STATUS_NORMAL,
       }
       return await this.findBy(options)
-    }
-
-    /**
-     * 获取某个用户的关注数量
-     *
-     * @param {number} userId
-     */
-    async countByUserId(userId) {
-      const key = `user_stat:${userId}`
-      let count = await redis.hget(key, 'followee_count')
-      if (count == null) {
-        const list = await this.query(
-          'SELECT COUNT(*) AS count FROM ?? WHERE user_id=? AND status=?',
-          [this.tableName, userId, STATUS_NORMAL]
-        )
-        count = list[0].count
-        await redis.hset(key, 'followee_count', count)
-      }
-      return +count
     }
 
     /**
@@ -145,8 +135,6 @@ module.exports = app => {
 
       await account.user.increaseUserFolloweeCount(currentUser.id)
       await account.user.increaseUserFollowerCount(userId)
-
-      const now = Date.now()
 
     }
 

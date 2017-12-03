@@ -510,7 +510,11 @@ module.exports = app => {
      * @param {number} commentId
      */
     async increaseCommentSubCount(commentId) {
-      await redis.hincrby(`comment_stat:${commentId}`, 'sub_count', 1)
+      const key = `comment_stat:${commentId}`
+      const subCount = await redis.hget(key, 'sub_count')
+      if (subCount != null) {
+        await redis.hincrby(key, 'sub_count', 1)
+      }
     }
 
     /**
@@ -519,7 +523,11 @@ module.exports = app => {
      * @param {number} commentId
      */
     async decreaseCommentSubCount(commentId) {
-      await redis.hincrby(`comment_stat:${commentId}`, 'sub_count', -1)
+      const key = `comment_stat:${commentId}`
+      const subCount = await redis.hget(key, 'sub_count')
+      if (subCount != null) {
+        await redis.hincrby(key, 'sub_count', -1)
+      }
     }
 
     /**
@@ -529,8 +537,18 @@ module.exports = app => {
      * @return {number}
      */
     async getCommentSubCount(commentId) {
-      const subCount = await redis.hget(`comment_stat:${commentId}`, 'sub_count')
-      return util.toNumber(subCount, 0)
+      const key = `comment_stat:${commentId}`
+      let subCount = await redis.hget(key, 'sub_count')
+      if (subCount == null) {
+        subCount = await this.getCommentCount({
+          parent_id: commentId,
+        })
+        await redis.hset(key, 'sub_count', subCount)
+      }
+      else {
+        subCount = util.toNumber(subCount, 0)
+      }
+      return subCount
     }
 
   }

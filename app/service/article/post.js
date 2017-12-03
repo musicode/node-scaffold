@@ -581,7 +581,7 @@ module.exports = app => {
      * @param {number} postId
      */
     async increasePostViewCount(postId) {
-      // 这里不管有没有，必须递增
+      // [TODO]这里不管有没有，必须递增
       // 因为靠数据库恢复不了
       await redis.hincrby(`post_stat:${postId}`, 'view_count', 1)
     }
@@ -605,7 +605,11 @@ module.exports = app => {
      * @param {number} postId
      */
     async increasePostSubCount(postId) {
-      await redis.hincrby(`post_stat:${postId}`, 'sub_count', 1)
+      const key = `post_stat:${postId}`
+      const subCount = await redis.hget(key, 'sub_count')
+      if (subCount != null) {
+        await redis.hincrby(key, 'sub_count', 1)
+      }
     }
 
     /**
@@ -614,7 +618,11 @@ module.exports = app => {
      * @param {number} postId
      */
     async decreasePostSubCount(postId) {
-      await redis.hincrby(`post_stat:${postId}`, 'sub_count', -1)
+      const key = `post_stat:${postId}`
+      const subCount = await redis.hget(key, 'sub_count')
+      if (subCount != null) {
+        await redis.hincrby(key, 'sub_count', -1)
+      }
     }
 
     /**
@@ -624,8 +632,18 @@ module.exports = app => {
      * @return {number}
      */
     async getPostSubCount(postId) {
-      const subCount = await redis.hget(`post_stat:${postId}`, 'sub_count')
-      return util.toNumber(subCount, 0)
+      const key = `post_stat:${postId}`
+      let subCount = await redis.hget(key, 'sub_count')
+      if (subCount == null) {
+        subCount = await this.service.article.comment.getCommentCount({
+          post_id: postId,
+        })
+        await redis.hset(key, 'sub_count', subCount)
+      }
+      else {
+        subCount = util.toNumber(subCount, 0)
+      }
+      return subCount
     }
 
   }

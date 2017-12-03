@@ -3,7 +3,7 @@
 
 module.exports = app => {
 
-  class ContentContent extends app.BaseService {
+  class CommentContent extends app.BaseService {
 
     get tableName() {
       return 'article_comment_content'
@@ -16,5 +16,5 @@ module.exports = app => {
     }
 
   }
-  return ContentContent
+  return CommentContent
 }
