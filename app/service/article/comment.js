@@ -164,6 +164,7 @@ module.exports = app => {
       const { article } = this.ctx.service
 
       const comment = await this.getCommentById(commentId)
+
       const record = await article.commentContent.findOneBy({
         comment_id: comment.id,
       })
