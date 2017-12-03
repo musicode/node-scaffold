@@ -52,7 +52,9 @@ module.exports = app => {
         }
       }
       else {
-        await this.insert(data)
+        if (data.sender_id !== data.receiver_id) {
+          await this.insert(data)
+        }
       }
 
     }

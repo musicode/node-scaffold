@@ -197,20 +197,67 @@ module.exports = app => {
      */
     async createComment(commentId, anonymous, postId, parentId) {
 
-      const row = {
-        resource_id: commentId,
-        resource_type: TYPE_COMMENT,
-        resource_master_id: postId,
-        anonymous,
-      }
+      const { article, trace } = this.service
 
+      const post = await article.post.checkPostAvailableById(postId, true)
+
+      let parentComment
       if (parentId) {
-        row.resource_parent_id = parentId
+        parentComment = await article.comment.checkCommentAvailableById(parentId, true)
       }
 
-      const traceId = await this._addCreate(row)
+      const isSuccess = await this.transaction(
+        async () => {
 
-      if (traceId == null) {
+          let row = {
+            resource_id: commentId,
+            resource_type: TYPE_COMMENT,
+            resource_master_id: post.id,
+            anonymous,
+          }
+
+          if (parentComment) {
+            row.resource_parent_id = parentComment.id
+          }
+
+          const traceId = await this._addCreate(row)
+
+          let record
+
+          if (util.type(traceId) === 'object') {
+            record = traceId
+            traceId = record.id
+          }
+          else {
+            record = await this.findOneBy({
+              id: traceId,
+            })
+          }
+
+          row = {
+            trace_id: traceId,
+            resource_type: record.resource_type,
+            sender_id: record.creator_id,
+            receiver_id: post.user_id,
+          }
+
+          if (parentComment) {
+            row.resource_parent_id = parentComment.id
+          }
+
+          await trace.createRemind.addCreateRemind(row)
+
+          if (parentComment) {
+            row.receiver_id = parentComment.user_id
+            await trace.createRemind.addCreateRemind(row)
+          }
+
+          return true
+
+        }
+      )
+
+      if (!isSuccess) {
         this.throw(
           code.DB_INSERT_ERROR,
           '创建失败'
@@ -268,6 +315,120 @@ module.exports = app => {
         status: STATUS_ACTIVE,
       })
 
+    }
+
+
+    /**
+     * 用户评论文章是否已提醒作者
+     *
+     * @param {number} userId
+     * @param {number} commentId
+     * @return {boolean}
+     */
+    async hasCreateCommentRemind(userId, commentId) {
+
+      const { trace } = this.service
+
+      const record = await this.findOneBy({
+        resource_id: commentId,
+        resource_type: TYPE_COMMENT,
+        creator_id: userId,
+      })
+
+      if (record) {
+        return await trace.createRemind.hasCreateRemind(record.id)
+      }
+
+      return false
+
+    }
+
+    /**
+     * 读取文章的评论数
+     *
+     * @param {number} creatorId
+     * @param {number} postId
+     * @return {number}
+     */
+    async getCreateCommentCount(creatorId, postId) {
+      const where = {
+        resource_type: TYPE_COMMENT,
+        status: STATUS_ACTIVE,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      if (postId) {
+        where.resource_master_id = postId
+      }
+      return await this.countBy(where)
+    }
+
+    /**
+     * 获取文章的评论列表
+     *
+     * @param {number} creatorId
+     * @param {number} postId
+     * @param {Object} options
+     * @return {Array}
+     */
+    async getCreateCommentList(creatorId, postId, options) {
+      const where = {
+        resource_type: TYPE_COMMENT,
+        status: STATUS_ACTIVE,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      if (postId) {
+        where.resource_master_id = postId
+      }
+      options.where = where
+      return await this.findBy(options)
+    }
+
+    /**
+     * 获取用户被评论文章的提醒列表
+     *
+     * @param {number} receiverId
+     * @param {Object} options
+     * @return {Array}
+     */
+    async getCreateCommentRemindList(receiverId, options) {
+      const { trace } = this.service
+      return await trace.createRemind.getCreateRemindList(receiverId, TYPE_COMMENT, options)
+    }
+
+    /**
+     * 获取用户被评论文章的提醒数量
+     *
+     * @param {number} receiverId
+     * @return {number}
+     */
+    async getCreateCommentRemindCount(receiverId) {
+      const { trace } = this.service
+      return await trace.createRemind.getCreateRemindCount(receiverId, TYPE_COMMENT)
+    }
+
+    /**
+     * 获取用户被评论文章的未读提醒数量
+     *
+     * @param {number} receiverId
+     * @return {number}
+     */
+    async getCreateCommentUnreadRemindCount(receiverId) {
+      const { trace } = this.service
+      return await trace.createRemind.getUnreadCreateRemindCount(receiverId, TYPE_COMMENT)
+    }
+
+    /**
+     * 标记已读
+     *
+     * @param {number} receiverId
+     */
+    async readCreateCommentRemind(receiverId) {
+      const { trace } = this.service
+      return await trace.createRemind.readCreateRemind(receiverId, TYPE_COMMENT)
     }
 
   }

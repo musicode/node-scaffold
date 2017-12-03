@@ -290,12 +290,14 @@ module.exports = app => {
                 anonymous = null
               }
             }
-            await this.update(
-              fields,
-              {
-                id: post.id,
-              }
-            )
+            if (Object.keys(fields).length) {
+              await this.update(
+                fields,
+                {
+                  id: post.id,
+                }
+              )
+            }
           }
 
           const { content } = data
@@ -331,8 +333,6 @@ module.exports = app => {
         if ('content' in cache) {
           delete cache.content
         }
-
-        cache.update_time = new Date()
 
         await this.updateRedis(`post:${post.id}`, cache)
 
@@ -515,6 +515,7 @@ module.exports = app => {
      * 获取文章的被点赞量
      *
      * @param {number} postId
+     * @return {number}
      */
     async getPostLikeCount(postId) {
       const key = `post_stat:${postId}`
@@ -559,6 +560,7 @@ module.exports = app => {
      * 获取文章的关注量
      *
      * @param {number} postId
+     * @return {number}
      */
     async getPostFollowCount(postId) {
       const key = `post_stat:${postId}`
@@ -588,6 +590,7 @@ module.exports = app => {
      * 获取文章的浏览量
      *
      * @param {number} postId
+     * @return {number}
      */
     async getPostViewCount(postId) {
       // 这里不管有没有，必须读 redis
@@ -618,6 +621,7 @@ module.exports = app => {
      * 获取文章的评论量
      *
      * @param {number} postId
+     * @return {number}
      */
     async getPostSubCount(postId) {
       const subCount = await redis.hget(`post_stat:${postId}`, 'sub_count')

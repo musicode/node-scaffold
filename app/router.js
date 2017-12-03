@@ -278,4 +278,28 @@ module.exports = app => {
     v1.post.getLikeList
   )
 
+  // =============================================
+  // 评论
+  // =============================================
+
+  app.get(
+    '/api/v1/comment/create',
+    v1.comment.create
+  )
+
+  app.get(
+    '/api/v1/comment/update',
+    v1.comment.update
+  )
+
+  app.get(
+    '/api/v1/comment/delete',
+    v1.comment.delete
+  )
+
+  app.get(
+    '/api/v1/comment/detail',
+    v1.comment.detail
+  )
+
 }

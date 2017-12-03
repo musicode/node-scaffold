@@ -53,7 +53,9 @@ module.exports = app => {
         }
       }
       else {
-        await this.insert(data)
+        if (data.sender_id !== data.receiver_id) {
+          await this.insert(data)
+        }
       }
 
     }
@@ -67,21 +69,16 @@ module.exports = app => {
 
       const hasLikeRemind = await this.hasLikeRemind(traceId)
 
-      if (!hasLikeRemind) [
-        this.throw(
-          code.RESOURCE_NOT_FOUND,
-          '未提醒点赞，无法取消'
+      if (hasLikeRemind) [
+        await this.update(
+          {
+            status: STATUS_DELETED,
+          },
+          {
+            trace_id: traceId,
+          }
         )
       ]
-
-      await this.update(
-        {
-          status: STATUS_DELETED,
-        },
-        {
-          trace_id: traceId,
-        }
-      )
 
     }
 

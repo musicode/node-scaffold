@@ -165,6 +165,9 @@ module.exports = app => {
       if (value) {
         const object = util.parseObject(value)
         Object.assign(object, fields)
+        if (object.update_time) {
+          object.update_time = new Date()
+        }
         await app.redis.set(key, util.stringifyObject(object))
       }
 

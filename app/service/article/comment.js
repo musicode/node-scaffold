@@ -7,6 +7,9 @@ const STATUS_AUDIT_FAIL = 2
 const STATUS_DELETED = 3
 
 module.exports = app => {
+
+  const { code, util, limit, redis, config, eventEmitter } = app
+
   class Comment extends app.BaseService {
 
     get tableName() {
@@ -32,6 +35,7 @@ module.exports = app => {
       delete result.number
       delete result.user_id
       delete result.post_id
+      delete result.parent_id
 
       result.id = number
 
@@ -186,7 +190,7 @@ module.exports = app => {
      */
     async createComment(data) {
 
-      const { account, article } = this.service
+      const { account, article, trace } = this.service
 
       if (!data.post_id) {
         this.throw(
@@ -255,6 +259,8 @@ module.exports = app => {
         }
       )
 
+      return commentId
+
     }
 
 
@@ -282,6 +288,7 @@ module.exports = app => {
       }
 
       let fields = this.getFields(data)
+
       await this.transaction(
         async () => {
 
@@ -297,12 +304,14 @@ module.exports = app => {
                 anonymous = null
               }
             }
-            await this.update(
-              fields,
-              {
-                id: comment.id,
-              }
-            )
+            if (Object.keys(fields).length) {
+              await this.update(
+                fields,
+                {
+                  id: comment.id,
+                }
+              )
+            }
           }
 
           const { content } = data
@@ -339,8 +348,6 @@ module.exports = app => {
           delete cache.content
         }
 
-        cache.update_time = new Date()
-
         await this.updateRedis(`comment:${comment.id}`, cache)
 
         eventEmitter.emit(
@@ -361,7 +368,7 @@ module.exports = app => {
      */
     async deleteComment(commentId) {
 
-      const { account, trace } = this.service
+      const { account, article, trace } = this.service
 
       const currentUser = await account.session.checkCurrentUser()
 
@@ -412,10 +419,10 @@ module.exports = app => {
 
       await this.updateRedis(`comment:${comment.id}`, fields)
 
-      await article.post.increasePostSubCount(comment.post_id)
+      await article.post.decreasePostSubCount(comment.post_id)
 
       if (comment.parent_id) {
-        await this.increaseCommentSubCount(comment.parent_id)
+        await this.decreaseCommentSubCount(comment.parent_id)
       }
 
       eventEmitter.emit(
@@ -425,6 +432,32 @@ module.exports = app => {
           service: this.service,
         }
       )
+
+    }
+
+    /**
+     * 浏览评论
+     *
+     * @param {number|Object} commentId
+     * @return {Object}
+     */
+    async viewComment(commentId) {
+
+      const { account } = this.service
+
+      if (!config.commentViewByGuest) {
+        const currentUser = await account.session.getCurrentUser()
+        if (!currentUser) {
+          this.throw(
+            code.AUTH_UNSIGNIN,
+            '只有登录用户才可以浏览评论'
+          )
+        }
+      }
+
+      const comment = await this.getCommentById(commentId)
+
+      return await this.getFullCommentById(comment)
 
     }
 
@@ -466,6 +499,37 @@ module.exports = app => {
       else {
         where.status = [ STATUS_ACTIVE, STATUS_AUDIT_SUCCESS ]
       }
+    }
+
+
+
+    /**
+     * 递增评论的评论量
+     *
+     * @param {number} commentId
+     */
+    async increaseCommentSubCount(commentId) {
+      await redis.hincrby(`comment_stat:${commentId}`, 'sub_count', 1)
+    }
+
+    /**
+     * 递减评论的评论量
+     *
+     * @param {number} commentId
+     */
+    async decreaseCommentSubCount(commentId) {
+      await redis.hincrby(`comment_stat:${commentId}`, 'sub_count', -1)
+    }
+
+    /**
+     * 获取评论的评论量
+     *
+     * @param {number} commentId
+     * @return {number}
+     */
+    async getCommentSubCount(commentId) {
+      const subCount = await redis.hget(`comment_stat:${commentId}`, 'sub_count')
+      return util.toNumber(subCount, 0)
     }
 
   }

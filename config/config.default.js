@@ -22,6 +22,7 @@ module.exports = appInfo => {
     ignoreVerifyCode: true,
     userViewByGuest: false,
     postViewByGuest: false,
+    commentViewByGuest: false,
   }
 
   // 全局中间件

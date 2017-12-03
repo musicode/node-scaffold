@@ -52,7 +52,9 @@ module.exports = app => {
         }
       }
       else {
-        await this.insert(data)
+        if (data.sender_id !== data.receiver_id) {
+          await this.insert(data)
+        }
       }
 
     }
@@ -66,21 +68,16 @@ module.exports = app => {
 
       const hasFollowRemind = await this.hasFollowRemind(traceId)
 
-      if (!hasFollowRemind) [
-        this.throw(
-          code.RESOURCE_NOT_FOUND,
-          '未提醒关注，无法取消'
+      if (hasFollowRemind) {
+        await this.update(
+          {
+            status: STATUS_DELETED,
+          },
+          {
+            trace_id: traceId,
+          }
         )
-      ]
-
-      await this.update(
-        {
-          status: STATUS_DELETED,
-        },
-        {
-          trace_id: traceId,
-        }
-      )
+      }
 
     }
 

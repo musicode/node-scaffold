@@ -160,7 +160,7 @@ module.exports = app => {
 
       const { account, trace, article } = this.service
 
-      const post = await article.post.getPostById(postId)
+      const post = await article.post.checkPostAvailableById(postId, true)
 
       const isSuccess = await this.transaction(
         async () => {
@@ -215,7 +215,7 @@ module.exports = app => {
 
       const { account, trace, article } = this.service
 
-      const post = await article.post.getPostById(postId)
+      const post = await article.post.checkPostAvailableById(postId)
 
       const isSuccess = await this.transaction(
         async () => {
