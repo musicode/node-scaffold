@@ -180,7 +180,7 @@ describe('test/service/feedback/issue.test.js', () => {
             assert(createTime.getTime() < updateTime.getTime())
 
             resolve()
-            
+
           },
           1000
         )

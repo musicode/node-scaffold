@@ -310,5 +310,14 @@ module.exports = app => {
     '/api/v1/issue/create',
     v1.issue.create
   )
+  
+  // =============================================
+  // 举报
+  // =============================================
+
+  app.get(
+    '/api/v1/report/create',
+    v1.report.create
+  )
 
 }

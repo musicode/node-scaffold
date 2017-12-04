@@ -1,7 +1,7 @@
 
 'use strict'
 
-const STATUS_ACTIVE = 0
+const STATUS_NORMAL = 0
 const STATUS_STARED = 1
 const STATUS_RESOLVED = 2
 const STATUS_DELAY_RESOLVE = 3
@@ -20,7 +20,7 @@ module.exports = app => {
 
     get fields() {
       return [
-        'number', 'user_id', 'content', 'anonymous', 'status',
+        'user_id', 'content', 'anonymous', 'status',
       ]
     }
 
@@ -125,20 +125,11 @@ module.exports = app => {
 
       const currentUser = await account.session.checkCurrentUser()
 
-      const issueId = await this.transaction(
-        async () => {
-
-          const anonymous = data.anonymous ? limit.ANONYMOUS_YES : limit.ANONYMOUS_NO
-          const issueId = await this.insert({
-            content: data.content,
-            user_id: currentUser.id,
-            anonymous,
-          })
-
-          return issueId
-
-        }
-      )
+      const issueId = await this.insert({
+        content: data.content,
+        user_id: currentUser.id,
+        anonymous: data.anonymous ? limit.ANONYMOUS_YES : limit.ANONYMOUS_NO,
+      })
 
       if (issueId == null) {
         this.throw(
@@ -177,28 +168,22 @@ module.exports = app => {
 
       let fields = this.getFields(data)
 
-      await this.transaction(
-        async () => {
-
-          if (fields) {
-            if ('anonymous' in fields) {
-              fields.anonymous = fields.anonymous ? limit.ANONYMOUS_YES : limit.ANONYMOUS_NO
-              if (fields.anonymous === issue.anonymous) {
-                delete fields.anonymous
-              }
-            }
-            if (Object.keys(fields).length) {
-              await this.update(
-                fields,
-                {
-                  id: issue.id,
-                }
-              )
-            }
+      if (fields) {
+        if ('anonymous' in fields) {
+          fields.anonymous = fields.anonymous ? limit.ANONYMOUS_YES : limit.ANONYMOUS_NO
+          if (fields.anonymous === issue.anonymous) {
+            delete fields.anonymous
           }
-
         }
-      )
+        if (Object.keys(fields).length) {
+          await this.update(
+            fields,
+            {
+              id: issue.id,
+            }
+          )
+        }
+      }
 
     }
 
@@ -215,63 +200,14 @@ module.exports = app => {
 
       const issue = await this.getIssueById(issueId)
 
-      if (issue.user_id !== currentUser.id) {
-        this.throw(
-          code.PERMISSION_DENIED,
-          '不能删除别人的反馈'
-        )
-      }
-
-      const fields = {
-        status: STATUS_DELETED,
-      }
-
-      const isSuccess = await this.transaction(
-        async () => {
-
-          await this.update(
-            fields,
-            {
-              id: issue.id,
-            }
-          )
-
-          return true
-
+      await this.update(
+        {
+          status: STATUS_DELETED,
+        },
+        {
+          id: issue.id,
         }
       )
-
-      if (!isSuccess) {
-        this.throw(
-          code.DB_UPDATE_ERROR,
-          '删除反馈失败'
-        )
-      }
-
-    }
-
-    /**
-     * 浏览反馈
-     *
-     * @param {number|Object} issueId
-     * @return {Object}
-     */
-    async viewIssue(issueId) {
-
-      if (!config.issueViewByGuest) {
-        const { account } = this.service
-        const currentUser = await account.session.getCurrentUser()
-        if (!currentUser) {
-          this.throw(
-            code.AUTH_UNSIGNIN,
-            '只有登录用户才可以浏览反馈'
-          )
-        }
-      }
-
-      const issue = await this.getIssueById(issueId)
-
-      return await this.getFullIssueById(issue)
 
     }
 
@@ -311,7 +247,7 @@ module.exports = app => {
         }
       }
       else {
-        where.status = [ STATUS_ACTIVE, STATUS_STARED ]
+        where.status = [ STATUS_NORMAL, STATUS_STARED ]
       }
     }
 
