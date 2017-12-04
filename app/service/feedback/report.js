@@ -90,28 +90,32 @@ module.exports = app => {
       // [TODO] 类型待完善
       const { account, article } = this.service
 
-      let resource, type
+      let resource
 
       switch (report.resource_type) {
         case TYPE_POST:
-          type = 'post'
-          resource = article.post.getFullPostById(report.resource_id)
+          resource = await article.post.getFullPostById(report.resource_id)
+          resource = await article.post.toExternal(resource)
           break
 
         case TYPE_COMMENT:
-          type = 'comment'
-          resource = article.comment.getFullCommentById(report.resource_id)
+          resource = await article.comment.getFullCommentById(report.resource_id)
+          resource = await article.comment.toExternal(resource)
           break
 
         case TYPE_USER:
-          type = 'user'
-          resource = account.user.getFullUserById(report.resource_id)
+          resource = await account.user.getFullUserById(report.resource_id)
+          resource = await account.user.toExternal(resource)
           break
       }
 
+      let user = await account.user.getFullUserById(report.user_id)
+      user = await account.user.toExternal(user)
+
       return {
         id: report.id,
-        type,
+        type: report.resource_type,
+        user,
         resource,
         reason: report.reason,
         content: report.content,

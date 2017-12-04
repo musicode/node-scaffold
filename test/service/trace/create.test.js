@@ -7,6 +7,7 @@ describe('test/service/trace/create.test.js', () => {
 
     let user1
     let user2
+    let post
 
     it('register a new user', async () => {
 
@@ -60,7 +61,7 @@ describe('test/service/trace/create.test.js', () => {
         password: user1.password,
       })
 
-      let post = {
+      post = {
         title: '123421123',
         content: 'contentcontentcontentcontentcontentcontent',
         anonymous: app.limit.ANONYMOUS_NO

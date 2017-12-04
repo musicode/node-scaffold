@@ -36,7 +36,7 @@ module.exports = app => {
 
     async view() {
 
-      let post = await this.checkPost()
+      const post = await this.checkPost()
 
       const { trace } = this.ctx.service
 
@@ -200,7 +200,7 @@ module.exports = app => {
 
     async delete() {
 
-      let post = await this.checkPost()
+      const post = await this.checkPost()
 
       const { article } = this.ctx.service
 
@@ -210,7 +210,7 @@ module.exports = app => {
 
     async follow() {
 
-      let post = await this.checkPost()
+      const post = await this.checkPost()
 
       const { trace } = this.ctx.service
 
@@ -220,7 +220,7 @@ module.exports = app => {
 
     async unfollow() {
 
-      let post = await this.checkPost()
+      const post = await this.checkPost()
 
       const { trace } = this.ctx.service
 
@@ -230,7 +230,7 @@ module.exports = app => {
 
     async getFollowCount() {
 
-      let post = await this.checkPost()
+      const post = await this.checkPost()
 
       const { article } = this.ctx.service
 
@@ -307,7 +307,7 @@ module.exports = app => {
 
     async like() {
 
-      let post = await this.checkPost()
+      const post = await this.checkPost()
 
       const { trace } = this.ctx.service
 
@@ -317,7 +317,7 @@ module.exports = app => {
 
     async unlike() {
 
-      let post = await this.checkPost()
+      const post = await this.checkPost()
 
       const { trace } = this.ctx.service
 
@@ -327,7 +327,7 @@ module.exports = app => {
 
     async getLikeCount() {
 
-      let post = await this.checkPost()
+      const post = await this.checkPost()
 
       const { article } = this.ctx.service
 

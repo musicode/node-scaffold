@@ -146,7 +146,7 @@ module.exports = app => {
         },
         anonymous: [
           limit.ANONYMOUS_YES,
-          limit.ANONYMOUS_NO
+          limit.ANONYMOUS_NO,
         ]
       })
 
@@ -183,7 +183,7 @@ module.exports = app => {
         },
         anonymous: [
           limit.ANONYMOUS_YES,
-          limit.ANONYMOUS_NO
+          limit.ANONYMOUS_NO,
         ]
       })
 
@@ -197,7 +197,7 @@ module.exports = app => {
 
     async delete() {
 
-      let comment = await this.checkComment()
+      const comment = await this.checkComment()
 
       const { article } = this.ctx.service
 
