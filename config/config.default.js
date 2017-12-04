@@ -23,6 +23,7 @@ module.exports = appInfo => {
     userViewByGuest: false,
     postViewByGuest: false,
     commentViewByGuest: false,
+    issueViewByGuest: false,
   }
 
   // 全局中间件

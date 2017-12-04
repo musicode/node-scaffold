@@ -301,5 +301,14 @@ module.exports = app => {
     '/api/v1/comment/detail',
     v1.comment.detail
   )
+  
+  // =============================================
+  // 反馈
+  // =============================================
+
+  app.get(
+    '/api/v1/issue/create',
+    v1.issue.create
+  )
 
 }
