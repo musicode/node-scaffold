@@ -127,8 +127,8 @@ module.exports = app => {
     }
 
     async createNumber(length) {
-      const number = util.randomInt(length)
-      while (true) {
+      let number
+      while (number = util.randomInt(length)) {
         let record = await this.findOneBy({ number })
         if (!record) {
           return number
