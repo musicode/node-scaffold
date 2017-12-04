@@ -212,10 +212,11 @@ module.exports = app => {
       const commentId = await this.transaction(
         async () => {
 
+          const number = await this.createNumber(limit.COMMENT_NUMBER_LENGTH)
           const anonymous = data.anonymous ? limit.ANONYMOUS_YES : limit.ANONYMOUS_NO
 
           const row = {
-            number: util.randomInt(limit.COMMENT_NUMBER_LENGTH),
+            number,
             user_id: currentUser.id,
             post_id: data.post_id,
             anonymous,

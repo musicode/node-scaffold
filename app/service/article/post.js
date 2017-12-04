@@ -210,9 +210,10 @@ module.exports = app => {
       const postId = await this.transaction(
         async () => {
 
+          const number = await this.createNumber(limit.POST_NUMBER_LENGTH)
           const anonymous = data.anonymous ? limit.ANONYMOUS_YES : limit.ANONYMOUS_NO
           const postId = await this.insert({
-            number: util.randomInt(limit.POST_NUMBER_LENGTH),
+            number,
             title: data.title,
             user_id: currentUser.id,
             anonymous,

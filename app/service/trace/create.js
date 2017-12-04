@@ -110,6 +110,7 @@ module.exports = app => {
 
     }
 
+
     /**
      * 创建文章
      *
@@ -273,12 +274,32 @@ module.exports = app => {
      */
     async uncreateComment(commentId) {
 
-      const record = await this._removeCreate({
-        resource_id: commentId,
-        resource_type: TYPE_COMMENT,
-      })
+      const { article, trace } = this.service
 
-      if (record == null) {
+      const comment = await article.comment.checkCommentAvailableById(commentId)
+      const post = await article.post.checkPostAvailableById(comment.post_id)
+
+      const isSuccess = await this.transaction(
+        async () => {
+
+          const record = await this._removeCreate({
+            resource_id: commentId,
+            resource_type: TYPE_COMMENT,
+          })
+
+          await trace.createRemind.removeCreateRemind(post.user_id, record.id)
+
+          if (comment.parent_id) {
+            const parentComment = await await article.comment.checkCommentAvailableById(comment.parent_id)
+            await trace.createRemind.removeCreateRemind(parentComment.user_id, record.id)
+          }
+
+          return true
+
+        }
+      )
+
+      if (!isSuccess) {
         this.throw(
           code.DB_UPDATE_ERROR,
           '取消创建失败'
@@ -321,25 +342,40 @@ module.exports = app => {
     /**
      * 用户评论文章是否已提醒作者
      *
-     * @param {number} userId
      * @param {number} commentId
      * @return {boolean}
      */
-    async hasCreateCommentRemind(userId, commentId) {
+    async hasCreateCommentRemind(commentId) {
 
-      const { trace } = this.service
+      const { article, trace } = this.service
 
       const record = await this.findOneBy({
         resource_id: commentId,
         resource_type: TYPE_COMMENT,
-        creator_id: userId,
       })
-
-      if (record) {
-        return await trace.createRemind.hasCreateRemind(record.id)
+      if (!record) {
+        return false
       }
 
-      return false
+      const comment = await article.comment.checkCommentAvailableById(commentId)
+      if (!comment) {
+        return false
+      }
+
+      const post = await article.post.checkPostAvailableById(comment.post_id)
+      if (!post) {
+        return false
+      }
+
+      let hasParentRemind = true
+      if (comment.parent_id) {
+        const parentComment = await article.comment.checkCommentAvailableById(comment.parent_id)
+        hasParentRemind = await trace.createRemind.hasCreateRemind(parentComment.user_id, record.id)
+      }
+
+      const hasPostRemind = await trace.createRemind.hasCreateRemind(post.user_id, record.id)
+
+      return hasPostRemind && hasParentRemind
 
     }
 

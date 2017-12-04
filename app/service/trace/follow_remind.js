@@ -174,22 +174,17 @@ module.exports = app => {
      */
     async readFollowRemind(receiverId, resourceType) {
 
-      const where = {
-        receiver_id: receiverId,
-        // [TODO]这里 ali-rds 有 bug，修复后需要加回来
-        // status: STATUS_UNREAD,
-      }
+      // https://github.com/ali-sdk/ali-rds/issues/42
+      let sql = `
+        UPDATE \`${this.tableName}\` SET \`status\` = ${STATUS_READED} WHERE \`receiver_id\` = ${receiverId} AND \`status\` = ${STATUS_UNREAD}
+      `
 
       if (resourceType != null) {
-        where.resource_type = resourceType
+        sql += ` AND \`resource_type\` = ${resourceType}`
       }
 
-      await this.update(
-        {
-          status: STATUS_READED,
-        },
-        where
-      )
+      await this.query(sql)
+
     }
 
   }

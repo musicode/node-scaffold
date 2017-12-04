@@ -206,7 +206,7 @@ module.exports = app => {
       userId = await this.transaction(
         async () => {
 
-          const number = util.randomInt(limit.USER_NUMBER_LENGTH)
+          const number = await this.createNumber(limit.USER_NUMBER_LENGTH)
           const password = await this.createHash(data.password)
 
           const userId = await this.insert({

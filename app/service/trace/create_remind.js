@@ -63,19 +63,23 @@ module.exports = app => {
     /**
      * 取消创建提醒
      *
+     * @param {number} receiverId
      * @param {number} traceId
      */
-    async removeCreateRemind(traceId) {
+    async removeCreateRemind(receiverId, traceId) {
 
-      const hasCreateRemind = await this.hasCreateRemind(traceId)
+      const record = await this.findOneBy({
+        receiver_id: receiverId,
+        trace_id: traceId,
+      })
 
-      if (hasCreateRemind) {
+      if (record) {
         await this.update(
           {
             status: STATUS_DELETED,
           },
           {
-            trace_id: traceId,
+            id: record.id,
           }
         )
       }
@@ -85,12 +89,14 @@ module.exports = app => {
     /**
      * 是否已提醒创建
      *
+     * @param {number} receiverId
      * @param {number} traceId
      * @return {boolean}
      */
-    async hasCreateRemind(traceId) {
+    async hasCreateRemind(receiverId, traceId) {
 
       const record = await this.findOneBy({
+        receiver_id: receiverId,
         trace_id: traceId,
       })
 
@@ -175,22 +181,17 @@ module.exports = app => {
      */
     async readCreateRemind(receiverId, resourceType) {
 
-      const where = {
-        receiver_id: receiverId,
-        // [TODO]这里 ali-rds 有 bug，修复后需要加回来
-        // status: STATUS_UNREAD,
-      }
+      // https://github.com/ali-sdk/ali-rds/issues/42
+      let sql = `
+        UPDATE \`${this.tableName}\` SET \`status\` = ${STATUS_READED} WHERE \`receiver_id\` = ${receiverId} AND \`status\` = ${STATUS_UNREAD}
+      `
 
       if (resourceType != null) {
-        where.resource_type = resourceType
+        sql += ` AND \`resource_type\` = ${resourceType}`
       }
 
-      await this.update(
-        {
-          status: STATUS_READED,
-        },
-        where
-      )
+      await this.query(sql)
+
     }
 
   }

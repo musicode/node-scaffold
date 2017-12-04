@@ -126,6 +126,16 @@ module.exports = app => {
       }
     }
 
+    async createNumber(length) {
+      const number = util.randomInt(length)
+      while (true) {
+        let record = await this.findOneBy({ number })
+        if (!record) {
+          return number
+        }
+      }
+    }
+
     async insert(data) {
       const result = await app.mysql.insert(
         this.tableName,
