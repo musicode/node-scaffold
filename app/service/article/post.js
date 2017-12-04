@@ -24,28 +24,29 @@ module.exports = app => {
 
     async toExternal(post) {
 
-      if (!('content' in post)) {
+      if (util.type(post.content) !== 'string') {
         post = await this.getFullPostById(post)
       }
 
       const result = { }
       Object.assign(result, post)
 
-      const { id, number, user_id } = result
+      const { id, number, user_id, anonymous } = result
       delete result.number
       delete result.user_id
+      delete result.anonymous
 
       result.id = number
 
       result.cover = util.parseCover(result.content)
 
-      const { account, trace, } = this.service
-      if (result.anonymous === limit.ANONYMOUS_YES) {
+      const { account, trace } = this.service
+      if (anonymous === limit.ANONYMOUS_YES) {
         result.user = account.user.anonymous
       }
       else {
         const user = await account.user.getFullUserById(user_id)
-        result.user = account.user.toExternal(user)
+        result.user = await account.user.toExternal(user)
       }
 
       const currentUser = await account.session.getCurrentUser()
@@ -160,19 +161,19 @@ module.exports = app => {
       const { article } = this.ctx.service
 
       const post = await this.getPostById(postId)
-      const record = await article.postContent.findOneBy({
+      const postContent = await article.postContent.findOneBy({
         post_id: post.id,
       })
+
+      post.content = postContent.content
+      if (postContent.update_time.getTime() > post.update_time.getTime()) {
+        post.update_time = postContent.update_time
+      }
 
       post.sub_count = await this.getPostSubCount(post.id)
       post.view_count = await this.getPostViewCount(post.id)
       post.like_count = await this.getPostLikeCount(post.id)
       post.follow_count = await this.getPostFollowCount(post.id)
-
-      post.content = record.content
-      if (record.update_time.getTime() > post.update_time.getTime()) {
-        post.update_time = record.update_time
-      }
 
       return post
 
@@ -185,7 +186,7 @@ module.exports = app => {
      * @property {string} data.title
      * @property {string} data.content
      * @property {boolean|number} data.anonymous
-     * @return {number}
+     * @return {number} 新建的 post id
      */
     async createPost(data) {
 
@@ -275,19 +276,17 @@ module.exports = app => {
       }
 
       let fields = this.getFields(data)
+
+      const { content } = data
+
       await this.transaction(
         async () => {
 
-          let anonymous
           if (fields) {
             if ('anonymous' in fields) {
-              anonymous = fields.anonymous ? limit.ANONYMOUS_YES : limit.ANONYMOUS_NO
-              if (anonymous !== post.anonymous) {
-                fields.anonymous = anonymous
-              }
-              else {
+              fields.anonymous = fields.anonymous ? limit.ANONYMOUS_YES : limit.ANONYMOUS_NO
+              if (fields.anonymous === post.anonymous) {
                 delete fields.anonymous
-                anonymous = null
               }
             }
             if (Object.keys(fields).length) {
@@ -298,16 +297,12 @@ module.exports = app => {
                 }
               )
             }
+            else {
+              fields = null
+            }
           }
 
-          const { content } = data
           if (content) {
-
-            if (!fields) {
-              fields = { }
-            }
-            fields.content = content
-
             await article.postContent.update(
               {
                 content,
@@ -318,30 +313,22 @@ module.exports = app => {
             )
           }
 
-          if (anonymous != null) {
-            await trace.create.createPost(postId, anonymous)
+          if (fields && 'anonymous' in fields) {
+            await trace.create.createPost(postId, fields.anonymous)
           }
 
         }
       )
 
-      if (fields) {
+      if (fields && content) {
 
-        const cache = { }
-        Object.assign(cache, fields)
-
-        if ('content' in cache) {
-          delete cache.content
-        }
-
-        await this.updateRedis(`post:${post.id}`, cache)
+        await this.updateRedis(`post:${post.id}`, fields)
 
         eventEmitter.emit(
           eventEmitter.POST_UDPATE,
           {
             postId: post.id,
             service: this.service,
-            fields,
           }
         )
       }
@@ -412,7 +399,7 @@ module.exports = app => {
         eventEmitter.POST_UDPATE,
         {
           postId: post.id,
-          fields,
+          service: this.service,
         }
       )
 
@@ -426,9 +413,8 @@ module.exports = app => {
      */
     async viewPost(postId) {
 
-      const { account } = this.service
-
       if (!config.postViewByGuest) {
+        const { account } = this.service
         const currentUser = await account.session.getCurrentUser()
         if (!currentUser) {
           this.throw(

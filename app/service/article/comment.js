@@ -288,21 +288,18 @@ module.exports = app => {
         )
       }
 
+      const { content } = data
+
       let fields = this.getFields(data)
 
       await this.transaction(
         async () => {
 
-          let anonymous
           if (fields) {
             if ('anonymous' in fields) {
-              anonymous = fields.anonymous ? limit.ANONYMOUS_YES : limit.ANONYMOUS_NO
-              if (anonymous !== comment.anonymous) {
-                fields.anonymous = anonymous
-              }
-              else {
+              fields.anonymous = fields.anonymous ? limit.ANONYMOUS_YES : limit.ANONYMOUS_NO
+              if (fields.anonymous === post.anonymous) {
                 delete fields.anonymous
-                anonymous = null
               }
             }
             if (Object.keys(fields).length) {
@@ -313,16 +310,12 @@ module.exports = app => {
                 }
               )
             }
+            else {
+              fields = null
+            }
           }
 
-          const { content } = data
           if (content) {
-
-            if (!fields) {
-              fields = { }
-            }
-            fields.content = content
-
             await article.commentContent.update(
               {
                 content,
@@ -333,24 +326,14 @@ module.exports = app => {
             )
           }
 
-          if (anonymous != null) {
-            await trace.create.createComment(comment.id, anonymous, comment.post_id, comment.parent_id)
+          if (fields && 'anonymous' in fields) {
+            await trace.create.createComment(comment.id, fields.anonymous, comment.post_id, comment.parent_id)
           }
 
         }
       )
 
-      if (fields) {
-
-        const cache = { }
-        Object.assign(cache, fields)
-
-        if ('content' in cache) {
-          delete cache.content
-        }
-
-        await this.updateRedis(`comment:${comment.id}`, cache)
-
+      if (fields && content) {
         eventEmitter.emit(
           eventEmitter.COMMENT_UDPATE,
           {
@@ -418,8 +401,6 @@ module.exports = app => {
         )
       }
 
-      await this.updateRedis(`comment:${comment.id}`, fields)
-
       await article.post.decreasePostSubCount(comment.post_id)
 
       if (comment.parent_id) {
@@ -444,9 +425,8 @@ module.exports = app => {
      */
     async viewComment(commentId) {
 
-      const { account } = this.service
-
       if (!config.commentViewByGuest) {
+        const { account } = this.service
         const currentUser = await account.session.getCurrentUser()
         if (!currentUser) {
           this.throw(
