@@ -254,6 +254,197 @@ module.exports = app => {
       return await trace.viewRemind.readViewRemind(receiverId, TYPE_POST)
     }
 
+
+
+     /**
+     * 浏览项目
+     *
+     * @param {number|Object} demandId
+     */
+    async viewDemand(demandId) {
+
+      const { account, trace, project } = this.service
+
+      const demand = await project.demand.getDemandById(demandId)
+
+      const isSuccess = await this.transaction(
+        async () => {
+
+          let traceId = await this._addView({
+            resource_id: demand.id,
+            resource_type: TYPE_DEMAND,
+          })
+
+          let record
+
+          if (util.type(traceId) === 'object') {
+            record = traceId
+            traceId = record.id
+          }
+          else if (traceId) {
+            record = await this.findOneBy({
+              id: traceId,
+            })
+          }
+
+          if (record) {
+            await trace.viewRemind.addViewRemind({
+              trace_id: traceId,
+              resource_type: record.resource_type,
+              sender_id: record.creator_id,
+              receiver_id: demand.user_id,
+            })
+          }
+
+          return true
+
+        }
+      )
+
+      if (!isSuccess) {
+        this.throw(
+          code.DB_INSERT_ERROR,
+          '浏览失败'
+        )
+      }
+
+      await project.demand.increaseDemandViewCount(demand.id)
+
+    }
+
+    /**
+     * 用户是否已浏览项目
+     *
+     * @param {number} userId
+     * @param {number} demandId
+     * @return {boolean}
+     */
+    async hasViewDemand(userId, demandId) {
+
+      const record = await this.findOneBy({
+        resource_id: demandId,
+        resource_type: TYPE_DEMAND,
+        creator_id: userId,
+        status: STATUS_ACTIVE,
+      })
+
+      return record ? true : false
+
+    }
+
+    /**
+     * 用户浏览项目是否已提醒作者
+     *
+     * @param {number} userId
+     * @param {number} demandId
+     * @return {boolean}
+     */
+    async hasViewDemandRemind(userId, demandId) {
+
+      const { trace } = this.service
+
+      const record = await this.findOneBy({
+        resource_id: demandId,
+        resource_type: TYPE_DEMAND,
+        creator_id: userId,
+      })
+
+      if (record) {
+        return await trace.viewRemind.hasViewRemind(record.id)
+      }
+
+      return false
+
+    }
+
+    /**
+     * 读取项目的浏览数
+     *
+     * @param {number} creatorId
+     * @param {number} demandId
+     * @return {number}
+     */
+    async getViewDemandCount(creatorId, demandId) {
+      const where = {
+        resource_type: TYPE_DEMAND,
+        status: STATUS_ACTIVE,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      if (demandId) {
+        where.resource_id = demandId
+      }
+      return await this.countBy(where)
+    }
+
+    /**
+     * 获取项目的浏览列表
+     *
+     * @param {number} creatorId
+     * @param {number} demandId
+     * @param {Object} options
+     * @return {Array}
+     */
+    async getViewDemandList(creatorId, demandId, options) {
+      const where = {
+        resource_type: TYPE_DEMAND,
+        status: STATUS_ACTIVE,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      if (demandId) {
+        where.resource_id = demandId
+      }
+      options.where = where
+      return await this.findBy(options)
+    }
+
+    /**
+     * 获取用户被浏览项目的提醒列表
+     *
+     * @param {number} receiverId
+     * @param {Object} options
+     * @return {Array}
+     */
+    async getViewDemandRemindList(receiverId, options) {
+      const { trace } = this.service
+      return await trace.viewRemind.getViewRemindList(receiverId, TYPE_DEMAND, options)
+    }
+
+    /**
+     * 获取用户被浏览项目的提醒数量
+     *
+     * @param {number} receiverId
+     * @return {number}
+     */
+    async getViewDemandRemindCount(receiverId) {
+      const { trace } = this.service
+      return await trace.viewRemind.getViewRemindCount(receiverId, TYPE_DEMAND)
+    }
+
+    /**
+     * 获取用户被浏览项目的未读提醒数量
+     *
+     * @param {number} receiverId
+     * @return {number}
+     */
+    async getViewDemandUnreadRemindCount(receiverId) {
+      const { trace } = this.service
+      return await trace.viewRemind.getUnreadViewRemindCount(receiverId, TYPE_DEMAND)
+    }
+
+    /**
+     * 标记已读
+     *
+     * @param {number} receiverId
+     */
+    async readViewDemandRemind(receiverId) {
+      const { trace } = this.service
+      return await trace.viewRemind.readViewRemind(receiverId, TYPE_DEMAND)
+    }
+
   }
   return View
 }

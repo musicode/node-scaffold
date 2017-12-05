@@ -34,18 +34,18 @@ module.exports = app => {
 
       let type, resource, resourceService
       if (resource_type == TYPE_QUESTION) {
-          type = 'question'
+        type = 'question'
       }
       else if (resource_type == TYPE_DEMAND) {
-          type = 'demand'
+        type = 'demand'
       }
       else if (resource_type == TYPE_POST) {
-          type = 'post'
-          resource = await article.post.getPostById(resource_id)
-          resource = await article.post.toExternal(resource)
+        type = 'post'
+        resource = await article.post.getPostById(resource_id)
+        resource = await article.post.toExternal(resource)
       }
       else if (resource_type == USER) {
-          type = 'comment'
+        type = 'comment'
       }
       else if (resource_type == TYPE_REPLY) {
         type = 'reply'
@@ -55,11 +55,11 @@ module.exports = app => {
       creator = await account.user.toExternal(creator)
 
       return {
-          id: follow.id,
-          type,
-          resource,
-          creator,
-          create_time: follow.create_time.getTime()
+        id: follow.id,
+        type,
+        resource,
+        creator,
+        create_time: follow.create_time.getTime(),
       }
 
     }
@@ -146,6 +146,8 @@ module.exports = app => {
       return record
 
     }
+
+
 
     /**
      * 关注文章
@@ -369,6 +371,233 @@ module.exports = app => {
     async readFollowPostRemind(receiverId) {
       const { trace } = this.service
       return await trace.followRemind.readFollowRemind(receiverId, TYPE_POST)
+    }
+
+
+
+
+    /**
+     * 关注项目
+     *
+     * @param {number|Object} demandId
+     */
+    async followDemand(demandId) {
+
+      const { account, trace, project } = this.service
+
+      const demand = await project.demand.checkDemandAvailableById(demandId, true)
+
+      const isSuccess = await this.transaction(
+        async () => {
+
+          let traceId = await this._addFollow({
+            resource_id: demand.id,
+            resource_type: TYPE_DEMAND,
+          })
+
+          let record
+
+          if (util.type(traceId) === 'object') {
+            record = traceId
+            traceId = record.id
+          }
+          else {
+            record = await this.findOneBy({
+              id: traceId,
+            })
+          }
+
+          await trace.followRemind.addFollowRemind({
+            trace_id: traceId,
+            resource_type: record.resource_type,
+            sender_id: record.creator_id,
+            receiver_id: demand.user_id,
+          })
+
+          return true
+
+        }
+      )
+
+      if (!isSuccess) {
+        this.throw(
+          code.DB_INSERT_ERROR,
+          '关注失败'
+        )
+      }
+
+      await project.demand.increaseDemandFollowCount(demand.id)
+
+    }
+
+    /**
+     * 取消关注项目
+     *
+     * @param {number|Object} demandId
+     */
+    async unfollowDemand(demandId) {
+
+      const { account, trace, project } = this.service
+
+      const demand = await project.demand.checkDemandAvailableById(demandId)
+
+      const isSuccess = await this.transaction(
+        async () => {
+
+          const record = await this._removeFollow({
+            resource_id: demand.id,
+            resource_type: TYPE_DEMAND,
+          })
+
+          await trace.followRemind.removeFollowRemind(record.id)
+
+          return true
+
+        }
+      )
+
+      if (!isSuccess) {
+        this.throw(
+          code.DB_UPDATE_ERROR,
+          '取消关注失败'
+        )
+      }
+
+      await project.demand.decreaseDemandFollowCount(demand.id)
+
+    }
+
+    /**
+     * 用户是否已关注项目
+     *
+     * @param {number} userId
+     * @param {number} demandId
+     * @return {boolean}
+     */
+    async hasFollowDemand(userId, demandId) {
+
+      const record = await this.findOneBy({
+        resource_id: demandId,
+        resource_type: TYPE_DEMAND,
+        creator_id: userId,
+        status: STATUS_ACTIVE,
+      })
+
+      return record ? true : false
+
+    }
+
+    /**
+     * 用户关注项目是否已提醒作者
+     *
+     * @param {number} userId
+     * @param {number} demandId
+     * @return {boolean}
+     */
+    async hasFollowDemandRemind(userId, demandId) {
+
+      const { trace } = this.service
+
+      const record = await this.findOneBy({
+        resource_id: demandId,
+        resource_type: TYPE_DEMAND,
+        creator_id: userId,
+      })
+
+      if (record) {
+        return await trace.followRemind.hasFollowRemind(record.id)
+      }
+
+      return false
+
+    }
+
+    /**
+     * 读取项目的关注数
+     *
+     * @param {number} creatorId
+     * @param {number} demandId
+     * @return {number}
+     */
+    async getFollowDemandCount(creatorId, demandId) {
+      const where = {
+        resource_type: TYPE_DEMAND,
+        status: STATUS_ACTIVE,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      if (demandId) {
+        where.resource_id = demandId
+      }
+      return await this.countBy(where)
+    }
+
+    /**
+     * 获取项目的关注列表
+     *
+     * @param {number} creatorId
+     * @param {number} demandId
+     * @param {Object} options
+     * @return {Array}
+     */
+    async getFollowDemandList(creatorId, demandId, options) {
+      const where = {
+        resource_type: TYPE_DEMAND,
+        status: STATUS_ACTIVE,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      if (demandId) {
+        where.resource_id = demandId
+      }
+      options.where = where
+      return await this.findBy(options)
+    }
+
+    /**
+     * 获取用户被关注项目的提醒列表
+     *
+     * @param {number} receiverId
+     * @param {Object} options
+     * @return {Array}
+     */
+    async getFollowDemandRemindList(receiverId, options) {
+      const { trace } = this.service
+      return await trace.followRemind.getFollowRemindList(receiverId, TYPE_DEMAND, options)
+    }
+
+    /**
+     * 获取用户被关注项目的提醒数量
+     *
+     * @param {number} receiverId
+     * @return {number}
+     */
+    async getFollowDemandRemindCount(receiverId) {
+      const { trace } = this.service
+      return await trace.followRemind.getFollowRemindCount(receiverId, TYPE_DEMAND)
+    }
+
+    /**
+     * 获取用户被关注项目的未读提醒数量
+     *
+     * @param {number} receiverId
+     * @return {number}
+     */
+    async getFollowDemandUnreadRemindCount(receiverId) {
+      const { trace } = this.service
+      return await trace.followRemind.getUnreadFollowRemindCount(receiverId, TYPE_DEMAND)
+    }
+
+    /**
+     * 标记已读
+     *
+     * @param {number} receiverId
+     */
+    async readFollowDemandRemind(receiverId) {
+      const { trace } = this.service
+      return await trace.followRemind.readFollowRemind(receiverId, TYPE_DEMAND)
     }
 
   }

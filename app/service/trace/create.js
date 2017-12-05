@@ -111,6 +111,8 @@ module.exports = app => {
     }
 
 
+
+
     /**
      * 创建文章
      *
@@ -465,6 +467,363 @@ module.exports = app => {
     async readCreateCommentRemind(receiverId) {
       const { trace } = this.service
       return await trace.createRemind.readCreateRemind(receiverId, TYPE_COMMENT)
+    }
+
+
+
+
+
+
+    /**
+     * 创建项目
+     *
+     * @param {number} demandId
+     */
+    async createDemand(demandId) {
+
+      let traceId = await this._addCreate({
+        resource_id: demandId,
+        resource_type: TYPE_DEMAND,
+      })
+
+      if (traceId == null) {
+        this.throw(
+          code.DB_INSERT_ERROR,
+          '创建失败'
+        )
+      }
+
+    }
+
+    /**
+     * 取消创建项目
+     *
+     * @param {number} demandId
+     */
+    async uncreateDemand(demandId) {
+
+      const record = await this._removeCreate({
+        resource_id: demandId,
+        resource_type: TYPE_DEMAND,
+      })
+
+      if (record == null) {
+        this.throw(
+          code.DB_UPDATE_ERROR,
+          '取消创建失败'
+        )
+      }
+
+    }
+
+    /**
+     * 用户是否已创建项目
+     *
+     * @param {number} demandId
+     * @return {boolean}
+     */
+    async hasCreateDemand(demandId) {
+
+      const record = await this.getCreateDemand(demandId)
+
+      return record ? true : false
+
+    }
+
+    /**
+     * 用户是否已创建项目
+     *
+     * @param {number} demandId
+     * @return {boolean}
+     */
+    async getCreateDemand(demandId) {
+
+      return await this.findOneBy({
+        resource_id: demandId,
+        resource_type: TYPE_DEMAND,
+        status: STATUS_ACTIVE,
+      })
+
+    }
+
+
+
+
+    /**
+     * 创建咨询
+     *
+     * @param {number} consultId
+     * @param {number} demandId
+     * @param {number} parentId
+     */
+    async createConsult(consultId, demandId, parentId) {
+
+      const { project, trace } = this.service
+
+      const demand = await project.demand.checkDemandAvailableById(demandId, true)
+
+      let parentConsult
+      if (parentId) {
+        parentConsult = await project.consult.checkConsultAvailableById(parentId, true)
+      }
+
+      const isSuccess = await this.transaction(
+        async () => {
+
+          let row = {
+            resource_id: consultId,
+            resource_type: TYPE_CONSULT,
+            resource_master_id: demand.id,
+          }
+
+          if (parentConsult) {
+            row.resource_parent_id = parentConsult.id
+          }
+
+          const traceId = await this._addCreate(row)
+
+          let record
+
+          if (util.type(traceId) === 'object') {
+            record = traceId
+            traceId = record.id
+          }
+          else {
+            record = await this.findOneBy({
+              id: traceId,
+            })
+          }
+
+          row = {
+            trace_id: traceId,
+            resource_type: record.resource_type,
+            sender_id: record.creator_id,
+            receiver_id: demand.user_id,
+          }
+
+          if (parentConsult) {
+            row.resource_parent_id = parentConsult.id
+          }
+
+          await trace.createRemind.addCreateRemind(row)
+
+          if (parentConsult) {
+            row.receiver_id = parentConsult.user_id
+            await trace.createRemind.addCreateRemind(row)
+          }
+
+          return true
+
+        }
+      )
+
+      if (!isSuccess) {
+        this.throw(
+          code.DB_INSERT_ERROR,
+          '创建失败'
+        )
+      }
+
+    }
+
+    /**
+     * 取消创建咨询
+     *
+     * @param {number} consultId
+     */
+    async uncreateConsult(consultId) {
+
+      const { project, trace } = this.service
+
+      const consult = await project.consult.checkConsultAvailableById(consultId)
+      const demand = await project.demand.checkDemandAvailableById(consult.demand_id)
+
+      const isSuccess = await this.transaction(
+        async () => {
+
+          const record = await this._removeCreate({
+            resource_id: consultId,
+            resource_type: TYPE_CONSULT,
+          })
+
+          await trace.createRemind.removeCreateRemind(demand.user_id, record.id)
+
+          if (consult.parent_id) {
+            const parentConsult = await await project.consult.checkConsultAvailableById(consult.parent_id)
+            await trace.createRemind.removeCreateRemind(parentConsult.user_id, record.id)
+          }
+
+          return true
+
+        }
+      )
+
+      if (!isSuccess) {
+        this.throw(
+          code.DB_UPDATE_ERROR,
+          '取消创建失败'
+        )
+      }
+
+    }
+
+    /**
+     * 用户是否已创建咨询
+     *
+     * @param {number} consultId
+     * @return {boolean}
+     */
+    async hasCreateConsult(consultId) {
+
+      const record = await this.getCreateConsult(consultId)
+
+      return record ? true : false
+
+    }
+
+    /**
+     * 用户是否已创建咨询
+     *
+     * @param {number} consultId
+     * @return {boolean}
+     */
+    async getCreateConsult(consultId) {
+
+      return await this.findOneBy({
+        resource_id: consultId,
+        resource_type: TYPE_CONSULT,
+        status: STATUS_ACTIVE,
+      })
+
+    }
+
+
+    /**
+     * 用户咨询项目是否已提醒作者
+     *
+     * @param {number} consultId
+     * @return {boolean}
+     */
+    async hasCreateConsultRemind(consultId) {
+
+      const { project, trace } = this.service
+
+      const record = await this.findOneBy({
+        resource_id: consultId,
+        resource_type: TYPE_CONSULT,
+      })
+      if (!record) {
+        return false
+      }
+
+      const consult = await project.consult.checkConsultAvailableById(consultId)
+      if (!consult) {
+        return false
+      }
+
+      const demand = await project.demand.checkDemandAvailableById(consult.demand_id)
+      if (!demand) {
+        return false
+      }
+
+      let hasParentRemind = true
+      if (consult.parent_id) {
+        const parentConsult = await project.consult.checkConsultAvailableById(consult.parent_id)
+        hasParentRemind = await trace.createRemind.hasCreateRemind(parentConsult.user_id, record.id)
+      }
+
+      const hasDemandRemind = await trace.createRemind.hasCreateRemind(demand.user_id, record.id)
+
+      return hasDemandRemind && hasParentRemind
+
+    }
+
+    /**
+     * 读取项目的咨询数
+     *
+     * @param {number} creatorId
+     * @param {number} demandId
+     * @return {number}
+     */
+    async getCreateConsultCount(creatorId, demandId) {
+      const where = {
+        resource_type: TYPE_CONSULT,
+        status: STATUS_ACTIVE,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      if (demandId) {
+        where.resource_master_id = demandId
+      }
+      return await this.countBy(where)
+    }
+
+    /**
+     * 获取项目的咨询列表
+     *
+     * @param {number} creatorId
+     * @param {number} demandId
+     * @param {Object} options
+     * @return {Array}
+     */
+    async getCreateConsultList(creatorId, demandId, options) {
+      const where = {
+        resource_type: TYPE_CONSULT,
+        status: STATUS_ACTIVE,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      if (demandId) {
+        where.resource_master_id = demandId
+      }
+      options.where = where
+      return await this.findBy(options)
+    }
+
+    /**
+     * 获取用户被咨询项目的提醒列表
+     *
+     * @param {number} receiverId
+     * @param {Object} options
+     * @return {Array}
+     */
+    async getCreateConsultRemindList(receiverId, options) {
+      const { trace } = this.service
+      return await trace.createRemind.getCreateRemindList(receiverId, TYPE_CONSULT, options)
+    }
+
+    /**
+     * 获取用户被咨询项目的提醒数量
+     *
+     * @param {number} receiverId
+     * @return {number}
+     */
+    async getCreateConsultRemindCount(receiverId) {
+      const { trace } = this.service
+      return await trace.createRemind.getCreateRemindCount(receiverId, TYPE_CONSULT)
+    }
+
+    /**
+     * 获取用户被咨询项目的未读提醒数量
+     *
+     * @param {number} receiverId
+     * @return {number}
+     */
+    async getCreateConsultUnreadRemindCount(receiverId) {
+      const { trace } = this.service
+      return await trace.createRemind.getUnreadCreateRemindCount(receiverId, TYPE_CONSULT)
+    }
+
+    /**
+     * 标记已读
+     *
+     * @param {number} receiverId
+     */
+    async readCreateConsultRemind(receiverId) {
+      const { trace } = this.service
+      return await trace.createRemind.readCreateRemind(receiverId, TYPE_CONSULT)
     }
 
   }

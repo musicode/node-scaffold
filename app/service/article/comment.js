@@ -31,16 +31,17 @@ module.exports = app => {
       const result = { }
       Object.assign(result, comment)
 
-      const { id, number, user_id, post_id, parent_id } = result
+      const { id, number, user_id, post_id, parent_id, anonymous } = result
       delete result.number
       delete result.user_id
       delete result.post_id
       delete result.parent_id
+      delete result.anonymous
 
       result.id = number
 
       const { account, article, trace, } = this.service
-      if (result.anonymous === limit.ANONYMOUS_YES) {
+      if (anonymous === limit.ANONYMOUS_YES) {
         result.user = account.user.anonymous
       }
       else {
