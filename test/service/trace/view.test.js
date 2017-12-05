@@ -161,6 +161,125 @@ describe('test/service/trace/view.test.js', () => {
 
     })
 
+    it('view demand', async () => {
+
+      const ctx = app.mockContext()
+      const { account, project, trace } = ctx.service
+      const userService = account.user
+
+      // 从未登录测起
+      let currentUser = await account.session.getCurrentUser()
+      if (currentUser) {
+        await account.user.signout()
+      }
+
+      // user1 发表一个项目
+      currentUser = await account.user.signin({
+        mobile: user1.mobile,
+        password: user1.password,
+      })
+
+      let demand = {
+        title: '123421123',
+        content: 'contentcontentcontentcontentcontentcontent'
+      }
+
+      demand.id = await project.demand.createDemand(demand)
+
+
+      await account.user.signout()
+
+      // user2 浏览该项目
+
+      currentUser = await account.user.signin({
+        mobile: user2.mobile,
+        password: user2.password,
+      })
+
+      // 项目总浏览数
+      let viewCount = await trace.view.getViewDemandCount(null, demand.id)
+      assert(viewCount === 0)
+
+      viewCount = await project.demand.getDemandViewCount(demand.id)
+      assert(viewCount === 0)
+
+      // 作者收到提醒的数量
+      let viewRemindCount = await trace.view.getViewDemandRemindCount(user1.id)
+      assert(viewRemindCount === 0)
+
+      // 作者收到未读提醒的数量
+      let viewUnreadRemindCount = await trace.view.getViewDemandUnreadRemindCount(user1.id)
+      assert(viewUnreadRemindCount === 0)
+
+      // user2 是否浏览了 user1 的项目
+      let hasView = await trace.view.hasViewDemand(user2.id, demand.id)
+      assert(hasView === false)
+
+      // user2 是否浏览了 user1 的项目之后是否发送了提醒
+      let hasViewRemind = await trace.view.hasViewDemandRemind(user2.id, demand.id)
+      assert(hasViewRemind === false)
+
+
+
+      await trace.view.viewDemand(demand.id)
+
+
+
+      viewCount = await trace.view.getViewDemandCount(null, demand.id)
+      assert(viewCount === 1)
+
+      viewCount = await project.demand.getDemandViewCount(demand.id)
+      assert(viewCount === 1)
+
+      viewRemindCount = await trace.view.getViewDemandRemindCount(user1.id)
+      assert(viewRemindCount === 1)
+
+      viewUnreadRemindCount = await trace.view.getViewDemandUnreadRemindCount(user1.id)
+      assert(viewUnreadRemindCount === 1)
+
+      hasView = await trace.view.hasViewDemand(user2.id, demand.id)
+      assert(hasView === true)
+
+      hasViewRemind = await trace.view.hasViewDemandRemind(user2.id, demand.id)
+      assert(hasViewRemind === true)
+
+
+      // 标记已读
+      await trace.view.readViewDemandRemind(user1.id)
+
+      viewRemindCount = await trace.view.getViewDemandRemindCount(user1.id)
+      assert(viewRemindCount === 1)
+
+      viewUnreadRemindCount = await trace.view.getViewDemandUnreadRemindCount(user1.id)
+      assert(viewUnreadRemindCount === 0)
+
+
+      let errorCount = 0
+
+      // 可以再次浏览
+      try {
+        await trace.view.viewDemand(demand.id)
+      }
+      catch (err) {
+        errorCount++
+      }
+
+      assert(errorCount === 0)
+
+      // 浏览量怎么累计是个问题
+      // 这里 trace_view 表不会每次浏览都 insert
+      // 因此他的数据总量是不会变的
+
+      viewCount = await trace.view.getViewDemandCount(null, demand.id)
+      assert(viewCount === 1)
+
+      // 但是对于资源来说，计数器是需要累加的
+
+      viewCount = await project.demand.getDemandViewCount(demand.id)
+      assert(viewCount === 2)
+
+    })
+
 
   })
 })

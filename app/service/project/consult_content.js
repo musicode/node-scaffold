@@ -6,12 +6,12 @@ module.exports = app => {
   class ConsultContent extends app.BaseService {
 
     get tableName() {
-      return 'project_demand_content'
+      return 'project_consult_content'
     }
 
     get fields() {
       return [
-        'demand_id', 'content',
+        'consult_id', 'content',
       ]
     }
 

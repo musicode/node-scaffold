@@ -319,5 +319,267 @@ describe('test/service/trace/create.test.js', () => {
     })
 
 
+
+    it('create demand', async () => {
+
+      const ctx = app.mockContext()
+      const { account, project, trace } = ctx.service
+      const userService = account.user
+
+      // 从未登录测起
+      let currentUser = await account.session.getCurrentUser()
+      if (currentUser) {
+        await account.user.signout()
+      }
+
+      // user1 发表一个项目
+      currentUser = await account.user.signin({
+        mobile: user1.mobile,
+        password: user1.password,
+      })
+
+      let demand = {
+        title: '123421123',
+        content: 'contentcontentcontentcontentcontentcontent',
+      }
+
+      demand.id = await project.demand.createDemand(demand)
+
+      let createRecord = await trace.create.getCreateDemand(demand.id)
+
+      let hasCreate = await trace.create.hasCreateDemand(demand.id)
+      assert(hasCreate === true)
+
+
+      await project.demand.deleteDemand(demand.id)
+
+      hasCreate = await trace.create.hasCreateDemand(demand.id)
+      assert(hasCreate === false)
+
+      createRecord = await trace.create.getCreateDemand(demand.id)
+      assert(createRecord == null)
+
+    })
+
+    it('create consult', async () => {
+
+      const ctx = app.mockContext()
+      const { account, project, trace } = ctx.service
+      const userService = account.user
+
+      // 从未登录测起
+      let currentUser = await account.session.getCurrentUser()
+      if (currentUser) {
+        await account.user.signout()
+      }
+
+
+      // user1 发表一篇项目
+      currentUser = await account.user.signin({
+        mobile: user1.mobile,
+        password: user1.password,
+      })
+
+      let demand = {
+        title: '123421123',
+        content: 'contentcontentcontentcontentcontentcontent',
+      }
+
+      demand.id = await project.demand.createDemand(demand)
+
+
+      let content = 'ahahahahahahahah'
+
+      let consultId = await project.consult.createConsult({
+        demand_id: demand.id,
+        content: content,
+      })
+
+      let hasCreateConsult = await trace.create.hasCreateConsult(consultId)
+      assert(hasCreateConsult === true)
+
+      let createConsult = await trace.create.getCreateConsult(consultId)
+      assert(app.util.type(createConsult) === 'object')
+
+      // 咨询自己的项目不用提醒
+      let hasCreateConsultRemind = await trace.create.hasCreateConsultRemind(consultId)
+      assert(hasCreateConsultRemind === false)
+
+      let createConsultCount = await trace.create.getCreateConsultCount(null, demand.id)
+      assert(createConsultCount === 1)
+
+      createConsultCount = await trace.create.getCreateConsultCount(user1.id, demand.id)
+      assert(createConsultCount === 1)
+
+      let createConsultList = await trace.create.getCreateConsultList(null, demand.id, { page: 0, page_size: 1000 })
+      assert(createConsultList.length === 1)
+
+      createConsultList = await trace.create.getCreateConsultList(user1.id, demand.id, { page: 0, page_size: 1000 })
+      assert(createConsultList.length === 1)
+
+      let createConsultRemindList = await trace.create.getCreateConsultRemindList(user1.id, { page: 0, page_size: 1000 })
+      assert(createConsultRemindList.length === 0)
+
+      let createConsultRemindCount = await trace.create.getCreateConsultRemindCount(user1.id)
+      assert(createConsultRemindCount === 0)
+
+      let createConsultUnreadRemindCount = await trace.create.getCreateConsultUnreadRemindCount(user1.id)
+      assert(createConsultUnreadRemindCount === 0)
+
+
+      // 换 user2 来咨询
+      await userService.signout()
+
+      currentUser = await account.user.signin({
+        mobile: user2.mobile,
+        password: user2.password,
+      })
+
+      consultId = await project.consult.createConsult({
+        demand_id: demand.id,
+        content: content,
+      })
+
+
+
+      hasCreateConsult = await trace.create.hasCreateConsult(consultId)
+      assert(hasCreateConsult === true)
+
+      createConsult = await trace.create.getCreateConsult(consultId)
+      assert(app.util.type(createConsult) === 'object')
+
+      hasCreateConsultRemind = await trace.create.hasCreateConsultRemind(consultId)
+      assert(hasCreateConsultRemind === true)
+
+      createConsultCount = await trace.create.getCreateConsultCount(null, demand.id)
+      assert(createConsultCount === 2)
+
+      createConsultCount = await trace.create.getCreateConsultCount(user1.id, demand.id)
+      assert(createConsultCount === 1)
+
+      createConsultCount = await trace.create.getCreateConsultCount(user2.id, demand.id)
+      assert(createConsultCount === 1)
+
+      createConsultList = await trace.create.getCreateConsultList(null, demand.id, { page: 0, page_size: 1000 })
+      assert(createConsultList.length === 2)
+
+      createConsultList = await trace.create.getCreateConsultList(user1.id, demand.id, { page: 0, page_size: 1000 })
+      assert(createConsultList.length === 1)
+
+      createConsultList = await trace.create.getCreateConsultList(user2.id, demand.id, { page: 0, page_size: 1000 })
+      assert(createConsultList.length === 1)
+
+      createConsultRemindList = await trace.create.getCreateConsultRemindList(user1.id, { page: 0, page_size: 1000 })
+      assert(createConsultRemindList.length === 1)
+
+      createConsultRemindCount = await trace.create.getCreateConsultRemindCount(user1.id)
+      assert(createConsultRemindCount === 1)
+
+      createConsultUnreadRemindCount = await trace.create.getCreateConsultUnreadRemindCount(user1.id)
+      assert(createConsultUnreadRemindCount === 1)
+
+
+
+
+      // 再咨询一次
+      consultId = await project.consult.createConsult({
+        demand_id: demand.id,
+        content: content,
+      })
+
+
+
+      hasCreateConsult = await trace.create.hasCreateConsult(consultId)
+      assert(hasCreateConsult === true)
+
+      createConsult = await trace.create.getCreateConsult(consultId)
+      assert(app.util.type(createConsult) === 'object')
+
+      hasCreateConsultRemind = await trace.create.hasCreateConsultRemind(consultId)
+      assert(hasCreateConsultRemind === true)
+
+      createConsultCount = await trace.create.getCreateConsultCount(null, demand.id)
+      assert(createConsultCount === 3)
+
+      createConsultCount = await trace.create.getCreateConsultCount(user1.id, demand.id)
+      assert(createConsultCount === 1)
+
+      createConsultCount = await trace.create.getCreateConsultCount(user2.id, demand.id)
+      assert(createConsultCount === 2)
+
+      createConsultList = await trace.create.getCreateConsultList(null, demand.id, { page: 0, page_size: 1000 })
+      assert(createConsultList.length === 3)
+
+      createConsultList = await trace.create.getCreateConsultList(user1.id, demand.id, { page: 0, page_size: 1000 })
+      assert(createConsultList.length === 1)
+
+      createConsultList = await trace.create.getCreateConsultList(user2.id, demand.id, { page: 0, page_size: 1000 })
+      assert(createConsultList.length === 2)
+
+      createConsultRemindList = await trace.create.getCreateConsultRemindList(user1.id, { page: 0, page_size: 1000 })
+      assert(createConsultRemindList.length === 2)
+
+      createConsultRemindCount = await trace.create.getCreateConsultRemindCount(user1.id)
+      assert(createConsultRemindCount === 2)
+
+      createConsultUnreadRemindCount = await trace.create.getCreateConsultUnreadRemindCount(user1.id)
+      assert(createConsultUnreadRemindCount === 2)
+
+
+      // 删掉一个
+      await project.consult.deleteConsult(consultId)
+
+
+
+      hasCreateConsult = await trace.create.hasCreateConsult(consultId)
+      assert(hasCreateConsult === false)
+
+      createConsult = await trace.create.getCreateConsult(consultId)
+      assert(createConsult == null)
+
+      hasCreateConsultRemind = await trace.create.hasCreateConsultRemind(consultId)
+      assert(hasCreateConsultRemind === false)
+
+      createConsultCount = await trace.create.getCreateConsultCount(null, demand.id)
+      assert(createConsultCount === 2)
+
+      createConsultCount = await trace.create.getCreateConsultCount(user1.id, demand.id)
+      assert(createConsultCount === 1)
+
+      createConsultCount = await trace.create.getCreateConsultCount(user2.id, demand.id)
+      assert(createConsultCount === 1)
+
+      createConsultList = await trace.create.getCreateConsultList(null, demand.id, { page: 0, page_size: 1000 })
+      assert(createConsultList.length === 2)
+
+      createConsultList = await trace.create.getCreateConsultList(user1.id, demand.id, { page: 0, page_size: 1000 })
+      assert(createConsultList.length === 1)
+
+      createConsultList = await trace.create.getCreateConsultList(user2.id, demand.id, { page: 0, page_size: 1000 })
+      assert(createConsultList.length === 1)
+
+      createConsultRemindList = await trace.create.getCreateConsultRemindList(user1.id, { page: 0, page_size: 1000 })
+      assert(createConsultRemindList.length === 1)
+
+      createConsultRemindCount = await trace.create.getCreateConsultRemindCount(user1.id)
+      assert(createConsultRemindCount === 1)
+
+      createConsultUnreadRemindCount = await trace.create.getCreateConsultUnreadRemindCount(user1.id)
+      assert(createConsultUnreadRemindCount === 1)
+
+
+
+      // 标记已读
+      await trace.create.readCreateConsultRemind(user1.id)
+
+      createConsultRemindCount = await trace.create.getCreateConsultRemindCount(user1.id)
+      assert(createConsultRemindCount === 1)
+
+      createConsultUnreadRemindCount = await trace.create.getCreateConsultUnreadRemindCount(user1.id)
+      assert(createConsultUnreadRemindCount === 0)
+
+    })
+
+
   })
 })
