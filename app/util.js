@@ -85,6 +85,10 @@ module.exports = {
 
   },
 
+  formatMobile(mobile) {
+    return mobile.replace(/(\d{3})(\d{5})(\d{3})/, '$1*****$3')
+  },
+
   parseCover(html) {
     if (html) {
       const result = html.match(/<img[^>]+src="([^"]+)"/i)

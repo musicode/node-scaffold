@@ -53,6 +53,10 @@ module.exports = app => {
         delete result.user_number
       }
 
+      if (result.mobile) {
+        result.mobile = util.formatMobile(result.mobile)
+      }
+
       result.id = number
       result.create_time = result.create_time.getTime()
       result.update_time = result.update_time.getTime()
