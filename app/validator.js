@@ -15,11 +15,33 @@ validator.addRule(
 )
 
 validator.addRule(
+  'page',
+  (rule, value) => {
+    if (value != null) {
+      if (util.type(value) !== 'number' || value <= 0) {
+        return 'must be a positive number'
+      }
+    }
+  }
+)
+
+validator.addRule(
+  'page_size',
+  (rule, value) => {
+    if (value != null) {
+      if (util.type(value) !== 'number' || value <= 0) {
+        return 'must be a positive number'
+      }
+    }
+  }
+)
+
+validator.addRule(
   'sort_by',
   (rule, value) => {
     if (value) {
       if (util.type(value) !== 'string') {
-        return 'sort_by must be a string.'
+        return 'must be a string.'
       }
     }
   }
@@ -34,7 +56,7 @@ validator.addRule(
       }
       value = value.toLowerCase()
       if (value !== 'asc' && value !== 'desc') {
-        return 'sort_order must be "asc" or "desc".'
+        return 'must be "asc" or "desc".'
       }
     }
   }

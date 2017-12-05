@@ -229,6 +229,11 @@ module.exports = app => {
   )
 
   app.get(
+    '/api/v1/post/list',
+    v1.post.list
+  )
+
+  app.get(
     '/api/v1/post/detail',
     v1.post.detail
   )
@@ -302,6 +307,11 @@ module.exports = app => {
     v1.comment.detail
   )
 
+  app.get(
+    '/api/v1/comment/list',
+    v1.comment.list
+  )
+
   // =============================================
   // 项目
   // =============================================
@@ -319,6 +329,11 @@ module.exports = app => {
   app.get(
     '/api/v1/demand/delete',
     v1.demand.delete
+  )
+
+  app.get(
+    '/api/v1/demand/list',
+    v1.demand.list
   )
 
   app.get(
@@ -393,6 +408,11 @@ module.exports = app => {
   app.get(
     '/api/v1/consult/detail',
     v1.consult.detail
+  )
+
+  app.get(
+    '/api/v1/consult/list',
+    v1.consult.list
   )
 
   // =============================================

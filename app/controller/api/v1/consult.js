@@ -16,9 +16,9 @@ module.exports = app => {
         consult_id: 'string',
       })
 
-      const { article } = this.ctx.service
+      const { project } = this.ctx.service
 
-      return await article.consult.checkConsultAvailableByNumber(input.consult_id, true)
+      return await project.consult.checkConsultAvailableByNumber(input.consult_id, true)
 
     }
 
@@ -26,11 +26,11 @@ module.exports = app => {
 
       let consult = await this.checkConsult()
 
-      const { article } = this.ctx.service
+      const { project } = this.ctx.service
 
-      consult = await article.consult.viewConsult(consult)
+      consult = await project.consult.viewConsult(consult)
 
-      this.output.consult = await article.consult.toExternal(consult)
+      this.output.consult = await project.consult.toExternal(consult)
 
     }
 
@@ -64,8 +64,8 @@ module.exports = app => {
           required: false,
           type: 'number'
         },
-        page: 'number',
-        page_size: 'number',
+        page: 'page',
+        page_size: 'page_size',
         sort_by: {
           required: false,
           type: 'sort_by',
@@ -76,7 +76,7 @@ module.exports = app => {
         },
       })
 
-      const { account, article } = this.ctx.service
+      const { account, project } = this.ctx.service
       const currentUser = await account.session.getCurrentUser()
 
       const where = { }
@@ -87,7 +87,7 @@ module.exports = app => {
       }
 
       if (input.demand_id) {
-        const demand = await article.demand.checkPostAvailableByNumber(input.demand_id)
+        const demand = await project.demand.checkDemandAvailableByNumber(input.demand_id)
         where.demand_id = demand.id
       }
 
@@ -101,13 +101,13 @@ module.exports = app => {
         sort_order: input.sort_order || 'desc',
         sort_by: input.sort_by || 'create_time'
       }
-      const list = await article.consult.getConsultList(where, options)
-      const count = await article.consult.getConsultCount(where)
+      const list = await project.consult.getConsultList(where, options)
+      const count = await project.consult.getConsultCount(where)
 
       await util.each(
         list,
         async (item, index) => {
-          list[ index ] = await article.consult.toExternal(item)
+          list[ index ] = await project.consult.toExternal(item)
         }
       )
 
@@ -136,20 +136,20 @@ module.exports = app => {
         }
       })
 
-      const { article } = this.ctx.service
+      const { project } = this.ctx.service
 
-      const demand = await article.demand.checkPostAvailableByNumber(input.demand_id)
+      const demand = await project.demand.checkDemandAvailableByNumber(input.demand_id)
       input.demand_id = demand.id
 
       if (input.parent_id) {
-        const consult = await article.consult.checkConsultAvailableByNumber(input.parent_id)
+        const consult = await project.consult.checkConsultAvailableByNumber(input.parent_id)
         input.parent_id = consult.id
       }
 
-      const consultId = await article.consult.createConsult(input)
-      const consult = await article.consult.getFullConsultById(consultId)
+      const consultId = await project.consult.createConsult(input)
+      const consult = await project.consult.getFullConsultById(consultId)
 
-      this.output.consult = await article.consult.toExternal(consult)
+      this.output.consult = await project.consult.toExternal(consult)
 
     }
 
@@ -168,7 +168,7 @@ module.exports = app => {
         },
       })
 
-      const consultService = this.ctx.service.article.consult
+      const consultService = this.ctx.service.project.consult
 
       const consult = await consultService.checkConsultAvailableByNumber(input.consult_id)
 
@@ -180,9 +180,9 @@ module.exports = app => {
 
       const consult = await this.checkConsult()
 
-      const { article } = this.ctx.service
+      const { project } = this.ctx.service
 
-      await article.consult.deleteConsult(consult)
+      await project.consult.deleteConsult(consult)
 
     }
 

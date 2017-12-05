@@ -29,7 +29,7 @@ module.exports = app => {
 
     async toExternal(follow) {
 
-      const { account, article } = this.service
+      const { account, article, project } = this.service
       const { resource_id, resource_type, creator_id } = follow
 
       let type, resource, resourceService
@@ -38,14 +38,18 @@ module.exports = app => {
       }
       else if (resource_type == TYPE_DEMAND) {
         type = 'demand'
+        resource = await project.demand.getFullDemandById(resource_id)
+        resource = await project.demand.toExternal(resource)
       }
       else if (resource_type == TYPE_POST) {
         type = 'post'
-        resource = await article.post.getPostById(resource_id)
+        resource = await article.post.getFullPostById(resource_id)
         resource = await article.post.toExternal(resource)
       }
       else if (resource_type == USER) {
-        type = 'comment'
+        type = 'user'
+        resource = await account.user.getFullUserById(resource_id)
+        resource = await account.user.toExternal(resource)
       }
       else if (resource_type == TYPE_REPLY) {
         type = 'reply'

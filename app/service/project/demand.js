@@ -41,9 +41,6 @@ module.exports = app => {
 
       const { account, trace } = this.service
 
-      const user = await account.user.getFullUserById(user_id)
-      result.user = await account.user.toExternal(user)
-
       const currentUser = await account.session.getCurrentUser()
       if (currentUser) {
         result.has_like = await trace.like.hasLikeDemand(currentUser.id, id)
@@ -56,6 +53,9 @@ module.exports = app => {
         }
 
       }
+
+      const user = await account.user.getFullUserById(user_id)
+      result.user = await account.user.toExternal(user)
 
       result.create_time = result.create_time.getTime()
       result.update_time = result.update_time.getTime()

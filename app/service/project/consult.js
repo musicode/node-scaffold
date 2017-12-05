@@ -40,6 +40,16 @@ module.exports = app => {
       result.id = number
 
       const { account, project, trace, } = this.service
+
+      const currentUser = await account.session.getCurrentUser()
+      if (currentUser) {
+        if (currentUser.id === user_id) {
+          result.can_update = true
+          const subCount = await this.getConsultSubCount(id)
+          result.can_delete = subCount === 0
+        }
+      }
+
       const user = await account.user.getFullUserById(user_id)
       result.user = await account.user.toExternal(user)
 
@@ -53,15 +63,6 @@ module.exports = app => {
 
       const demand = await project.demand.getFullDemandById(demand_id)
       result.demand = await project.demand.toExternal(demand)
-
-      const currentUser = await account.session.getCurrentUser()
-      if (currentUser) {
-        if (currentUser.id === user_id) {
-          result.can_update = true
-          const subCount = await this.getConsultSubCount(id)
-          result.can_delete = subCount === 0
-        }
-      }
 
       result.create_time = result.create_time.getTime()
       result.update_time = result.update_time.getTime()

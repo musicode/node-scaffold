@@ -40,15 +40,6 @@ module.exports = app => {
 
       result.cover = util.parseCover(result.content)
 
-      const { account, trace } = this.service
-      if (anonymous === limit.ANONYMOUS_YES) {
-        result.user = account.user.anonymous
-      }
-      else {
-        const user = await account.user.getFullUserById(user_id)
-        result.user = await account.user.toExternal(user)
-      }
-
       const currentUser = await account.session.getCurrentUser()
       if (currentUser) {
         result.has_like = await trace.like.hasLikePost(currentUser.id, id)
@@ -60,6 +51,15 @@ module.exports = app => {
           result.can_delete = subCount === 0
         }
 
+      }
+
+      const { account, trace } = this.service
+      if (anonymous === limit.ANONYMOUS_YES) {
+        result.user = account.user.anonymous
+      }
+      else {
+        const user = await account.user.getFullUserById(user_id)
+        result.user = await account.user.toExternal(user)
       }
 
       result.create_time = result.create_time.getTime()

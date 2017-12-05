@@ -64,8 +64,8 @@ module.exports = app => {
           required: false,
           type: 'number'
         },
-        page: 'number',
-        page_size: 'number',
+        page: 'page',
+        page_size: 'page_size',
         sort_by: {
           required: false,
           type: 'sort_by',

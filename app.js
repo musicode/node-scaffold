@@ -93,7 +93,7 @@ module.exports = app => {
 
       const data = { where: options.where }
 
-      if (options.page && options.page_size) {
+      if (options.page > 0 && options.page_size > 0) {
         data.offset = (options.page - 1) * options.page_size
         data.limit = options.page_size
       }

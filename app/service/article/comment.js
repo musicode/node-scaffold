@@ -41,6 +41,16 @@ module.exports = app => {
       result.id = number
 
       const { account, article, trace, } = this.service
+
+      const currentUser = await account.session.getCurrentUser()
+      if (currentUser) {
+        if (currentUser.id === user_id) {
+          result.can_update = true
+          const subCount = await this.getCommentSubCount(id)
+          result.can_delete = subCount === 0
+        }
+      }
+
       if (anonymous === limit.ANONYMOUS_YES) {
         result.user = account.user.anonymous
       }
@@ -64,15 +74,6 @@ module.exports = app => {
 
       const post = await article.post.getFullPostById(post_id)
       result.post = await article.post.toExternal(post)
-
-      const currentUser = await account.session.getCurrentUser()
-      if (currentUser) {
-        if (currentUser.id === user_id) {
-          result.can_update = true
-          const subCount = await this.getCommentSubCount(id)
-          result.can_delete = subCount === 0
-        }
-      }
 
       result.create_time = result.create_time.getTime()
       result.update_time = result.update_time.getTime()

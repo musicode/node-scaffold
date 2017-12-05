@@ -47,6 +47,8 @@ module.exports = app => {
       }
       else if (resource_type == TYPE_CONSULT) {
         type = 'consult'
+        resource = await project.consult.getFullConsultById(resource_id)
+        resource = await project.consult.toExternal(resource)
       }
       else if (resource_type == TYPE_POST) {
         type = 'post'

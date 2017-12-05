@@ -88,10 +88,16 @@ module.exports = app => {
 
       this.validate(input, {
         user_id: 'string',
-        page: 'number',
-        page_size: 'number',
-        sort_by: 'sort_by',
-        sort_order: 'sort_order',
+        page: 'page',
+        page_size: 'page_size',
+        sort_by: {
+          required: false,
+          type: 'sort_by',
+        },
+        sort_order: {
+          required: false,
+          type: 'sort_order',
+        },
       })
 
 
@@ -156,10 +162,16 @@ module.exports = app => {
 
       this.validate(input, {
         user_id: 'string',
-        page: 'number',
-        page_size: 'number',
-        sort_by: 'sort_by',
-        sort_order: 'sort_order',
+        page: 'page',
+        page_size: 'page_size',
+        sort_by: {
+          required: false,
+          type: 'sort_by',
+        },
+        sort_order: {
+          required: false,
+          type: 'sort_order',
+        },
       })
 
 
