@@ -301,7 +301,100 @@ module.exports = app => {
     '/api/v1/comment/detail',
     v1.comment.detail
   )
-  
+
+  // =============================================
+  // 项目
+  // =============================================
+
+  app.get(
+    '/api/v1/demand/create',
+    v1.demand.create
+  )
+
+  app.get(
+    '/api/v1/demand/update',
+    v1.demand.update
+  )
+
+  app.get(
+    '/api/v1/demand/delete',
+    v1.demand.delete
+  )
+
+  app.get(
+    '/api/v1/demand/detail',
+    v1.demand.detail
+  )
+
+  app.get(
+    '/api/v1/demand/view',
+    v1.demand.view
+  )
+
+  app.get(
+    '/api/v1/demand/follow',
+    v1.demand.follow
+  )
+
+  app.get(
+    '/api/v1/demand/follow/undo',
+    v1.demand.unfollow
+  )
+
+  app.get(
+    '/api/v1/demand/follow/count',
+    v1.demand.getFollowCount
+  )
+
+  app.get(
+    '/api/v1/demand/follow/list',
+    v1.demand.getFollowList
+  )
+
+  app.get(
+    '/api/v1/demand/like',
+    v1.demand.like
+  )
+
+  app.get(
+    '/api/v1/demand/like/undo',
+    v1.demand.unlike
+  )
+
+  app.get(
+    '/api/v1/demand/like/count',
+    v1.demand.getLikeCount
+  )
+
+  app.get(
+    '/api/v1/demand/like/list',
+    v1.demand.getLikeList
+  )
+
+  // =============================================
+  // 咨询
+  // =============================================
+
+  app.get(
+    '/api/v1/consult/create',
+    v1.consult.create
+  )
+
+  app.get(
+    '/api/v1/consult/update',
+    v1.consult.update
+  )
+
+  app.get(
+    '/api/v1/consult/delete',
+    v1.consult.delete
+  )
+
+  app.get(
+    '/api/v1/consult/detail',
+    v1.consult.detail
+  )
+
   // =============================================
   // 反馈
   // =============================================
@@ -310,7 +403,7 @@ module.exports = app => {
     '/api/v1/issue/create',
     v1.issue.create
   )
-  
+
   // =============================================
   // 举报
   // =============================================
