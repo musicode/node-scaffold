@@ -31,6 +31,13 @@ module.exports = appInfo => {
     reportViewByGuest: false,
   }
 
+  config.avatar = {
+    male: '',
+    female: '',
+    group: '',
+    anonymous: '',
+  }
+
   // 全局中间件
   config.middleware = [
     'errorHandler',

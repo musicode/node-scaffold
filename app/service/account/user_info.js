@@ -39,7 +39,7 @@ module.exports = app => {
 
     async setUserInfo(data) {
 
-      const { account } = this.ctx.service
+      const { account } = this.service
 
       const currentUser = await account.session.checkCurrentUser()
 
@@ -57,7 +57,7 @@ module.exports = app => {
             eventEmitter.USER_UDPATE,
             {
               userId,
-              fields,
+              service: this.service,
             }
           )
           return true

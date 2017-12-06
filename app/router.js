@@ -489,6 +489,31 @@ module.exports = app => {
     v1.question.getLikeList
   )
 
+  app.get(
+    '/api/v1/question/invite',
+    v1.question.invite
+  )
+
+  app.get(
+    '/api/v1/question/invite/undo',
+    v1.question.uninvite
+  )
+
+  app.get(
+    '/api/v1/question/invite/list',
+    v1.question.inviteList
+  )
+
+  app.get(
+    '/api/v1/question/invite/ignore',
+    v1.question.ignoreInvite
+  )
+
+  app.get(
+    '/api/v1/question/invite/suggestion',
+    v1.question.inviteSuggestion
+  )
+
   // =============================================
   // 回复
   // =============================================
@@ -534,6 +559,20 @@ module.exports = app => {
   app.get(
     '/api/v1/report/create',
     v1.report.create
+  )
+
+  // =============================================
+  // 动态
+  // =============================================
+
+  app.get(
+    '/api/v1/trace/friend',
+    v1.trace.friend
+  )
+
+  app.get(
+    '/api/v1/sync',
+    v1.system.sync
   )
 
 }

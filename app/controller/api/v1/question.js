@@ -404,6 +404,96 @@ module.exports = app => {
 
     }
 
+    invite() {
+
+      const input = this.filter(this.input, {
+        question_id: 'number',
+        user_id: 'number',
+      })
+
+      this.validate(input, {
+        question_id: 'number',
+        user_id: 'number',
+      })
+
+      const { account, qa, trace } = this.ctx.service
+
+      const question = await qa.question.checkQuestionAvailableByNumber(input.question_id)
+      const user = await account.user.checkUserAvailableByNumber(input.user_id)
+
+      await trace.invite.inviteQuestion(user, question)
+
+    }
+
+    uninvite() {
+
+      const input = this.filter(this.input, {
+        question_id: 'number',
+        user_id: 'number',
+      })
+
+      this.validate(input, {
+        question_id: 'number',
+        user_id: 'number',
+      })
+
+      const { account, qa, trace } = this.ctx.service
+
+      const question = await qa.question.checkQuestionAvailableByNumber(input.question_id)
+      const user = await account.user.checkUserAvailableByNumber(input.user_id)
+
+      await trace.invite.uninviteQuestion(user, question)
+
+    }
+
+    ignoreInvite() {
+
+      const input = this.filter(this.input, {
+        question_id: 'number',
+        user_id: 'number',
+      })
+
+      this.validate(input, {
+        question_id: 'number',
+        user_id: 'number',
+      })
+
+      const { account, qa, trace } = this.ctx.service
+
+      const question = await qa.question.checkQuestionAvailableByNumber(input.question_id)
+      const user = await account.user.checkUserAvailableByNumber(input.user_id)
+
+      await trace.invite.ignoreQuestion(user, question)
+
+    }
+
+    inviteList() {
+
+      // [TODO] 这里要做分页
+      const { account, qa, trace } = this.ctx.service
+
+      const currentUser = await account.session.checkCurrentUser()
+
+      const list = await trace.invite.getInviteQuestionList(null, currentUser.id, null, { })
+
+      await util.each(
+        list,
+        async (item, index) => {
+          list[ index ] = await trace.invite.toExternal(item)
+        }
+      )
+
+      this.output.list = list
+
+    }
+
+    inviteSuggestion() {
+
+      const question = await this.checkQuestion()
+
+      // 待完善
+    }
+
   }
 
   return QuestionController

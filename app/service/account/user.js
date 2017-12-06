@@ -152,12 +152,17 @@ module.exports = app => {
 
       const user = await this.getUserById(userId)
 
-      const userInfo = await account.userInfo.getUserInfoByUserId(userId)
+      const userInfo = await account.userInfo.getUserInfoByUserId(user.id)
       for (let key in userInfo) {
         if (!user[key]) {
           user[key] = userInfo[key]
         }
       }
+
+      user.like_count = await this.getUserLikeCount(user.id)
+      user.write_count = await this.getUserWriteCount(user.id)
+      user.followee_count = await this.getUserFolloweeCount(user.id)
+      user.follower_count = await this.getUserFollowerCount(user.id)
 
       return user
 
@@ -600,13 +605,7 @@ module.exports = app => {
 
       await this.increaseUserViewCount(user.id)
 
-      user = await this.getFullUserById(user.id)
-      user.like_count = await this.getUserLikeCount(user.id)
-      user.write_count = await this.getUserWriteCount(user.id)
-      user.followee_count = await this.getUserFolloweeCount(user.id)
-      user.follower_count = await this.getUserFollowerCount(user.id)
-
-      return user
+      return await this.getFullUserById(user.id)
 
     }
 

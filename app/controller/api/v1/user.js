@@ -119,7 +119,7 @@ module.exports = app => {
         nickname: 'trim',
         gender: 'number',
         avatar: 'trim',
-        domain: ['trim', 'lower'],
+        domain: 'trim',
         intro: 'trim',
         company: 'trim',
         job: 'trim',
