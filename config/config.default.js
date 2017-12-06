@@ -25,6 +25,8 @@ module.exports = appInfo => {
     commentViewByGuest: false,
     demandViewByGuest: false,
     consultViewByGuest: false,
+    questionViewByGuest: false,
+    replyViewByGuest: false,
     issueViewByGuest: false,
     reportViewByGuest: false,
   }

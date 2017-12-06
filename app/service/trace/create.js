@@ -826,6 +826,391 @@ module.exports = app => {
       return await trace.createRemind.readCreateRemind(receiverId, TYPE_CONSULT)
     }
 
+
+
+
+
+
+
+
+    /**
+     * 创建问题
+     *
+     * @param {number} questionId
+     * @param {number} anonymous
+     */
+    async createQuestion(questionId, anonymous) {
+
+      let traceId = await this._addCreate({
+        resource_id: questionId,
+        resource_type: TYPE_QUESTION,
+        anonymous,
+      })
+
+      if (traceId == null) {
+        this.throw(
+          code.DB_INSERT_ERROR,
+          '创建失败'
+        )
+      }
+
+    }
+
+    /**
+     * 取消创建问题
+     *
+     * @param {number} questionId
+     */
+    async uncreateQuestion(questionId) {
+
+      const record = await this._removeCreate({
+        resource_id: questionId,
+        resource_type: TYPE_QUESTION,
+      })
+
+      if (record == null) {
+        this.throw(
+          code.DB_UPDATE_ERROR,
+          '取消创建失败'
+        )
+      }
+
+    }
+
+    /**
+     * 用户是否已创建问题
+     *
+     * @param {number} questionId
+     * @return {boolean}
+     */
+    async hasCreateQuestion(questionId) {
+
+      const record = await this.getCreateQuestion(questionId)
+
+      return record ? true : false
+
+    }
+
+    /**
+     * 用户是否已创建问题
+     *
+     * @param {number} questionId
+     * @return {boolean}
+     */
+    async getCreateQuestion(questionId) {
+
+      return await this.findOneBy({
+        resource_id: questionId,
+        resource_type: TYPE_QUESTION,
+        status: STATUS_ACTIVE,
+      })
+
+    }
+
+
+
+
+    /**
+     * 创建回复
+     *
+     * @param {number} replyId
+     * @param {number} anonymous
+     * @param {number} questionId
+     * @param {number} rootId
+     * @param {number} parentId
+     */
+    async createReply(replyId, anonymous, questionId, rootId, parentId) {
+
+      const { qa, trace } = this.service
+
+      const question = await qa.question.checkQuestionAvailableById(questionId, true)
+
+      let rootReply
+      if (rootId) {
+        rootReply = await qa.reply.checkReplyAvailableById(rootId, true)
+      }
+
+      let parentReply
+      if (parentId) {
+        parentReply = await qa.reply.checkReplyAvailableById(parentId, true)
+      }
+
+      const isSuccess = await this.transaction(
+        async () => {
+
+          let row = {
+            resource_id: replyId,
+            resource_type: TYPE_REPLY,
+            resource_master_id: question.id,
+            anonymous,
+          }
+
+          if (parentReply) {
+            row.resource_parent_id = parentReply.id
+          }
+
+          const traceId = await this._addCreate(row)
+
+          let record
+
+          if (util.type(traceId) === 'object') {
+            record = traceId
+            traceId = record.id
+          }
+          else {
+            record = await this.findOneBy({
+              id: traceId,
+            })
+          }
+
+          row = {
+            trace_id: traceId,
+            resource_type: record.resource_type,
+            sender_id: record.creator_id,
+            receiver_id: question.user_id,
+          }
+
+          if (parentReply) {
+            row.resource_parent_id = parentReply.id
+          }
+
+          await trace.createRemind.addCreateRemind(row)
+
+          if (rootReply) {
+            row.receiver_id = rootReply.user_id
+            await trace.createRemind.addCreateRemind(row)
+          }
+
+          if (parentReply && rootId !== parentId) {
+            row.receiver_id = parentReply.user_id
+            await trace.createRemind.addCreateRemind(row)
+          }
+
+          return true
+
+        }
+      )
+
+      if (!isSuccess) {
+        this.throw(
+          code.DB_INSERT_ERROR,
+          '创建失败'
+        )
+      }
+
+    }
+
+    /**
+     * 取消创建回复
+     *
+     * @param {number} replyId
+     */
+    async uncreateReply(replyId) {
+
+      const { qa, trace } = this.service
+
+      const reply = await qa.reply.checkReplyAvailableById(replyId)
+      const question = await qa.question.checkQuestionAvailableById(reply.question_id)
+
+      const isSuccess = await this.transaction(
+        async () => {
+
+          const record = await this._removeCreate({
+            resource_id: replyId,
+            resource_type: TYPE_REPLY,
+          })
+
+          await trace.createRemind.removeCreateRemind(question.user_id, record.id)
+
+          if (reply.root_id) {
+            const rootReply = await await qa.reply.checkReplyAvailableById(reply.root_id)
+            await trace.createRemind.removeCreateRemind(rootReply.user_id, record.id)
+          }
+
+          if (reply.parent_id && reply.parent_id !== reply.root_id) {
+            const parentReply = await await qa.reply.checkReplyAvailableById(reply.parent_id)
+            await trace.createRemind.removeCreateRemind(parentReply.user_id, record.id)
+          }
+
+          return true
+
+        }
+      )
+
+      if (!isSuccess) {
+        this.throw(
+          code.DB_UPDATE_ERROR,
+          '取消创建失败'
+        )
+      }
+
+    }
+
+    /**
+     * 用户是否已创建回复
+     *
+     * @param {number} replyId
+     * @return {boolean}
+     */
+    async hasCreateReply(replyId) {
+
+      const record = await this.getCreateReply(replyId)
+
+      return record ? true : false
+
+    }
+
+    /**
+     * 用户是否已创建回复
+     *
+     * @param {number} replyId
+     * @return {boolean}
+     */
+    async getCreateReply(replyId) {
+
+      return await this.findOneBy({
+        resource_id: replyId,
+        resource_type: TYPE_REPLY,
+        status: STATUS_ACTIVE,
+      })
+
+    }
+
+
+    /**
+     * 用户回复问题是否已提醒作者
+     *
+     * @param {number} replyId
+     * @return {boolean}
+     */
+    async hasCreateReplyRemind(replyId) {
+
+      const { qa, trace } = this.service
+
+      const record = await this.findOneBy({
+        resource_id: replyId,
+        resource_type: TYPE_REPLY,
+      })
+      if (!record) {
+        return false
+      }
+
+      const reply = await qa.reply.checkReplyAvailableById(replyId)
+      if (!reply) {
+        return false
+      }
+
+      const question = await qa.question.checkQuestionAvailableById(reply.question_id)
+      if (!question) {
+        return false
+      }
+
+      let hasRootRemind = true
+      if (reply.root_id) {
+        const rootReply = await qa.reply.checkReplyAvailableById(reply.root_id)
+        hasRootRemind = await trace.createRemind.hasCreateRemind(rootReply.user_id, record.id)
+      }
+
+      let hasParentRemind = true
+      if (reply.parent_id && reply.parent_id !== reply.root_id) {
+        const parentReply = await qa.reply.checkReplyAvailableById(reply.parent_id)
+        hasParentRemind = await trace.createRemind.hasCreateRemind(parentReply.user_id, record.id)
+      }
+
+      const hasQuestionRemind = await trace.createRemind.hasCreateRemind(question.user_id, record.id)
+
+      return hasQuestionRemind && hasRootRemind && hasParentRemind
+
+    }
+
+    /**
+     * 读取问题的回复数
+     *
+     * @param {number} creatorId
+     * @param {number} questionId
+     * @return {number}
+     */
+    async getCreateReplyCount(creatorId, questionId) {
+      const where = {
+        resource_type: TYPE_REPLY,
+        status: STATUS_ACTIVE,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      if (questionId) {
+        where.resource_master_id = questionId
+      }
+      return await this.countBy(where)
+    }
+
+    /**
+     * 获取问题的回复列表
+     *
+     * @param {number} creatorId
+     * @param {number} questionId
+     * @param {Object} options
+     * @return {Array}
+     */
+    async getCreateReplyList(creatorId, questionId, options) {
+      const where = {
+        resource_type: TYPE_REPLY,
+        status: STATUS_ACTIVE,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      if (questionId) {
+        where.resource_master_id = questionId
+      }
+      options.where = where
+      return await this.findBy(options)
+    }
+
+    /**
+     * 获取用户被回复问题的提醒列表
+     *
+     * @param {number} receiverId
+     * @param {Object} options
+     * @return {Array}
+     */
+    async getCreateReplyRemindList(receiverId, options) {
+      const { trace } = this.service
+      return await trace.createRemind.getCreateRemindList(receiverId, TYPE_REPLY, options)
+    }
+
+    /**
+     * 获取用户被回复问题的提醒数量
+     *
+     * @param {number} receiverId
+     * @return {number}
+     */
+    async getCreateReplyRemindCount(receiverId) {
+      const { trace } = this.service
+      return await trace.createRemind.getCreateRemindCount(receiverId, TYPE_REPLY)
+    }
+
+    /**
+     * 获取用户被回复问题的未读提醒数量
+     *
+     * @param {number} receiverId
+     * @return {number}
+     */
+    async getCreateReplyUnreadRemindCount(receiverId) {
+      const { trace } = this.service
+      return await trace.createRemind.getUnreadCreateRemindCount(receiverId, TYPE_REPLY)
+    }
+
+    /**
+     * 标记已读
+     *
+     * @param {number} receiverId
+     */
+    async readCreateReplyRemind(receiverId) {
+      const { trace } = this.service
+      return await trace.createRemind.readCreateRemind(receiverId, TYPE_REPLY)
+    }
+
   }
   return Create
 }

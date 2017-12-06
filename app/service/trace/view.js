@@ -445,6 +445,200 @@ module.exports = app => {
       return await trace.viewRemind.readViewRemind(receiverId, TYPE_DEMAND)
     }
 
+
+
+
+
+
+    /**
+     * 浏览问题
+     *
+     * @param {number|Object} questionId
+     */
+    async viewQuestion(questionId) {
+
+      const { account, trace, qa } = this.service
+
+      const question = await qa.question.getQuestionById(questionId)
+
+      const isSuccess = await this.transaction(
+        async () => {
+
+          let traceId = await this._addView({
+            resource_id: question.id,
+            resource_type: TYPE_QUESTION,
+          })
+
+          let record
+
+          if (util.type(traceId) === 'object') {
+            record = traceId
+            traceId = record.id
+          }
+          else if (traceId) {
+            record = await this.findOneBy({
+              id: traceId,
+            })
+          }
+
+          if (record) {
+            await trace.viewRemind.addViewRemind({
+              trace_id: traceId,
+              resource_type: record.resource_type,
+              sender_id: record.creator_id,
+              receiver_id: question.user_id,
+            })
+          }
+
+          return true
+
+        }
+      )
+
+      if (!isSuccess) {
+        this.throw(
+          code.DB_INSERT_ERROR,
+          '浏览失败'
+        )
+      }
+
+      await qa.question.increaseQuestionViewCount(question.id)
+
+    }
+
+    /**
+     * 用户是否已浏览问题
+     *
+     * @param {number} userId
+     * @param {number} questionId
+     * @return {boolean}
+     */
+    async hasViewQuestion(userId, questionId) {
+
+      const record = await this.findOneBy({
+        resource_id: questionId,
+        resource_type: TYPE_QUESTION,
+        creator_id: userId,
+        status: STATUS_ACTIVE,
+      })
+
+      return record ? true : false
+
+    }
+
+    /**
+     * 用户浏览问题是否已提醒作者
+     *
+     * @param {number} userId
+     * @param {number} questionId
+     * @return {boolean}
+     */
+    async hasViewQuestionRemind(userId, questionId) {
+
+      const { trace } = this.service
+
+      const record = await this.findOneBy({
+        resource_id: questionId,
+        resource_type: TYPE_QUESTION,
+        creator_id: userId,
+      })
+
+      if (record) {
+        return await trace.viewRemind.hasViewRemind(record.id)
+      }
+
+      return false
+
+    }
+
+    /**
+     * 读取问题的浏览数
+     *
+     * @param {number} creatorId
+     * @param {number} questionId
+     * @return {number}
+     */
+    async getViewQuestionCount(creatorId, questionId) {
+      const where = {
+        resource_type: TYPE_QUESTION,
+        status: STATUS_ACTIVE,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      if (questionId) {
+        where.resource_id = questionId
+      }
+      return await this.countBy(where)
+    }
+
+    /**
+     * 获取问题的浏览列表
+     *
+     * @param {number} creatorId
+     * @param {number} questionId
+     * @param {Object} options
+     * @return {Array}
+     */
+    async getViewQuestionList(creatorId, questionId, options) {
+      const where = {
+        resource_type: TYPE_QUESTION,
+        status: STATUS_ACTIVE,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      if (questionId) {
+        where.resource_id = questionId
+      }
+      options.where = where
+      return await this.findBy(options)
+    }
+
+    /**
+     * 获取用户被浏览问题的提醒列表
+     *
+     * @param {number} receiverId
+     * @param {Object} options
+     * @return {Array}
+     */
+    async getViewQuestionRemindList(receiverId, options) {
+      const { trace } = this.service
+      return await trace.viewRemind.getViewRemindList(receiverId, TYPE_QUESTION, options)
+    }
+
+    /**
+     * 获取用户被浏览问题的提醒数量
+     *
+     * @param {number} receiverId
+     * @return {number}
+     */
+    async getViewQuestionRemindCount(receiverId) {
+      const { trace } = this.service
+      return await trace.viewRemind.getViewRemindCount(receiverId, TYPE_QUESTION)
+    }
+
+    /**
+     * 获取用户被浏览问题的未读提醒数量
+     *
+     * @param {number} receiverId
+     * @return {number}
+     */
+    async getViewQuestionUnreadRemindCount(receiverId) {
+      const { trace } = this.service
+      return await trace.viewRemind.getUnreadViewRemindCount(receiverId, TYPE_QUESTION)
+    }
+
+    /**
+     * 标记已读
+     *
+     * @param {number} receiverId
+     */
+    async readViewQuestionRemind(receiverId) {
+      const { trace } = this.service
+      return await trace.viewRemind.readViewRemind(receiverId, TYPE_QUESTION)
+    }
+
   }
   return View
 }

@@ -30,15 +30,19 @@ module.exports = app => {
 
     async toExternal(like) {
 
-      const { account, article, project } = this.service
+      const { account, article, project, qa } = this.service
       const { resource_id, resource_type, resource_parent_id, creator_id } = like
 
       let type, resource, resourceService
       if (resource_type == TYPE_QUESTION) {
         type = 'question'
+        resource = await qa.question.getFullQuestionById(resource_id)
+        resource = await qa.question.toExternal(resource)
       }
       else if (resource_type == TYPE_REPLY) {
         type = 'reply'
+        resource = await qa.reply.getFullReplyById(resource_id)
+        resource = await qa.reply.toExternal(resource)
       }
       else if (resource_type == TYPE_DEMAND) {
         type = 'demand'
@@ -611,6 +615,467 @@ module.exports = app => {
     async readLikeDemandRemind(receiverId) {
       const { trace } = this.service
       return await trace.likeRemind.readLikeRemind(receiverId, TYPE_DEMAND)
+    }
+
+
+
+
+
+    /**
+     * 点赞问题
+     *
+     * @param {number|Object} questionId
+     */
+    async likeQuestion(questionId) {
+
+      const { account, trace, qa } = this.service
+
+      const question = await qa.question.checkQuestionAvailableById(questionId, true)
+
+      const isSuccess = await this.transaction(
+        async () => {
+
+          let traceId = await this._addLike({
+            resource_id: question.id,
+            resource_type: TYPE_QUESTION,
+          })
+
+          let record
+
+          if (util.type(traceId) === 'object') {
+            record = traceId
+            traceId = record.id
+          }
+          else {
+            record = await this.findOneBy({
+              id: traceId,
+            })
+          }
+
+          await trace.likeRemind.addLikeRemind({
+            trace_id: traceId,
+            resource_type: record.resource_type,
+            sender_id: record.creator_id,
+            receiver_id: question.user_id,
+          })
+
+          return true
+
+        }
+      )
+
+      if (!isSuccess) {
+        this.throw(
+          code.DB_INSERT_ERROR,
+          '点赞失败'
+        )
+      }
+
+      await account.user.increaseUserLikeCount(question.user_id)
+      await qa.question.increaseQuestionLikeCount(question.id)
+
+    }
+
+    /**
+     * 取消点赞问题
+     *
+     * @param {number|Object} questionId
+     */
+    async unlikeQuestion(questionId) {
+
+      const { account, trace, qa } = this.service
+
+      const question = await qa.question.checkQuestionAvailableById(questionId)
+
+      const isSuccess = await this.transaction(
+        async () => {
+
+          const record = await this._removeLike({
+            resource_id: question.id,
+            resource_type: TYPE_QUESTION,
+          })
+
+          await trace.likeRemind.removeLikeRemind(record.id)
+
+          return true
+
+        }
+      )
+
+      if (!isSuccess) {
+        this.throw(
+          code.DB_UPDATE_ERROR,
+          '取消点赞失败'
+        )
+      }
+
+      await account.user.decreaseUserLikeCount(question.user_id)
+      await qa.question.decreaseQuestionLikeCount(question.id)
+
+    }
+
+    /**
+     * 用户是否已点赞问题
+     *
+     * @param {number} userId
+     * @param {number} questionId
+     * @return {boolean}
+     */
+    async hasLikeQuestion(userId, questionId) {
+
+      const record = await this.findOneBy({
+        resource_id: questionId,
+        resource_type: TYPE_QUESTION,
+        creator_id: userId,
+        status: STATUS_ACTIVE,
+      })
+
+      return record ? true : false
+
+    }
+
+    /**
+     * 用户点赞问题是否已提醒作者
+     *
+     * @param {number} userId
+     * @param {number} questionId
+     * @return {boolean}
+     */
+    async hasLikeQuestionRemind(userId, questionId) {
+
+      const { trace } = this.service
+
+      const record = await this.findOneBy({
+        resource_id: questionId,
+        resource_type: TYPE_QUESTION,
+        creator_id: userId,
+      })
+
+      if (record) {
+        return await trace.likeRemind.hasLikeRemind(record.id)
+      }
+
+      return false
+
+    }
+
+    /**
+     * 读取问题的点赞数
+     *
+     * @param {number} creatorId
+     * @param {number} questionId
+     * @return {number}
+     */
+    async getLikeQuestionCount(creatorId, questionId) {
+      const where = {
+        resource_type: TYPE_QUESTION,
+        status: STATUS_ACTIVE,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      if (questionId) {
+        where.resource_id = questionId
+      }
+      return await this.countBy(where)
+    }
+
+    /**
+     * 获取问题的点赞列表
+     *
+     * @param {number} creatorId
+     * @param {number} questionId
+     * @param {Object} options
+     * @return {Array}
+     */
+    async getLikeQuestionList(creatorId, questionId, options) {
+      const where = {
+        resource_type: TYPE_QUESTION,
+        status: STATUS_ACTIVE,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      if (questionId) {
+        where.resource_id = questionId
+      }
+      options.where = where
+      return await this.findBy(options)
+    }
+
+    /**
+     * 获取用户被点赞问题的提醒列表
+     *
+     * @param {number} receiverId
+     * @param {Object} options
+     * @return {Array}
+     */
+    async getLikeQuestionRemindList(receiverId, options) {
+      const { trace } = this.service
+      return await trace.likeRemind.getLikeRemindList(receiverId, TYPE_QUESTION, options)
+    }
+
+    /**
+     * 获取用户被点赞问题的提醒数量
+     *
+     * @param {number} receiverId
+     * @return {number}
+     */
+    async getLikeQuestionRemindCount(receiverId) {
+      const { trace } = this.service
+      return await trace.likeRemind.getLikeRemindCount(receiverId, TYPE_QUESTION)
+    }
+
+    /**
+     * 获取用户被点赞问题的未读提醒数量
+     *
+     * @param {number} receiverId
+     * @return {number}
+     */
+    async getLikeQuestionUnreadRemindCount(receiverId) {
+      const { trace } = this.service
+      return await trace.likeRemind.getUnreadLikeRemindCount(receiverId, TYPE_QUESTION)
+    }
+
+    /**
+     * 标记已读
+     *
+     * @param {number} receiverId
+     */
+    async readLikeQuestionRemind(receiverId) {
+      const { trace } = this.service
+      return await trace.likeRemind.readLikeRemind(receiverId, TYPE_QUESTION)
+    }
+
+
+
+
+
+
+    /**
+     * 点赞回复
+     *
+     * @param {number|Object} replyId
+     */
+    async likeReply(replyId) {
+
+      const { account, trace, qa } = this.service
+
+      const reply = await qa.reply.checkReplyAvailableById(replyId, true)
+
+      const isSuccess = await this.transaction(
+        async () => {
+
+          let traceId = await this._addLike({
+            resource_id: reply.id,
+            resource_type: TYPE_REPLY,
+          })
+
+          let record
+
+          if (util.type(traceId) === 'object') {
+            record = traceId
+            traceId = record.id
+          }
+          else {
+            record = await this.findOneBy({
+              id: traceId,
+            })
+          }
+
+          await trace.likeRemind.addLikeRemind({
+            trace_id: traceId,
+            resource_type: record.resource_type,
+            sender_id: record.creator_id,
+            receiver_id: reply.user_id,
+          })
+
+          return true
+
+        }
+      )
+
+      if (!isSuccess) {
+        this.throw(
+          code.DB_INSERT_ERROR,
+          '点赞失败'
+        )
+      }
+
+      await account.user.increaseUserLikeCount(reply.user_id)
+      await qa.reply.increaseReplyLikeCount(reply.id)
+
+    }
+
+    /**
+     * 取消点赞回复
+     *
+     * @param {number|Object} replyId
+     */
+    async unlikeReply(replyId) {
+
+      const { account, trace, qa } = this.service
+
+      const reply = await qa.reply.checkReplyAvailableById(replyId)
+
+      const isSuccess = await this.transaction(
+        async () => {
+
+          const record = await this._removeLike({
+            resource_id: reply.id,
+            resource_type: TYPE_REPLY,
+          })
+
+          await trace.likeRemind.removeLikeRemind(record.id)
+
+          return true
+
+        }
+      )
+
+      if (!isSuccess) {
+        this.throw(
+          code.DB_UPDATE_ERROR,
+          '取消点赞失败'
+        )
+      }
+
+      await account.user.decreaseUserLikeCount(reply.user_id)
+      await qa.reply.decreaseReplyLikeCount(reply.id)
+
+    }
+
+    /**
+     * 用户是否已点赞回复
+     *
+     * @param {number} userId
+     * @param {number} replyId
+     * @return {boolean}
+     */
+    async hasLikeReply(userId, replyId) {
+
+      const record = await this.findOneBy({
+        resource_id: replyId,
+        resource_type: TYPE_REPLY,
+        creator_id: userId,
+        status: STATUS_ACTIVE,
+      })
+
+      return record ? true : false
+
+    }
+
+    /**
+     * 用户点赞回复是否已提醒作者
+     *
+     * @param {number} userId
+     * @param {number} replyId
+     * @return {boolean}
+     */
+    async hasLikeReplyRemind(userId, replyId) {
+
+      const { trace } = this.service
+
+      const record = await this.findOneBy({
+        resource_id: replyId,
+        resource_type: TYPE_REPLY,
+        creator_id: userId,
+      })
+
+      if (record) {
+        return await trace.likeRemind.hasLikeRemind(record.id)
+      }
+
+      return false
+
+    }
+
+    /**
+     * 读取回复的点赞数
+     *
+     * @param {number} creatorId
+     * @param {number} replyId
+     * @return {number}
+     */
+    async getLikeReplyCount(creatorId, replyId) {
+      const where = {
+        resource_type: TYPE_REPLY,
+        status: STATUS_ACTIVE,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      if (replyId) {
+        where.resource_id = replyId
+      }
+      return await this.countBy(where)
+    }
+
+    /**
+     * 获取回复的点赞列表
+     *
+     * @param {number} creatorId
+     * @param {number} replyId
+     * @param {Object} options
+     * @return {Array}
+     */
+    async getLikeReplyList(creatorId, replyId, options) {
+      const where = {
+        resource_type: TYPE_REPLY,
+        status: STATUS_ACTIVE,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      if (replyId) {
+        where.resource_id = replyId
+      }
+      options.where = where
+      return await this.findBy(options)
+    }
+
+    /**
+     * 获取用户被点赞回复的提醒列表
+     *
+     * @param {number} receiverId
+     * @param {Object} options
+     * @return {Array}
+     */
+    async getLikeReplyRemindList(receiverId, options) {
+      const { trace } = this.service
+      return await trace.likeRemind.getLikeRemindList(receiverId, TYPE_REPLY, options)
+    }
+
+    /**
+     * 获取用户被点赞回复的提醒数量
+     *
+     * @param {number} receiverId
+     * @return {number}
+     */
+    async getLikeReplyRemindCount(receiverId) {
+      const { trace } = this.service
+      return await trace.likeRemind.getLikeRemindCount(receiverId, TYPE_REPLY)
+    }
+
+    /**
+     * 获取用户被点赞回复的未读提醒数量
+     *
+     * @param {number} receiverId
+     * @return {number}
+     */
+    async getLikeReplyUnreadRemindCount(receiverId) {
+      const { trace } = this.service
+      return await trace.likeRemind.getUnreadLikeRemindCount(receiverId, TYPE_REPLY)
+    }
+
+    /**
+     * 标记已读
+     *
+     * @param {number} receiverId
+     */
+    async readLikeReplyRemind(receiverId) {
+      const { trace } = this.service
+      return await trace.likeRemind.readLikeRemind(receiverId, TYPE_REPLY)
     }
 
   }

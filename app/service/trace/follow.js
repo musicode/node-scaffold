@@ -29,12 +29,14 @@ module.exports = app => {
 
     async toExternal(follow) {
 
-      const { account, article, project } = this.service
+      const { account, article, project, qa } = this.service
       const { resource_id, resource_type, creator_id } = follow
 
       let type, resource, resourceService
       if (resource_type == TYPE_QUESTION) {
         type = 'question'
+        resource = await qa.question.getFullQuestionById(resource_id)
+        resource = await qa.question.toExternal(resource)
       }
       else if (resource_type == TYPE_DEMAND) {
         type = 'demand'
@@ -53,6 +55,8 @@ module.exports = app => {
       }
       else if (resource_type == TYPE_REPLY) {
         type = 'reply'
+        resource = await qa.reply.getFullReplyById(resource_id)
+        resource = await qa.reply.toExternal(resource)
       }
 
       let creator = await account.user.getUserById(creator_id)
@@ -602,6 +606,464 @@ module.exports = app => {
     async readFollowDemandRemind(receiverId) {
       const { trace } = this.service
       return await trace.followRemind.readFollowRemind(receiverId, TYPE_DEMAND)
+    }
+
+
+
+
+
+
+    /**
+     * 关注问题
+     *
+     * @param {number|Object} questionId
+     */
+    async followQuestion(questionId) {
+
+      const { account, trace, qa } = this.service
+
+      const question = await qa.question.checkQuestionAvailableById(questionId, true)
+
+      const isSuccess = await this.transaction(
+        async () => {
+
+          let traceId = await this._addFollow({
+            resource_id: question.id,
+            resource_type: TYPE_QUESTION,
+          })
+
+          let record
+
+          if (util.type(traceId) === 'object') {
+            record = traceId
+            traceId = record.id
+          }
+          else {
+            record = await this.findOneBy({
+              id: traceId,
+            })
+          }
+
+          await trace.followRemind.addFollowRemind({
+            trace_id: traceId,
+            resource_type: record.resource_type,
+            sender_id: record.creator_id,
+            receiver_id: question.user_id,
+          })
+
+          return true
+
+        }
+      )
+
+      if (!isSuccess) {
+        this.throw(
+          code.DB_INSERT_ERROR,
+          '关注失败'
+        )
+      }
+
+      await qa.question.increaseQuestionFollowCount(question.id)
+
+    }
+
+    /**
+     * 取消关注问题
+     *
+     * @param {number|Object} questionId
+     */
+    async unfollowQuestion(questionId) {
+
+      const { account, trace, qa } = this.service
+
+      const question = await qa.question.checkQuestionAvailableById(questionId)
+
+      const isSuccess = await this.transaction(
+        async () => {
+
+          const record = await this._removeFollow({
+            resource_id: question.id,
+            resource_type: TYPE_QUESTION,
+          })
+
+          await trace.followRemind.removeFollowRemind(record.id)
+
+          return true
+
+        }
+      )
+
+      if (!isSuccess) {
+        this.throw(
+          code.DB_UPDATE_ERROR,
+          '取消关注失败'
+        )
+      }
+
+      await qa.question.decreaseQuestionFollowCount(question.id)
+
+    }
+
+    /**
+     * 用户是否已关注问题
+     *
+     * @param {number} userId
+     * @param {number} questionId
+     * @return {boolean}
+     */
+    async hasFollowQuestion(userId, questionId) {
+
+      const record = await this.findOneBy({
+        resource_id: questionId,
+        resource_type: TYPE_QUESTION,
+        creator_id: userId,
+        status: STATUS_ACTIVE,
+      })
+
+      return record ? true : false
+
+    }
+
+    /**
+     * 用户关注问题是否已提醒作者
+     *
+     * @param {number} userId
+     * @param {number} questionId
+     * @return {boolean}
+     */
+    async hasFollowQuestionRemind(userId, questionId) {
+
+      const { trace } = this.service
+
+      const record = await this.findOneBy({
+        resource_id: questionId,
+        resource_type: TYPE_QUESTION,
+        creator_id: userId,
+      })
+
+      if (record) {
+        return await trace.followRemind.hasFollowRemind(record.id)
+      }
+
+      return false
+
+    }
+
+    /**
+     * 读取问题的关注数
+     *
+     * @param {number} creatorId
+     * @param {number} questionId
+     * @return {number}
+     */
+    async getFollowQuestionCount(creatorId, questionId) {
+      const where = {
+        resource_type: TYPE_QUESTION,
+        status: STATUS_ACTIVE,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      if (questionId) {
+        where.resource_id = questionId
+      }
+      return await this.countBy(where)
+    }
+
+    /**
+     * 获取问题的关注列表
+     *
+     * @param {number} creatorId
+     * @param {number} questionId
+     * @param {Object} options
+     * @return {Array}
+     */
+    async getFollowQuestionList(creatorId, questionId, options) {
+      const where = {
+        resource_type: TYPE_QUESTION,
+        status: STATUS_ACTIVE,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      if (questionId) {
+        where.resource_id = questionId
+      }
+      options.where = where
+      return await this.findBy(options)
+    }
+
+    /**
+     * 获取用户被关注问题的提醒列表
+     *
+     * @param {number} receiverId
+     * @param {Object} options
+     * @return {Array}
+     */
+    async getFollowQuestionRemindList(receiverId, options) {
+      const { trace } = this.service
+      return await trace.followRemind.getFollowRemindList(receiverId, TYPE_QUESTION, options)
+    }
+
+    /**
+     * 获取用户被关注问题的提醒数量
+     *
+     * @param {number} receiverId
+     * @return {number}
+     */
+    async getFollowQuestionRemindCount(receiverId) {
+      const { trace } = this.service
+      return await trace.followRemind.getFollowRemindCount(receiverId, TYPE_QUESTION)
+    }
+
+    /**
+     * 获取用户被关注问题的未读提醒数量
+     *
+     * @param {number} receiverId
+     * @return {number}
+     */
+    async getFollowQuestionUnreadRemindCount(receiverId) {
+      const { trace } = this.service
+      return await trace.followRemind.getUnreadFollowRemindCount(receiverId, TYPE_QUESTION)
+    }
+
+    /**
+     * 标记已读
+     *
+     * @param {number} receiverId
+     */
+    async readFollowQuestionRemind(receiverId) {
+      const { trace } = this.service
+      return await trace.followRemind.readFollowRemind(receiverId, TYPE_QUESTION)
+    }
+
+
+
+
+
+
+    /**
+     * 关注回复
+     *
+     * @param {number|Object} replyId
+     */
+    async followReply(replyId) {
+
+      const { account, trace, qa } = this.service
+
+      const reply = await qa.reply.checkReplyAvailableById(replyId, true)
+
+      const isSuccess = await this.transaction(
+        async () => {
+
+          let traceId = await this._addFollow({
+            resource_id: reply.id,
+            resource_type: TYPE_REPLY,
+          })
+
+          let record
+
+          if (util.type(traceId) === 'object') {
+            record = traceId
+            traceId = record.id
+          }
+          else {
+            record = await this.findOneBy({
+              id: traceId,
+            })
+          }
+
+          await trace.followRemind.addFollowRemind({
+            trace_id: traceId,
+            resource_type: record.resource_type,
+            sender_id: record.creator_id,
+            receiver_id: reply.user_id,
+          })
+
+          return true
+
+        }
+      )
+
+      if (!isSuccess) {
+        this.throw(
+          code.DB_INSERT_ERROR,
+          '关注失败'
+        )
+      }
+
+      await qa.reply.increaseReplyFollowCount(reply.id)
+
+    }
+
+    /**
+     * 取消关注回复
+     *
+     * @param {number|Object} replyId
+     */
+    async unfollowReply(replyId) {
+
+      const { account, trace, qa } = this.service
+
+      const reply = await qa.reply.checkReplyAvailableById(replyId)
+
+      const isSuccess = await this.transaction(
+        async () => {
+
+          const record = await this._removeFollow({
+            resource_id: reply.id,
+            resource_type: TYPE_REPLY,
+          })
+
+          await trace.followRemind.removeFollowRemind(record.id)
+
+          return true
+
+        }
+      )
+
+      if (!isSuccess) {
+        this.throw(
+          code.DB_UPDATE_ERROR,
+          '取消关注失败'
+        )
+      }
+
+      await qa.reply.decreaseReplyFollowCount(reply.id)
+
+    }
+
+    /**
+     * 用户是否已关注回复
+     *
+     * @param {number} userId
+     * @param {number} replyId
+     * @return {boolean}
+     */
+    async hasFollowReply(userId, replyId) {
+
+      const record = await this.findOneBy({
+        resource_id: replyId,
+        resource_type: TYPE_REPLY,
+        creator_id: userId,
+        status: STATUS_ACTIVE,
+      })
+
+      return record ? true : false
+
+    }
+
+    /**
+     * 用户关注回复是否已提醒作者
+     *
+     * @param {number} userId
+     * @param {number} replyId
+     * @return {boolean}
+     */
+    async hasFollowReplyRemind(userId, replyId) {
+
+      const { trace } = this.service
+
+      const record = await this.findOneBy({
+        resource_id: replyId,
+        resource_type: TYPE_REPLY,
+        creator_id: userId,
+      })
+
+      if (record) {
+        return await trace.followRemind.hasFollowRemind(record.id)
+      }
+
+      return false
+
+    }
+
+    /**
+     * 读取回复的关注数
+     *
+     * @param {number} creatorId
+     * @param {number} replyId
+     * @return {number}
+     */
+    async getFollowReplyCount(creatorId, replyId) {
+      const where = {
+        resource_type: TYPE_REPLY,
+        status: STATUS_ACTIVE,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      if (replyId) {
+        where.resource_id = replyId
+      }
+      return await this.countBy(where)
+    }
+
+    /**
+     * 获取回复的关注列表
+     *
+     * @param {number} creatorId
+     * @param {number} replyId
+     * @param {Object} options
+     * @return {Array}
+     */
+    async getFollowReplyList(creatorId, replyId, options) {
+      const where = {
+        resource_type: TYPE_REPLY,
+        status: STATUS_ACTIVE,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      if (replyId) {
+        where.resource_id = replyId
+      }
+      options.where = where
+      return await this.findBy(options)
+    }
+
+    /**
+     * 获取用户被关注回复的提醒列表
+     *
+     * @param {number} receiverId
+     * @param {Object} options
+     * @return {Array}
+     */
+    async getFollowReplyRemindList(receiverId, options) {
+      const { trace } = this.service
+      return await trace.followRemind.getFollowRemindList(receiverId, TYPE_REPLY, options)
+    }
+
+    /**
+     * 获取用户被关注回复的提醒数量
+     *
+     * @param {number} receiverId
+     * @return {number}
+     */
+    async getFollowReplyRemindCount(receiverId) {
+      const { trace } = this.service
+      return await trace.followRemind.getFollowRemindCount(receiverId, TYPE_REPLY)
+    }
+
+    /**
+     * 获取用户被关注回复的未读提醒数量
+     *
+     * @param {number} receiverId
+     * @return {number}
+     */
+    async getFollowReplyUnreadRemindCount(receiverId) {
+      const { trace } = this.service
+      return await trace.followRemind.getUnreadFollowRemindCount(receiverId, TYPE_REPLY)
+    }
+
+    /**
+     * 标记已读
+     *
+     * @param {number} receiverId
+     */
+    async readFollowReplyRemind(receiverId) {
+      const { trace } = this.service
+      return await trace.followRemind.readFollowRemind(receiverId, TYPE_REPLY)
     }
 
   }
