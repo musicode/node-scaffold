@@ -404,7 +404,7 @@ module.exports = app => {
 
     }
 
-    invite() {
+    async invite() {
 
       const input = this.filter(this.input, {
         question_id: 'number',
@@ -425,7 +425,7 @@ module.exports = app => {
 
     }
 
-    uninvite() {
+    async uninvite() {
 
       const input = this.filter(this.input, {
         question_id: 'number',
@@ -446,7 +446,7 @@ module.exports = app => {
 
     }
 
-    ignoreInvite() {
+    async ignoreInvite() {
 
       const input = this.filter(this.input, {
         question_id: 'number',
@@ -467,7 +467,7 @@ module.exports = app => {
 
     }
 
-    inviteList() {
+    async inviteList() {
 
       // [TODO] 这里要做分页
       const { account, qa, trace } = this.ctx.service
@@ -487,7 +487,7 @@ module.exports = app => {
 
     }
 
-    inviteSuggestion() {
+    async inviteSuggestion() {
 
       const question = await this.checkQuestion()
 
