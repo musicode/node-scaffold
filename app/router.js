@@ -416,6 +416,109 @@ module.exports = app => {
   )
 
   // =============================================
+  // 问题
+  // =============================================
+
+  app.get(
+    '/api/v1/question/create',
+    v1.question.create
+  )
+
+  app.get(
+    '/api/v1/question/update',
+    v1.question.update
+  )
+
+  app.get(
+    '/api/v1/question/delete',
+    v1.question.delete
+  )
+
+  app.get(
+    '/api/v1/question/list',
+    v1.question.list
+  )
+
+  app.get(
+    '/api/v1/question/detail',
+    v1.question.detail
+  )
+
+  app.get(
+    '/api/v1/question/view',
+    v1.question.view
+  )
+
+  app.get(
+    '/api/v1/question/follow',
+    v1.question.follow
+  )
+
+  app.get(
+    '/api/v1/question/follow/undo',
+    v1.question.unfollow
+  )
+
+  app.get(
+    '/api/v1/question/follow/count',
+    v1.question.getFollowCount
+  )
+
+  app.get(
+    '/api/v1/question/follow/list',
+    v1.question.getFollowList
+  )
+
+  app.get(
+    '/api/v1/question/like',
+    v1.question.like
+  )
+
+  app.get(
+    '/api/v1/question/like/undo',
+    v1.question.unlike
+  )
+
+  app.get(
+    '/api/v1/question/like/count',
+    v1.question.getLikeCount
+  )
+
+  app.get(
+    '/api/v1/question/like/list',
+    v1.question.getLikeList
+  )
+
+  // =============================================
+  // 回复
+  // =============================================
+
+  app.get(
+    '/api/v1/reply/create',
+    v1.reply.create
+  )
+
+  app.get(
+    '/api/v1/reply/update',
+    v1.reply.update
+  )
+
+  app.get(
+    '/api/v1/reply/delete',
+    v1.reply.delete
+  )
+
+  app.get(
+    '/api/v1/reply/detail',
+    v1.reply.detail
+  )
+
+  app.get(
+    '/api/v1/reply/list',
+    v1.reply.list
+  )
+
+  // =============================================
   // 反馈
   // =============================================
 

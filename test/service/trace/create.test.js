@@ -581,5 +581,59 @@ describe('test/service/trace/create.test.js', () => {
     })
 
 
+
+    it('create question', async () => {
+
+      const ctx = app.mockContext()
+      const { account, qa, trace } = ctx.service
+      const userService = account.user
+
+      // 从未登录测起
+      let currentUser = await account.session.getCurrentUser()
+      if (currentUser) {
+        await account.user.signout()
+      }
+
+      // user1 发表一个问题
+      currentUser = await account.user.signin({
+        mobile: user1.mobile,
+        password: user1.password,
+      })
+
+      let question = {
+        title: '123421123',
+        content: 'contentcontentcontentcontentcontentcontent',
+        anonymous: app.limit.ANONYMOUS_NO
+      }
+
+      question.id = await qa.question.createQuestion(question)
+
+      let createRecord = await trace.create.getCreateQuestion(question.id)
+      assert(createRecord.anonymous === question.anonymous)
+
+      let hasCreate = await trace.create.hasCreateQuestion(question.id)
+      assert(hasCreate === true)
+
+      await qa.question.updateQuestionById(
+        {
+          anonymous: app.limit.ANONYMOUS_YES
+        },
+        question.id
+      )
+
+      createRecord = await trace.create.getCreateQuestion(question.id)
+      assert(createRecord.anonymous === app.limit.ANONYMOUS_YES)
+
+
+      await qa.question.deleteQuestion(question.id)
+
+      hasCreate = await trace.create.hasCreateQuestion(question.id)
+      assert(hasCreate === false)
+
+      createRecord = await trace.create.getCreateQuestion(question.id)
+      assert(createRecord == null)
+
+    })
+
   })
 })

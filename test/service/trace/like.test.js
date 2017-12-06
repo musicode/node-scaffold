@@ -68,6 +68,9 @@ describe('test/service/trace/like.test.js', () => {
       post.id = await article.post.createPost(post)
 
 
+      let userLikeCount = await account.user.getUserLikeCount(user1.id)
+      assert(userLikeCount === 0)
+
       await account.user.signout()
 
       // user2 点赞该文章
@@ -104,7 +107,8 @@ describe('test/service/trace/like.test.js', () => {
 
       await trace.like.likePost(post.id)
 
-
+      userLikeCount = await account.user.getUserLikeCount(user1.id)
+      assert(userLikeCount === 1)
 
       likeCount = await trace.like.getLikePostCount(null, post.id)
       assert(likeCount === 1)
@@ -152,6 +156,9 @@ describe('test/service/trace/like.test.js', () => {
 
       await trace.like.unlikePost(post.id)
 
+      userLikeCount = await account.user.getUserLikeCount(user1.id)
+      assert(userLikeCount === 0)
+
       likeCount = await trace.like.getLikePostCount(null, post.id)
       assert(likeCount === 0)
 
@@ -190,6 +197,9 @@ describe('test/service/trace/like.test.js', () => {
 
 
 
+      userLikeCount = await account.user.getUserLikeCount(user1.id)
+      assert(userLikeCount === 1)
+
       likeCount = await trace.like.getLikePostCount(null, post.id)
       assert(likeCount === 1)
 
@@ -207,6 +217,8 @@ describe('test/service/trace/like.test.js', () => {
 
       hasLikeRemind = await trace.like.hasLikePostRemind(user2.id, post.id)
       assert(hasLikeRemind === true)
+
+      await trace.like.unlikePost(post.id)
 
     })
 
@@ -239,6 +251,9 @@ describe('test/service/trace/like.test.js', () => {
 
       demand.id = await project.demand.createDemand(demand)
 
+
+      let userLikeCount = await account.user.getUserLikeCount(user1.id)
+      assert(userLikeCount === 0)
 
       await account.user.signout()
 
@@ -277,6 +292,9 @@ describe('test/service/trace/like.test.js', () => {
       await trace.like.likeDemand(demand.id)
 
 
+
+      userLikeCount = await account.user.getUserLikeCount(user1.id)
+      assert(userLikeCount === 1)
 
       likeCount = await trace.like.getLikeDemandCount(null, demand.id)
       assert(likeCount === 1)
@@ -324,6 +342,10 @@ describe('test/service/trace/like.test.js', () => {
 
       await trace.like.unlikeDemand(demand.id)
 
+
+      userLikeCount = await account.user.getUserLikeCount(user1.id)
+      assert(userLikeCount === 0)
+
       likeCount = await trace.like.getLikeDemandCount(null, demand.id)
       assert(likeCount === 0)
 
@@ -362,6 +384,9 @@ describe('test/service/trace/like.test.js', () => {
 
 
 
+      userLikeCount = await account.user.getUserLikeCount(user1.id)
+      assert(userLikeCount === 1)
+
       likeCount = await trace.like.getLikeDemandCount(null, demand.id)
       assert(likeCount === 1)
 
@@ -379,6 +404,195 @@ describe('test/service/trace/like.test.js', () => {
 
       hasLikeRemind = await trace.like.hasLikeDemandRemind(user2.id, demand.id)
       assert(hasLikeRemind === true)
+
+      await trace.like.unlikeDemand(demand.id)
+
+    })
+
+
+
+
+
+    it('like question', async () => {
+
+      const ctx = app.mockContext()
+      const { account, qa, trace } = ctx.service
+      const userService = account.user
+
+      // 从未登录测起
+      let currentUser = await account.session.getCurrentUser()
+      if (currentUser) {
+        await account.user.signout()
+      }
+
+      // user1 发表一个问题
+      currentUser = await account.user.signin({
+        mobile: user1.mobile,
+        password: user1.password,
+      })
+
+      let question = {
+        title: '123421123',
+        content: 'contentcontentcontentcontentcontentcontent'
+      }
+
+      question.id = await qa.question.createQuestion(question)
+
+
+      let userLikeCount = await account.user.getUserLikeCount(user1.id)
+      assert(userLikeCount === 0)
+
+      await account.user.signout()
+
+      // user2 点赞该问题
+
+      currentUser = await account.user.signin({
+        mobile: user2.mobile,
+        password: user2.password,
+      })
+
+      // 问题总点赞数
+      let likeCount = await trace.like.getLikeQuestionCount(null, question.id)
+      assert(likeCount === 0)
+
+      likeCount = await qa.question.getQuestionLikeCount(question.id)
+      assert(likeCount === 0)
+
+      // 作者收到提醒的数量
+      let likeRemindCount = await trace.like.getLikeQuestionRemindCount(user1.id)
+      assert(likeRemindCount === 0)
+
+      // 作者收到未读提醒的数量
+      let likeUnreadRemindCount = await trace.like.getLikeQuestionUnreadRemindCount(user1.id)
+      assert(likeUnreadRemindCount === 0)
+
+      // user2 是否点赞了 user1 的问题
+      let hasLike = await trace.like.hasLikeQuestion(user2.id, question.id)
+      assert(hasLike === false)
+
+      // user2 是否点赞了 user1 的问题之后是否发送了提醒
+      let hasLikeRemind = await trace.like.hasLikeQuestionRemind(user2.id, question.id)
+      assert(hasLikeRemind === false)
+
+
+
+      await trace.like.likeQuestion(question.id)
+
+
+
+      userLikeCount = await account.user.getUserLikeCount(user1.id)
+      assert(userLikeCount === 1)
+
+      likeCount = await trace.like.getLikeQuestionCount(null, question.id)
+      assert(likeCount === 1)
+
+      likeCount = await qa.question.getQuestionLikeCount(question.id)
+      assert(likeCount === 1)
+
+      likeRemindCount = await trace.like.getLikeQuestionRemindCount(user1.id)
+      assert(likeRemindCount === 1)
+
+      likeUnreadRemindCount = await trace.like.getLikeQuestionUnreadRemindCount(user1.id)
+      assert(likeUnreadRemindCount === 1)
+
+      hasLike = await trace.like.hasLikeQuestion(user2.id, question.id)
+      assert(hasLike === true)
+
+      hasLikeRemind = await trace.like.hasLikeQuestionRemind(user2.id, question.id)
+      assert(hasLikeRemind === true)
+
+
+      // 标记已读
+      await trace.like.readLikeQuestionRemind(user1.id)
+
+      likeRemindCount = await trace.like.getLikeQuestionRemindCount(user1.id)
+      assert(likeRemindCount === 1)
+
+      likeUnreadRemindCount = await trace.like.getLikeQuestionUnreadRemindCount(user1.id)
+      assert(likeUnreadRemindCount === 0)
+
+
+      let errorCount = 0
+
+      // 不能再次点赞
+      try {
+        await trace.like.likeQuestion(question.id)
+      }
+      catch (err) {
+        assert(err.code === app.code.RESOURCE_EXISTS)
+        errorCount++
+      }
+
+      assert(errorCount === 1)
+
+
+
+      await trace.like.unlikeQuestion(question.id)
+
+
+      userLikeCount = await account.user.getUserLikeCount(user1.id)
+      assert(userLikeCount === 0)
+
+      likeCount = await trace.like.getLikeQuestionCount(null, question.id)
+      assert(likeCount === 0)
+
+      likeCount = await qa.question.getQuestionLikeCount(question.id)
+      assert(likeCount === 0)
+
+      likeRemindCount = await trace.like.getLikeQuestionRemindCount(user1.id)
+      assert(likeRemindCount === 0)
+
+      likeUnreadRemindCount = await trace.like.getLikeQuestionUnreadRemindCount(user1.id)
+      assert(likeUnreadRemindCount === 0)
+
+      hasLike = await trace.like.hasLikeQuestion(user2.id, question.id)
+      assert(hasLike === false)
+
+      hasLikeRemind = await trace.like.hasLikeQuestionRemind(user2.id, question.id)
+      assert(hasLikeRemind === false)
+
+
+
+      // 不能再次取消关注
+      try {
+        await trace.like.unlikeQuestion(question.id)
+      }
+      catch (err) {
+        assert(err.code === app.code.RESOURCE_NOT_FOUND)
+        errorCount++
+      }
+
+      assert(errorCount === 2)
+
+
+
+
+      await trace.like.likeQuestion(question.id)
+
+
+
+      userLikeCount = await account.user.getUserLikeCount(user1.id)
+      assert(userLikeCount === 1)
+
+      likeCount = await trace.like.getLikeQuestionCount(null, question.id)
+      assert(likeCount === 1)
+
+      likeCount = await qa.question.getQuestionLikeCount(question.id)
+      assert(likeCount === 1)
+
+      likeRemindCount = await trace.like.getLikeQuestionRemindCount(user1.id)
+      assert(likeRemindCount === 1)
+
+      likeUnreadRemindCount = await trace.like.getLikeQuestionUnreadRemindCount(user1.id)
+      assert(likeUnreadRemindCount === 1)
+
+      hasLike = await trace.like.hasLikeQuestion(user2.id, question.id)
+      assert(hasLike === true)
+
+      hasLikeRemind = await trace.like.hasLikeQuestionRemind(user2.id, question.id)
+      assert(hasLikeRemind === true)
+
+      await trace.like.unlikeQuestion(question.id)
 
     })
 
