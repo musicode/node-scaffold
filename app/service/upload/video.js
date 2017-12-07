@@ -1,38 +1,37 @@
 
 'use strict'
 
-const sizeOf = require('image-size')
 const BaseUploadService = require('./base')
 
 module.exports = app => {
 
   const { code, config } = app
 
-  class ImageUpload extends BaseUploadService {
+  class VideoUpload extends BaseUploadService {
 
     get tableName() {
-      return 'file_image'
+      return 'file_video'
     }
 
     get fields() {
       return [
-        'name', 'url', 'width', 'height', 'size', 'status', 'user_id',
+        'name', 'url', 'duration', 'size', 'status', 'user_id',
       ]
     }
 
     get bucketName() {
-      return config.qiniu.imageBucket
+      return config.qiniu.videoBucket
     }
 
     get cdnDomain() {
-      return config.qiniu.imageCdnDomain
+      return config.qiniu.videoCdnDomain
     }
 
-    async addImage(file) {
+    async addVideo(file, duration) {
 
       // 1KB - 20M
       this.checkFile(file, {
-        mimeTypes: ['image/*'],
+        mimeTypes: ['video/*'],
         minSize: 1,
         maxSize: 20 * 1024,
       })
@@ -53,9 +52,7 @@ module.exports = app => {
       else {
         record = await this.uploadToCloud(file)
 
-        const { width, height } = await sizeOf(file.path)
-        record.width = width
-        record.height = height
+        record.duration = duration > 0 ? duration : 0
         record.user_id = userId
 
         await this.insert(record)
@@ -72,12 +69,11 @@ module.exports = app => {
       return {
         url: record.url,
         size: record.size,
-        width: record.width,
-        height: record.height,
+        duration: record.duration,
       }
 
     }
 
   }
-  return ImageUpload
+  return VideoUpload
 }

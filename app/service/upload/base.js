@@ -121,14 +121,6 @@ class BaseUploadService extends BaseService {
         new qiniu.form_up.PutExtra(),
         (err, body, info) => {
 
-          // 删除源文件
-          fs.unlink(
-            file.path,
-            err => {
-              throw err
-            }
-          )
-
           if (err) {
             throw err
           }

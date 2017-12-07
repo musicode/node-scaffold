@@ -49,6 +49,10 @@ module.exports = appInfo => {
     zone: qiniu.zone.Zone_z0,
     imageBucket: 'image',
     imageCdnDomain: '',
+    audioBucket: 'audio',
+    audioCdnDomain: '',
+    videoBucket: 'video',
+    videoCdnDomain: '',
   }
 
   // 全局中间件

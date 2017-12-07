@@ -570,6 +570,16 @@ module.exports = app => {
     v1.upload.image
   )
 
+  app.post(
+    '/api/v1/upload/audio',
+    v1.upload.audio
+  )
+
+  app.post(
+    '/api/v1/upload/video',
+    v1.upload.video
+  )
+
   // =============================================
   // 动态
   // =============================================

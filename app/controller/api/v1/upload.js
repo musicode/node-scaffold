@@ -44,6 +44,42 @@ module.exports = app => {
 
     }
 
+    async audio() {
+
+      const input = this.filter(this.input, {
+        duration: 'number',
+      })
+
+      this.validate(input, {
+        duration: 'number',
+      })
+
+      const { upload } = this.ctx.service
+
+      const { files } = await this.uploading()
+
+      this.output = await upload.audio.addAudio(files.upload, input.duration)
+
+    }
+
+    async video() {
+
+      const input = this.filter(this.input, {
+        duration: 'number',
+      })
+
+      this.validate(input, {
+        duration: 'number',
+      })
+
+      const { upload } = this.ctx.service
+
+      const { files } = await this.uploading()
+
+      this.output = await upload.video.addVideo(files.upload, input.duration)
+
+    }
+
   }
 
   return UploadController
