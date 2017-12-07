@@ -2,12 +2,13 @@
 'use strict'
 
 const sizeOf = require('image-size')
+const BaseUploadService = require('./base')
 
 module.exports = app => {
 
-  const { code } = app
+  const { code, config } = app
 
-  class ImageUpload extends app.BaseService {
+  class ImageUpload extends BaseUploadService {
 
     get tableName() {
       return 'file_image'
@@ -17,6 +18,14 @@ module.exports = app => {
       return [
         'name', 'url', 'width', 'height', 'size', 'status', 'user_id',
       ]
+    }
+
+    get bucketName() {
+      return config.qiniu.imageBucket
+    }
+
+    get cdnDomain() {
+      return config.qiniu.imageCdnDomain
     }
 
     async addImage(file) {

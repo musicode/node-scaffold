@@ -21,6 +21,8 @@ class BaseUploadService extends BaseService {
 
   checkFile(file, rules) {
 
+    const { code, util } = this.app
+
     if (!file) {
       this.throw(
         code.PARAM_INVALID,
@@ -52,13 +54,12 @@ class BaseUploadService extends BaseService {
       )
     }
 
-    const { util } = this.app
-
-    if (util.is(mimeTypes) === 'array') {
+    if (util.type(mimeTypes) === 'array') {
+      console.log(mimeTypes, file.type )
       util.each(
         mimeTypes,
         mimeType => {
-          let { type, subType } = mimeType.split('/')
+          let [ type, subType ] = mimeType.split('/')
           if (subType === '*') {
             subType = '.+'
           }
@@ -80,8 +81,7 @@ class BaseUploadService extends BaseService {
   }
 
   getFileName(file) {
-    let extname = path.extname(file.path)
-    return this.getFileHash(file) + (extname ? `.${extname}` : '')
+    return this.getFileHash(file) + path.extname(file.path)
   }
 
   getFileCloudUrl(file) {
@@ -91,12 +91,11 @@ class BaseUploadService extends BaseService {
 
   async uploadToCloud(file) {
 
-    const { util, config, } = this.app
+    let { code, util, config } = this.app
 
-    const mac = new qiniu.auth.digest.Mac(
-      config.qiniu.accessKey,
-      config.qiniu.secretKey
-    )
+    const { accessKey, secretKey, zone } = config.qiniu
+
+    const mac = new qiniu.auth.digest.Mac(accessKey, secretKey)
 
     const putPolicy = new qiniu.rs.PutPolicy({
       scope: this.bucketName,
@@ -104,10 +103,10 @@ class BaseUploadService extends BaseService {
     })
 
     // https://developer.qiniu.com/kodo/sdk/1289/nodejs#server-upload
-    const config = new qiniu.conf.Config()
+    config = new qiniu.conf.Config()
 
     // 空间对应的机房
-    config.zone =config.qiniu.zone
+    config.zone = zone
 
     const formUploader = new qiniu.form_up.FormUploader(config)
 
@@ -121,9 +120,14 @@ class BaseUploadService extends BaseService {
         fs.createReadStream(file.path),
         new qiniu.form_up.PutExtra(),
         (err, body, info) => {
+
+          // 删除源文件，无需等待
+          fs.unlink(file.path)
+
           if (err) {
             throw err
           }
+
           if (info.statusCode == 200) {
             resolve({
               name: fileName,

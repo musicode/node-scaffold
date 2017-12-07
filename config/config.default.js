@@ -47,6 +47,8 @@ module.exports = appInfo => {
     // qiniu.zone.Zone_z2 华南
     // qiniu.zone.Zone_na0 北美
     zone: qiniu.zone.Zone_z1,
+    imageBucket: 'image',
+    imageCdnDomain: '',
   }
 
   // 全局中间件
@@ -55,14 +57,15 @@ module.exports = appInfo => {
     'sessionHandler',
   ]
 
-  exports.jsonp = {
+  config.jsonp = {
     callback: 'callback',
     // 函数名最长为 100 个字符
     limit: 100,
   }
 
-  exports.security = {
+  config.security = {
     csrf: {
+      enable: false,
       useSession: false,
       cookieName: 'csrf_token', // Cookie 中的字段名
       sessionName: 'csrf_token', // Session 中的字段名
