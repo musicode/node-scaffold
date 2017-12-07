@@ -3,7 +3,7 @@
 module.exports = app => {
 
   const { controller } = app
-  const { v1 } = controller.api
+  const { v1 } = controller
 
   app.get(
     '/api/v1/auth/signup',
