@@ -82,6 +82,10 @@ module.exports = appInfo => {
     },
   }
 
+  config.upload = {
+    dir: path.join(appInfo.baseDir, 'upload'),
+  }
+
   // 因为运行时的配置会输出到 baseDir/run 目录
   // 因此这里统一把日志也输出到 baseDir/log 目录
   const logDir = path.join(appInfo.baseDir, 'log')

@@ -4,7 +4,7 @@ const formidable = require('formidable')
 
 module.exports = app => {
 
-  const { util } = app
+  const { util, config } = app
 
   class UploadController extends app.BaseController {
 
@@ -14,6 +14,7 @@ module.exports = app => {
 
       form.hash = 'md5'
       form.keepExtensions = true
+      form.uploadDir = config.upload.dir
 
       return new Promise(resolve => {
 
