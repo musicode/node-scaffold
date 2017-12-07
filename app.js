@@ -21,6 +21,10 @@ module.exports = app => {
       return this.ctx.output
     }
 
+    set output(output) {
+      this.ctx.output = output
+    }
+
     filter(data, filters) {
       return this.ctx.filter(data, filters)
     }

@@ -46,7 +46,7 @@ module.exports = appInfo => {
     // qiniu.zone.Zone_z1 华北
     // qiniu.zone.Zone_z2 华南
     // qiniu.zone.Zone_na0 北美
-    zone: qiniu.zone.Zone_z1,
+    zone: qiniu.zone.Zone_z0,
     imageBucket: 'image',
     imageCdnDomain: '',
   }
