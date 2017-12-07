@@ -117,22 +117,22 @@ module.exports = app => {
   // =============================================
   app.get(
     '/api/v1/user/career/create',
-    v1.user.career.create
+    v1.career.create
   )
 
   app.get(
     '/api/v1/user/career/update',
-    v1.user.career.update
+    v1.career.update
   )
 
   app.get(
     '/api/v1/user/career/delete',
-    v1.user.career.delete
+    v1.career.delete
   )
 
   app.get(
     '/api/v1/user/career/list',
-    v1.user.career.list
+    v1.career.list
   )
 
   // =============================================
@@ -140,22 +140,22 @@ module.exports = app => {
   // =============================================
   app.get(
     '/api/v1/user/education/create',
-    v1.user.education.create
+    v1.education.create
   )
 
   app.get(
     '/api/v1/user/education/update',
-    v1.user.education.update
+    v1.education.update
   )
 
   app.get(
     '/api/v1/user/education/delete',
-    v1.user.education.delete
+    v1.education.delete
   )
 
   app.get(
     '/api/v1/user/education/list',
-    v1.user.education.list
+    v1.education.list
   )
 
   // =============================================
