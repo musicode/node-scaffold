@@ -39,6 +39,12 @@ module.exports = appInfo => {
     anonymous: '',
   }
 
+  config.sms = {
+    signName: '产品名称',
+    accessKey: '',
+    secretKey: '',
+  }
+
   config.qiniu = {
     accessKey: '',
     secretKey: '',
@@ -130,7 +136,12 @@ module.exports = appInfo => {
     currentUser: 'current_user',
     captcha: 'captcha',
     verifyCode: 'verify_code',
-    maxAge: 30 * moment.DAY,
+  }
+
+  config.expireTime = {
+    currentUser: moment.MONTH,
+    captcha: 10 * moment.MINUTE,
+    verifyCode: 20 * moment.MINUTE,
   }
 
   return config

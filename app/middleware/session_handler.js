@@ -22,7 +22,7 @@ module.exports = (options, app) => {
             'access_token',
             accessToken,
             {
-              maxAge: app.config.session.maxAge,
+              maxAge: app.config.expireTime.currentUser,
             }
           )
         }
