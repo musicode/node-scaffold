@@ -51,7 +51,10 @@ module.exports = app => {
       })
 
       this.validate(input, {
-        duration: 'number',
+        duration: {
+          required: false,
+          type: 'number',
+        }
       })
 
       const { upload } = this.ctx.service
@@ -69,7 +72,10 @@ module.exports = app => {
       })
 
       this.validate(input, {
-        duration: 'number',
+        duration: {
+          required: false,
+          type: 'number',
+        }
       })
 
       const { upload } = this.ctx.service

@@ -1,6 +1,7 @@
 
 'use strict'
 
+const fs = require('fs')
 const BaseUploadService = require('./base')
 
 module.exports = app => {
