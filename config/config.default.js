@@ -1,6 +1,7 @@
 'use strict'
 
 const path = require('path')
+const qiniu = require('qiniu')
 const moment = require('../app/moment')
 
 /**
@@ -36,6 +37,16 @@ module.exports = appInfo => {
     female: '',
     group: '',
     anonymous: '',
+  }
+
+  config.qiniu = {
+    accessKey: '',
+    secretKey: '',
+    // qiniu.zone.Zone_z0 华东
+    // qiniu.zone.Zone_z1 华北
+    // qiniu.zone.Zone_z2 华南
+    // qiniu.zone.Zone_na0 北美
+    zone: qiniu.zone.Zone_z1,
   }
 
   // 全局中间件

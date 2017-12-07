@@ -10,8 +10,11 @@
     "egg-mysql": "^3.0.0",
     "egg-redis": "^1.0.2",
     "egg-scripts": "^2.4.0",
+    "formidable": "^1.1.1",
+    "image-size": "^0.6.1",
     "lodash": "^4.17.4",
     "parameter": "^2.2.1",
+    "qiniu": "^7.1.1",
     "striptags": "^3.1.1",
     "ua-device": "^0.1.10",
     "uuid": "^3.1.0"
