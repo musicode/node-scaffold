@@ -1078,6 +1078,29 @@ module.exports = app => {
       return await trace.likeRemind.readLikeRemind(receiverId, TYPE_REPLY)
     }
 
+
+
+    /**
+     * 获取被点赞的未读提醒数量
+     *
+     * @param {number} receiverId
+     * @return {number}
+     */
+    async getLikeReplyUnreadRemindCount(receiverId) {
+      const { trace } = this.service
+      return await trace.likeRemind.getUnreadLikeRemindCount(receiverId)
+    }
+
+    /**
+     * 对所有被点赞标记已读
+     *
+     * @param {number} receiverId
+     */
+    async readLikeRemind(receiverId) {
+      const { trace } = this.service
+      return await trace.likeRemind.readLikeRemind(receiverId)
+    }
+
   }
   return Like
 }

@@ -1183,32 +1183,35 @@ module.exports = app => {
      * 获取用户被回复问题的提醒数量
      *
      * @param {number} receiverId
+     * @param {boolean} isAnswer
      * @return {number}
      */
-    async getCreateReplyRemindCount(receiverId) {
+    async getCreateReplyRemindCount(receiverId, isAnswer) {
       const { trace } = this.service
-      return await trace.createRemind.getCreateRemindCount(receiverId, TYPE_REPLY)
+      return await trace.createRemind.getCreateRemindCount(receiverId, TYPE_REPLY, isAnswer ? 0 : null)
     }
 
     /**
      * 获取用户被回复问题的未读提醒数量
      *
      * @param {number} receiverId
+     * @param {boolean} isAnswer
      * @return {number}
      */
-    async getCreateReplyUnreadRemindCount(receiverId) {
+    async getCreateReplyUnreadRemindCount(receiverId, isAnswer) {
       const { trace } = this.service
-      return await trace.createRemind.getUnreadCreateRemindCount(receiverId, TYPE_REPLY)
+      return await trace.createRemind.getUnreadCreateRemindCount(receiverId, TYPE_REPLY, isAnswer ? 0 : null)
     }
 
     /**
      * 标记已读
      *
      * @param {number} receiverId
+     * @param {boolean} isAnswer
      */
-    async readCreateReplyRemind(receiverId) {
+    async readCreateReplyRemind(receiverId, isAnswer) {
       const { trace } = this.service
-      return await trace.createRemind.readCreateRemind(receiverId, TYPE_REPLY)
+      return await trace.createRemind.readCreateRemind(receiverId, TYPE_REPLY, isAnswer ? 0 : null)
     }
 
   }

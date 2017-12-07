@@ -134,9 +134,10 @@ module.exports = app => {
      *
      * @param {number} receiverId
      * @param {number} resourceType
+     * @param {number} parentId
      * @return {number}
      */
-    async getCreateRemindCount(receiverId, resourceType) {
+    async getCreateRemindCount(receiverId, resourceType, parentId) {
 
       const where = {
         receiver_id: receiverId,
@@ -145,6 +146,10 @@ module.exports = app => {
 
       if (resourceType != null) {
         where.resource_type = resourceType
+      }
+
+      if (parentId != null) {
+        where.resource_type = parentId
       }
 
       return await this.countBy(where)
@@ -156,9 +161,10 @@ module.exports = app => {
      *
      * @param {number} receiverId
      * @param {number} resourceType
+     * @param {number} parentId
      * @return {number}
      */
-    async getUnreadCreateRemindCount(receiverId, resourceType) {
+    async getUnreadCreateRemindCount(receiverId, resourceType, parentId) {
 
       const where = {
         receiver_id: receiverId,
@@ -167,6 +173,10 @@ module.exports = app => {
 
       if (resourceType != null) {
         where.resource_type = resourceType
+      }
+
+      if (parentId != null) {
+        where.resource_type = parentId
       }
 
       return await this.countBy(where)
@@ -178,8 +188,9 @@ module.exports = app => {
      *
      * @param {number} receiverId
      * @param {number} resourceType
+     * @param {number} parentId
      */
-    async readCreateRemind(receiverId, resourceType) {
+    async readCreateRemind(receiverId, resourceType, parentId) {
 
       // https://github.com/ali-sdk/ali-rds/issues/42
       let sql = `
@@ -188,6 +199,10 @@ module.exports = app => {
 
       if (resourceType != null) {
         sql += ` AND \`resource_type\` = ${resourceType}`
+      }
+
+      if (parentId != null) {
+        sql += ` AND \`resource_parent_id\` = ${parentId}`
       }
 
       await this.query(sql)
