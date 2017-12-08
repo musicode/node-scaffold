@@ -85,14 +85,14 @@ module.exports = app => {
       const currentUser = await account.session.getCurrentUser()
 
       const where = { }
-      let anonymousVisible
+      let anonymousVisible = true
 
       if (input.user_id) {
         const user = await account.user.checkUserAvailableByNumber(input.user_id)
         where.user_id = user.id
 
-        if (currentUser && currentUser.id === user.id) {
-          anonymousVisible = true
+        if (!currentUser || currentUser.id !== user.id) {
+          anonymousVisible = false
         }
       }
 
@@ -101,7 +101,7 @@ module.exports = app => {
       }
 
       if (!anonymousVisible) {
-        where.anonymous = limit.ANONYMOUSE_NO
+        where.anonymous = limit.ANONYMOUS_NO
       }
 
       const options = {

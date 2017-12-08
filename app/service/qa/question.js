@@ -38,6 +38,8 @@ module.exports = app => {
 
       result.id = number
 
+      const { account, trace } = this.service
+
       const currentUser = await account.session.getCurrentUser()
       if (currentUser) {
         result.has_like = await trace.like.hasLikeQuestion(currentUser.id, id)
@@ -50,7 +52,6 @@ module.exports = app => {
         }
       }
 
-      const { account, trace } = this.service
       if (anonymous === limit.ANONYMOUS_YES) {
         result.user = account.user.anonymous
       }

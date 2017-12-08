@@ -38,12 +38,12 @@ module.exports = app => {
       return bcrypt.compare(password.toLowerCase(), hash)
     }
 
-    toExternal(user) {
+    async toExternal(user) {
       const result = { }
       Object.assign(result, user)
 
       result.password = result.password ? true : false
-      const { number } = result
+      const { number, area_id } = result
       delete result.number
 
       if (result.user_id) {
@@ -55,6 +55,13 @@ module.exports = app => {
 
       if (result.mobile) {
         result.mobile = util.formatMobile(result.mobile)
+      }
+
+      if (area_id != null) {
+        delete result.area_id
+        if (area_id && area_id != 0) {
+          result.area = await this.service.common.area.getAreaById(area_id)
+        }
       }
 
       result.id = number

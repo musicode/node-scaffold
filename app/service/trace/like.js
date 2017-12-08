@@ -65,7 +65,7 @@ module.exports = app => {
         resource = await article.comment.toExternal(resource)
       }
 
-      let creator = await account.user.getUserById(creator_id)
+      let creator = await account.user.getFullUserById(creator_id)
       creator = await account.user.toExternal(creator)
 
       return {

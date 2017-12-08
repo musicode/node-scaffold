@@ -40,6 +40,8 @@ module.exports = app => {
 
       result.cover = util.parseCover(result.content)
 
+      const { account, trace } = this.service
+
       const currentUser = await account.session.getCurrentUser()
       if (currentUser) {
         result.has_like = await trace.like.hasLikePost(currentUser.id, id)
@@ -53,7 +55,6 @@ module.exports = app => {
 
       }
 
-      const { account, trace } = this.service
       if (anonymous === limit.ANONYMOUS_YES) {
         result.user = account.user.anonymous
       }

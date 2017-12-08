@@ -31,10 +31,10 @@ module.exports = app => {
       let resource = await qa.question.getFullQuestionById(resource_id)
       resource = await qa.question.toExternal(resource)
 
-      let creator = await account.user.getUserById(creator_id)
+      let creator = await account.user.getFullUserById(creator_id)
       creator = await account.user.toExternal(creator)
 
-      let user = await account.user.getUserById(user_id)
+      let user = await account.user.getFullUserById(user_id)
       user = await account.user.toExternal(user)
 
       return {

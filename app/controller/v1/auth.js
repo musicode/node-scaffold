@@ -59,8 +59,8 @@ module.exports = app => {
       const userService = this.ctx.service.account.user
       const userId = await userService.signup(input)
 
-      const result = await userService.getUserById(userId)
-      this.output.user = userService.toExternal(result)
+      const result = await userService.getFullUserById(userId)
+      this.output.user = await userService.toExternal(result)
 
     }
 
@@ -82,8 +82,8 @@ module.exports = app => {
         password: input.password,
       })
 
-      const result = await userService.getUserById(user)
-      this.output.user = userService.toExternal(result)
+      const result = await userService.getFullUserById(user)
+      this.output.user = await userService.toExternal(result)
 
     }
 

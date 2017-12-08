@@ -15,9 +15,12 @@ module.exports = app => {
 
     async getUsedInfo(inviteCodeUsed, toExternal) {
       const { account } = this.service
-      const user = await account.user.getUserById(inviteCodeUsed.user_id)
+      let user = await account.user.getFullUserById(inviteCodeUsed.user_id)
+      if (toExternal) {
+        user = await account.user.toExternal(user)
+      }
       return {
-        used_user: toExternal ? account.user.toExternal(user) : user,
+        used_user: user,
         used_time: inviteCodeUsed.create_time,
       }
     }

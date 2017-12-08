@@ -55,7 +55,6 @@ class BaseUploadService extends BaseService {
     }
 
     if (util.type(mimeTypes) === 'array') {
-      console.log(mimeTypes, file.type )
       util.each(
         mimeTypes,
         mimeType => {

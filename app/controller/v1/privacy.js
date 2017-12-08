@@ -78,10 +78,9 @@ module.exports = app => {
       await util.each(
         userIds,
         async userId => {
-          const user = await account.user.getUserById(userId)
-          userList.push(
-            account.user.toExternal(user)
-          )
+          let user = await account.user.getFullUserById(userId)
+          user = await account.user.toExternal(user)
+          userList.push(user)
         }
       )
 
@@ -133,10 +132,9 @@ module.exports = app => {
       await util.each(
         userIds,
         async userId => {
-          const user = await account.user.getUserById(userId)
-          userList.push(
-            account.user.toExternal(user)
-          )
+          let user = await account.user.getFullUserById(userId)
+          user = await account.user.toExternal(user)
+          userList.push(user)
         }
       )
 
@@ -243,10 +241,9 @@ module.exports = app => {
       await util.each(
         userIds,
         async userId => {
-          const user = await account.user.getUserById(userId)
-          userList.push(
-            account.user.toExternal(user)
-          )
+          let user = await account.user.getFullUserById(userId)
+          user = await account.user.toExternal(user)
+          userList.push(user)
         }
       )
 

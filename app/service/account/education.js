@@ -93,6 +93,7 @@ module.exports = app => {
         if (fields.end_date === limit.SOFAR) {
           fields.end_date = ''
         }
+        this.checkDateRange(fields.start_date, fields.end_date)
         return await this.insert(fields)
       }
 
@@ -118,6 +119,7 @@ module.exports = app => {
         if (fields.end_date === limit.SOFAR) {
           fields.end_date = ''
         }
+        this.checkDateRange(fields.start_date, fields.end_date)
         const rows = await this.update(fields, { id: educationId })
         if (rows === 1) {
           await this.updateRedis(`education:${educationId}`, fields)
@@ -164,6 +166,25 @@ module.exports = app => {
 
       return educationList
 
+    }
+
+    /**
+     * 判断开始日期和结束日期是否合法
+     *
+     * @param {string} startDate
+     * @param {string} endDate
+     */
+    checkDateRange(startDate, endDate) {
+      if (endDate) {
+        startDate = util.parseDate(startDate)
+        endDate = util.parseDate(endDate)
+        if (startDate.getTime() > endDate.getTime()) {
+          this.throw(
+            code.PARAM_INVALID,
+            '开始日期不能晚于结束日期'
+          )
+        }
+      }
     }
 
     /**

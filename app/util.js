@@ -89,6 +89,11 @@ module.exports = {
     return mobile.replace(/(\d{3})(\d{5})(\d{3})/, '$1*****$3')
   },
 
+  parseDate(str) {
+    const [ year, month, date ] = str.split('-')
+    return new Date(year, month - 1, date)
+  },
+
   parseCover(html) {
     if (html) {
       const result = html.match(/<img[^>]+src="([^"]+)"/i)

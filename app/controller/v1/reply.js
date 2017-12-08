@@ -30,14 +30,17 @@ module.exports = app => {
 
       reply = await qa.reply.viewReply(reply)
 
+      const question = await qa.question.viewQuestion(reply.question_id)
+
       this.output.reply = await qa.reply.toExternal(reply)
+      this.output.question = await qa.question.toExternal(question)
 
     }
 
     async list() {
 
       const input = this.filter(this.input, {
-        post_id: 'number',
+        question_id: 'number',
         user_id: 'number',
         status: 'number',
         content_max_length: 'number',
@@ -48,7 +51,7 @@ module.exports = app => {
       })
 
       this.validate(input, {
-        post_id: {
+        question_id: {
           required: false,
           type: 'number'
         },
@@ -80,20 +83,20 @@ module.exports = app => {
       const currentUser = await account.session.getCurrentUser()
 
       const where = { }
-      let anonymousVisible
+      let anonymousVisible = true
 
       if (input.user_id) {
         const user = await account.user.checkUserAvailableByNumber(input.user_id)
         where.user_id = user.id
 
-        if (currentUser && currentUser.id === user.id) {
-          anonymousVisible = true
+        if (!currentUser || currentUser.id !== user.id) {
+          anonymousVisible = false
         }
       }
 
-      if (input.post_id) {
-        const post = await qa.post.checkPostAvailableByNumber(input.post_id)
-        where.post_id = post.id
+      if (input.question_id) {
+        const question = await qa.question.checkQuestionAvailableByNumber(input.question_id)
+        where.question_id = question.id
       }
 
       if (util.type(input.status) === 'number') {
@@ -101,7 +104,7 @@ module.exports = app => {
       }
 
       if (!anonymousVisible) {
-        where.anonymous = limit.ANONYMOUSE_NO
+        where.anonymous = limit.ANONYMOUS_NO
       }
 
       const options = {
@@ -128,14 +131,14 @@ module.exports = app => {
     async create() {
 
       const input = this.filter(this.input, {
-        post_id: 'number',
+        question_id: 'number',
         parent_id: 'number',
         content: 'trim',
         anonymous: 'number',
       })
 
       this.validate(input, {
-        post_id: 'number',
+        question_id: 'number',
         parent_id: {
           required: false,
           type: 'number',
@@ -152,8 +155,8 @@ module.exports = app => {
 
       const { qa } = this.ctx.service
 
-      const post = await qa.post.checkPostAvailableByNumber(input.post_id)
-      input.post_id = post.id
+      const question = await qa.question.checkQuestionAvailableByNumber(input.question_id)
+      input.question_id = question.id
 
       if (input.parent_id) {
         const reply = await qa.reply.checkReplyAvailableByNumber(input.parent_id)

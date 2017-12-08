@@ -119,13 +119,13 @@ module.exports = app => {
         list,
         async item => {
 
-          const followee = await account.user.getUserById(item.followee_id)
+          const followee = await account.user.getFullUserById(item.followee_id)
           const isFollower = await relation.followee.hasFollow(followee.id, user.id)
 
           delete item.user_id
           delete item.followee_id
 
-          item.user = account.user.toExternal(followee)
+          item.user = await account.user.toExternal(followee)
           item.create_time = item.update_time
           item.is_followee = true
           item.is_follower = isFollower
@@ -193,13 +193,13 @@ module.exports = app => {
         list,
         async item => {
 
-          const follower = await account.user.getUserById(item.follower_id)
+          const follower = await account.user.getFullUserById(item.follower_id)
           const isFollowee = await relation.followee.hasFollow(user.id, follower.id)
 
           delete item.user_id
           delete item.follower_id
 
-          item.user = account.user.toExternal(follower)
+          item.user = await account.user.toExternal(follower)
           item.create_time = item.update_time
           item.is_followee = isFollowee
           item.is_follower = true
