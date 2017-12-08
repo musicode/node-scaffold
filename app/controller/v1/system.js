@@ -25,7 +25,7 @@ module.exports = app => {
 
       if (config.system.signupByInvite) {
         this.output.invite_code = {
-          max_count: limit.INVITE_CODE_MAX_COUNT_PER_USER,
+          max_count: currentUser ? limit.INVITE_CODE_MAX_COUNT_PER_USER : 0,
         }
       }
 
