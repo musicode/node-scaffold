@@ -543,6 +543,46 @@ module.exports = app => {
     v1.reply.list
   )
 
+  app.post(
+    '/v1/reply/follow',
+    v1.reply.follow
+  )
+
+  app.post(
+    '/v1/reply/follow/undo',
+    v1.reply.unfollow
+  )
+
+  app.post(
+    '/v1/reply/follow/count',
+    v1.reply.getFollowCount
+  )
+
+  app.post(
+    '/v1/reply/follow/list',
+    v1.reply.getFollowList
+  )
+
+  app.post(
+    '/v1/reply/like',
+    v1.reply.like
+  )
+
+  app.post(
+    '/v1/reply/like/undo',
+    v1.reply.unlike
+  )
+
+  app.post(
+    '/v1/reply/like/count',
+    v1.reply.getLikeCount
+  )
+
+  app.post(
+    '/v1/reply/like/list',
+    v1.reply.getLikeList
+  )
+
   // =============================================
   // 反馈
   // =============================================

@@ -45,6 +45,10 @@ module.exports = app => {
 
       const currentUser = await account.session.getCurrentUser()
       if (currentUser) {
+
+        result.has_like = await trace.like.hasLikeReply(currentUser.id, id)
+        result.has_follow = await trace.follow.hasFollowReply(currentUser.id, id)
+
         if (currentUser.id === user_id) {
           result.can_update = true
           const subCount = await this.getReplySubCount(id)
@@ -65,7 +69,7 @@ module.exports = app => {
         result.user = await account.user.toExternal(user)
       }
 
-      if (parent_id) {
+      if (parent_id && parent_id !== root_id) {
         const parentReply = await this.getReplyById(parent_id)
         result.parent_id = parentReply.number
 
@@ -213,10 +217,10 @@ module.exports = app => {
 
       const { account, qa, trace } = this.service
 
-      if (!data.question_id) {
+      if (!data.question_id && !data.parent_id) {
         this.throw(
           code.PARAM_INVALID,
-          '缺少 question_id'
+          'question_id 或 parent_id 必须至少有一个'
         )
       }
 
@@ -247,6 +251,13 @@ module.exports = app => {
           }
           if (data.parent_id) {
             row.parent_id = data.parent_id
+          }
+
+          if (!row.root_id && row.parent_id) {
+            this.throw(
+              code.PARAM_INVALID,
+              '缺少 root_id'
+            )
           }
 
           const replyId = await this.insert(row)

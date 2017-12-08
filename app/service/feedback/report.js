@@ -235,7 +235,7 @@ module.exports = app => {
 
       const reportId = await this.insert({
         resource_id: data.resource_id,
-        reasource_type: data.resource_type,
+        resource_type: data.resource_type,
         reason: data.reason,
         content: data.content,
         user_id: currentUser.id,

@@ -3,6 +3,7 @@ node_modules/
 run/
 log/
 sql/
+package-lock.json
 config/config.local.js
 config/config.test.js
 config/config.prod.js

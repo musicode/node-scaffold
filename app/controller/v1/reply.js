@@ -2,7 +2,7 @@
 
 module.exports = app => {
 
-  const { util, limit } = app
+  const { code, util, limit } = app
 
   class ReplyController extends app.BaseController {
 
@@ -41,6 +41,7 @@ module.exports = app => {
 
       const input = this.filter(this.input, {
         question_id: 'number',
+        parent_id: 'number',
         user_id: 'number',
         status: 'number',
         content_max_length: 'number',
@@ -54,6 +55,10 @@ module.exports = app => {
         question_id: {
           required: false,
           type: 'number'
+        },
+        parent_id: {
+          required: false,
+          type: 'number',
         },
         user_id: {
           required: false,
@@ -94,7 +99,11 @@ module.exports = app => {
         }
       }
 
-      if (input.question_id) {
+      if (input.parent_id) {
+        const reply = await qa.reply.checkReplyAvailableByNumber(input.parent_id)
+        where.parent_id = reply.id
+      }
+      else if (input.question_id) {
         const question = await qa.question.checkQuestionAvailableByNumber(input.question_id)
         where.question_id = question.id
       }
@@ -138,7 +147,10 @@ module.exports = app => {
       })
 
       this.validate(input, {
-        question_id: 'number',
+        question_id: {
+          required: false,
+          type: 'number',
+        },
         parent_id: {
           required: false,
           type: 'number',
@@ -155,12 +167,15 @@ module.exports = app => {
 
       const { qa } = this.ctx.service
 
-      const question = await qa.question.checkQuestionAvailableByNumber(input.question_id)
-      input.question_id = question.id
-
       if (input.parent_id) {
         const reply = await qa.reply.checkReplyAvailableByNumber(input.parent_id)
         input.parent_id = reply.id
+        input.root_id = reply.root_id || reply.id
+        input.question_id = reply.question_id
+      }
+      else if (input.question_id) {
+        const question = await qa.question.checkQuestionAvailableByNumber(input.question_id)
+        input.question_id = question.id
       }
 
       const replyId = await qa.reply.createReply(input)
@@ -205,6 +220,203 @@ module.exports = app => {
       const { qa } = this.ctx.service
 
       await qa.reply.deleteReply(reply)
+
+    }
+
+
+    async follow() {
+
+      const reply = await this.checkReply()
+
+      const { trace } = this.ctx.service
+
+      await trace.follow.followReply(reply)
+
+    }
+
+    async unfollow() {
+
+      const reply = await this.checkReply()
+
+      const { trace } = this.ctx.service
+
+~     await trace.follow.unfollowReply(reply)
+
+    }
+
+    async getFollowCount() {
+
+      const reply = await this.checkReply()
+
+      const { qa } = this.ctx.service
+
+      this.output.count = await qa.reply.getReplyFollowCount(reply.id)
+
+    }
+
+    async getFollowList() {
+
+      const input = this.filter(this.input, {
+        reply_id: 'number',
+        user_id: 'number',
+        page: 'number',
+        page_size: 'number',
+        sort_order: 'string',
+        sort_by: 'string',
+      })
+
+      this.validate(input, {
+        reply_id: {
+          required: false,
+          type: 'number'
+        },
+        user_id: {
+          required: false,
+          type: 'number'
+        },
+        page: 'page',
+        page_size: 'page_size',
+        sort_by: {
+          required: false,
+          type: 'sort_by',
+        },
+        sort_order: {
+          required: false,
+          type: 'sort_order'
+        },
+      })
+
+      const { account, qa, trace } = this.ctx.service
+
+      let replyId, userId
+
+      if (input.reply_id) {
+        const reply = await qa.reply.checkReplyAvailableByNumber(input.reply_id)
+        replyId = reply.id
+      }
+
+      if (input.user_id) {
+        const user = await account.user.checkUserAvailableByNumber(input.user_id)
+        userId = user.id
+      }
+
+      const options = {
+        page: input.page,
+        page_size: input.page_size,
+        sort_order: input.sort_order || 'desc',
+        sort_by: input.sort_by || 'update_time'
+      }
+      const list = await trace.follow.getFollowReplyList(userId, replyId, options)
+      const count = await trace.follow.getFollowReplyCount(userId, replyId)
+
+      await util.each(
+        list,
+        async (item, index) => {
+          list[ index ] = await trace.follow.toExternal(item)
+        }
+      )
+
+      this.output.list = list
+      this.output.pager = this.createPager(input, count)
+
+    }
+
+    async like() {
+
+      const reply = await this.checkReply()
+
+      const { trace } = this.ctx.service
+
+      await trace.like.likeReply(reply)
+
+    }
+
+    async unlike() {
+
+      const reply = await this.checkReply()
+
+      const { trace } = this.ctx.service
+
+      await trace.like.unlikeReply(reply)
+
+    }
+
+    async getLikeCount() {
+
+      const reply = await this.checkReply()
+
+      const { qa } = this.ctx.service
+
+      this.output.count = await qa.reply.getReplyLikeCount(reply.id)
+
+    }
+
+    async getLikeList() {
+
+      const input = this.filter(this.input, {
+        reply_id: 'number',
+        user_id: 'number',
+        page: 'number',
+        page_size: 'number',
+        sort_order: 'string',
+        sort_by: 'string',
+      })
+
+      this.validate(input, {
+        reply_id: {
+          required: false,
+          type: 'number'
+        },
+        user_id: {
+          required: false,
+          type: 'number'
+        },
+        page: 'page',
+        page_size: 'page_size',
+        sort_by: {
+          required: false,
+          type: 'sort_by',
+        },
+        sort_order: {
+          required: false,
+          type: 'sort_order'
+        },
+      })
+
+      const { account, qa, trace } = this.ctx.service
+
+
+      let replyId, userId
+
+      if (input.reply_id) {
+        const reply = await qa.reply.checkReplyAvailableByNumber(input.reply_id)
+        replyId = reply.id
+      }
+
+      if (input.user_id) {
+        const user = await account.user.checkUserAvailableByNumber(input.user_id)
+        userId = user.id
+      }
+
+
+      const options = {
+        page: input.page,
+        page_size: input.page_size,
+        sort_order: input.sort_order || 'desc',
+        sort_by: input.sort_by || 'update_time'
+      }
+      const list = await trace.like.getLikeReplyList(userId, replyId, options)
+      const count = await trace.like.getLikeReplyCount(userId, replyId)
+
+      await util.each(
+        list,
+        async (item, index) => {
+          list[ index ] = await trace.like.toExternal(item)
+        }
+      )
+
+      this.output.list = list
+      this.output.pager = this.createPager(input, count)
 
     }
 

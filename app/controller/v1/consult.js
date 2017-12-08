@@ -125,7 +125,10 @@ module.exports = app => {
       })
 
       this.validate(input, {
-        demand_id: 'number',
+        demand_id: {
+          required: false,
+          type: 'number',
+        },
         parent_id: {
           required: false,
           type: 'number',
@@ -138,12 +141,14 @@ module.exports = app => {
 
       const { project } = this.ctx.service
 
-      const demand = await project.demand.checkDemandAvailableByNumber(input.demand_id)
-      input.demand_id = demand.id
-
       if (input.parent_id) {
         const consult = await project.consult.checkConsultAvailableByNumber(input.parent_id)
         input.parent_id = consult.id
+        input.demand_id = consult.demand_id
+      }
+      else if (input.demand_id) {
+        const demand = await project.demand.checkDemandAvailableByNumber(input.demand_id)
+        input.demand_id = demand.id
       }
 
       const consultId = await project.consult.createConsult(input)

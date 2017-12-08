@@ -10,6 +10,8 @@ const TYPE_CITY = 2
 // 区
 const TYPE_DISTRICT = 3
 
+const cache = { }
+
 module.exports = app => {
 
   const { code, util, config } = app
@@ -27,6 +29,10 @@ module.exports = app => {
     }
 
     async getAreaById(areaId) {
+
+      if (cache[ areaId ]) {
+        return cache[ areaId ]
+      }
 
       const result = { }
 
@@ -56,11 +62,14 @@ module.exports = app => {
       }
 
       if (record.parent_id == 0) {
+        cache[ areaId ] = result
         return result
       }
 
       const parent = await this.getAreaById(record.parent_id)
       Object.assign(result, parent)
+
+      cache[ areaId ] = result
 
       return result
 

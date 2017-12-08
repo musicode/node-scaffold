@@ -48,7 +48,7 @@ module.exports = app => {
         resource = await article.post.getFullPostById(resource_id)
         resource = await article.post.toExternal(resource)
       }
-      else if (resource_type == USER) {
+      else if (resource_type == TYPE_USER) {
         type = 'user'
         resource = await account.user.getFullUserById(resource_id)
         resource = await account.user.toExternal(resource)

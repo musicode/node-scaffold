@@ -135,7 +135,10 @@ module.exports = app => {
       })
 
       this.validate(input, {
-        post_id: 'number',
+        post_id: {
+          required: false,
+          type: 'number',
+        },
         parent_id: {
           required: false,
           type: 'number',
@@ -152,12 +155,14 @@ module.exports = app => {
 
       const { article } = this.ctx.service
 
-      const post = await article.post.checkPostAvailableByNumber(input.post_id)
-      input.post_id = post.id
-
       if (input.parent_id) {
         const comment = await article.comment.checkCommentAvailableByNumber(input.parent_id)
         input.parent_id = comment.id
+        input.post_id = comment.post_id
+      }
+      else if (input.post_id) {
+        const post = await article.post.checkPostAvailableByNumber(input.post_id)
+        input.post_id = post.id
       }
 
       const commentId = await article.comment.createComment(input)
