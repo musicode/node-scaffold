@@ -53,6 +53,11 @@ module.exports = app => {
     v1.user.detail
   )
 
+  app.post(
+    '/v1/user/view',
+    v1.user.view
+  )
+
   // =============================================
   // 隐私设置
   // =============================================
@@ -627,6 +632,11 @@ module.exports = app => {
   app.post(
     '/v1/remind/unreadCount',
     v1.remind.unreadCount
+  )
+
+  app.post(
+    '/v1/remind/view/list',
+    v1.remind.viewList
   )
 
   // =============================================

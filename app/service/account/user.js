@@ -565,19 +565,35 @@ module.exports = app => {
      * 浏览用户详细资料
      *
      * @param {number|Object} userId
+     * @return {Object}
      */
     async viewUser(userId) {
 
       const { account, privacy, relation } = this.service
 
-      let user = await this.getUserById(userId)
+      const user = await this.getUserById(userId)
+
       const currentUser = await account.session.getCurrentUser()
 
-      if (currentUser) {
-        if (user.id !== currentUser.id) {
-          await privacy.profileAllowed.checkAllowedType(currentUser.id, user.id)
+      await this.checkViewAvailable(currentUser.id, user.id)
 
-          const hasBlacked = await privacy.blacklist.hasBlacked(user.id, currentUser.id)
+      return await this.getFullUserById(user.id)
+
+    }
+
+    /**
+     * 判断 visitor 是否有权限访问 user
+     *
+     * @param {number} visitorId 访问者 id
+     * @param {number} userId
+     */
+    async checkViewAvailable(visitorId, userId) {
+
+      if (visitorId) {
+        if (userId !== visitorId) {
+          await privacy.profileAllowed.checkAllowedType(visitorId, userId)
+
+          const hasBlacked = await privacy.blacklist.hasBlacked(userId, visitorId)
           if (hasBlacked) {
             this.throw(
               code.VISITOR_BLACKED,
@@ -595,7 +611,7 @@ module.exports = app => {
           )
         }
         try {
-          await privacy.profileAllowed.checkAllowedType(currentUser ? currentUser.id : null, user.id)
+          await privacy.profileAllowed.checkAllowedType(visitorId || null, userId)
         }
         catch (err) {
           if (err.code === code.PARAM_INVALID) {
@@ -610,13 +626,7 @@ module.exports = app => {
         }
       }
 
-      await this.increaseUserViewCount(user.id)
-
-      return await this.getFullUserById(user.id)
-
     }
-
-
 
     /**
      * 递增用户的浏览量

@@ -124,16 +124,16 @@ module.exports = app => {
     /**
      * 用户是否已浏览文章
      *
-     * @param {number} userId
+     * @param {number} creatorId
      * @param {number} postId
      * @return {boolean}
      */
-    async hasViewPost(userId, postId) {
+    async hasViewPost(creatorId, postId) {
 
       const record = await this.findOneBy({
         resource_id: postId,
         resource_type: TYPE_POST,
-        creator_id: userId,
+        creator_id: creatorId,
         status: STATUS_ACTIVE,
       })
 
@@ -144,18 +144,18 @@ module.exports = app => {
     /**
      * 用户浏览文章是否已提醒作者
      *
-     * @param {number} userId
+     * @param {number} creatorId
      * @param {number} postId
      * @return {boolean}
      */
-    async hasViewPostRemind(userId, postId) {
+    async hasViewPostRemind(creatorId, postId) {
 
       const { trace } = this.service
 
       const record = await this.findOneBy({
         resource_id: postId,
         resource_type: TYPE_POST,
-        creator_id: userId,
+        creator_id: creatorId,
       })
 
       if (record) {
@@ -256,7 +256,7 @@ module.exports = app => {
 
 
 
-     /**
+    /**
      * 浏览项目
      *
      * @param {number|Object} demandId
@@ -315,16 +315,16 @@ module.exports = app => {
     /**
      * 用户是否已浏览项目
      *
-     * @param {number} userId
+     * @param {number} creatorId
      * @param {number} demandId
      * @return {boolean}
      */
-    async hasViewDemand(userId, demandId) {
+    async hasViewDemand(creatorId, demandId) {
 
       const record = await this.findOneBy({
         resource_id: demandId,
         resource_type: TYPE_DEMAND,
-        creator_id: userId,
+        creator_id: creatorId,
         status: STATUS_ACTIVE,
       })
 
@@ -335,18 +335,18 @@ module.exports = app => {
     /**
      * 用户浏览项目是否已提醒作者
      *
-     * @param {number} userId
+     * @param {number} creatorId
      * @param {number} demandId
      * @return {boolean}
      */
-    async hasViewDemandRemind(userId, demandId) {
+    async hasViewDemandRemind(creatorId, demandId) {
 
       const { trace } = this.service
 
       const record = await this.findOneBy({
         resource_id: demandId,
         resource_type: TYPE_DEMAND,
-        creator_id: userId,
+        creator_id: creatorId,
       })
 
       if (record) {
@@ -509,16 +509,16 @@ module.exports = app => {
     /**
      * 用户是否已浏览问题
      *
-     * @param {number} userId
+     * @param {number} creatorId
      * @param {number} questionId
      * @return {boolean}
      */
-    async hasViewQuestion(userId, questionId) {
+    async hasViewQuestion(creatorId, questionId) {
 
       const record = await this.findOneBy({
         resource_id: questionId,
         resource_type: TYPE_QUESTION,
-        creator_id: userId,
+        creator_id: creatorId,
         status: STATUS_ACTIVE,
       })
 
@@ -529,18 +529,18 @@ module.exports = app => {
     /**
      * 用户浏览问题是否已提醒作者
      *
-     * @param {number} userId
+     * @param {number} creatorId
      * @param {number} questionId
      * @return {boolean}
      */
-    async hasViewQuestionRemind(userId, questionId) {
+    async hasViewQuestionRemind(creatorId, questionId) {
 
       const { trace } = this.service
 
       const record = await this.findOneBy({
         resource_id: questionId,
         resource_type: TYPE_QUESTION,
-        creator_id: userId,
+        creator_id: creatorId,
       })
 
       if (record) {
@@ -637,6 +637,202 @@ module.exports = app => {
     async readViewQuestionRemind(receiverId) {
       const { trace } = this.service
       return await trace.viewRemind.readViewRemind(receiverId, TYPE_QUESTION)
+    }
+
+
+
+
+
+    /**
+     * 浏览用户
+     *
+     * @param {number|Object} userId
+     */
+    async viewUser(userId) {
+
+      const { account, trace } = this.service
+
+      const currentUser = await account.session.checkCurrentUser()
+      const user = await account.user.getUserById(userId)
+
+      await account.user.checkViewAvailable(currentUser.id, user.id)
+
+      const isSuccess = await this.transaction(
+        async () => {
+
+          let traceId = await this._addView({
+            resource_id: user.id,
+            resource_type: TYPE_USER,
+          })
+
+          let record
+
+          if (util.type(traceId) === 'object') {
+            record = traceId
+            traceId = record.id
+          }
+          else if (traceId) {
+            record = await this.findOneBy({
+              id: traceId,
+            })
+          }
+
+          if (record) {
+            await trace.viewRemind.addViewRemind({
+              trace_id: traceId,
+              resource_type: record.resource_type,
+              sender_id: record.creator_id,
+              receiver_id: user.user_id,
+            })
+          }
+
+          return true
+
+        }
+      )
+
+      if (!isSuccess) {
+        this.throw(
+          code.DB_INSERT_ERROR,
+          '浏览失败'
+        )
+      }
+
+      await account.user.increaseUserViewCount(user.id)
+
+    }
+
+    /**
+     * 用户是否已浏览用户
+     *
+     * @param {number} creatorId
+     * @param {number} userId
+     * @return {boolean}
+     */
+    async hasViewUser(creatorId, userId) {
+
+      const record = await this.findOneBy({
+        resource_id: userId,
+        resource_type: TYPE_USER,
+        creator_id: creatorId,
+        status: STATUS_ACTIVE,
+      })
+
+      return record ? true : false
+
+    }
+
+    /**
+     * 用户浏览用户是否已提醒作者
+     *
+     * @param {number} creatorId
+     * @param {number} userId
+     * @return {boolean}
+     */
+    async hasViewUserRemind(creatorId, userId) {
+
+      const { trace } = this.service
+
+      const record = await this.findOneBy({
+        resource_id: userId,
+        resource_type: TYPE_USER,
+        creator_id: creatorId,
+      })
+
+      if (record) {
+        return await trace.viewRemind.hasViewRemind(record.id)
+      }
+
+      return false
+
+    }
+
+    /**
+     * 读取用户的浏览数
+     *
+     * @param {number} creatorId
+     * @param {number} userId
+     * @return {number}
+     */
+    async getViewUserCount(creatorId, userId) {
+      const where = {
+        resource_type: TYPE_USER,
+        status: STATUS_ACTIVE,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      if (userId) {
+        where.resource_id = userId
+      }
+      return await this.countBy(where)
+    }
+
+    /**
+     * 获取用户的浏览列表
+     *
+     * @param {number} creatorId
+     * @param {number} userId
+     * @param {Object} options
+     * @return {Array}
+     */
+    async getViewUserList(creatorId, userId, options) {
+      const where = {
+        resource_type: TYPE_USER,
+        status: STATUS_ACTIVE,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      if (userId) {
+        where.resource_id = userId
+      }
+      options.where = where
+      return await this.findBy(options)
+    }
+
+    /**
+     * 获取用户被浏览用户的提醒列表
+     *
+     * @param {number} receiverId
+     * @param {Object} options
+     * @return {Array}
+     */
+    async getViewUserRemindList(receiverId, options) {
+      const { trace } = this.service
+      return await trace.viewRemind.getViewRemindList(receiverId, TYPE_USER, options)
+    }
+
+    /**
+     * 获取用户被浏览用户的提醒数量
+     *
+     * @param {number} receiverId
+     * @return {number}
+     */
+    async getViewUserRemindCount(receiverId) {
+      const { trace } = this.service
+      return await trace.viewRemind.getViewRemindCount(receiverId, TYPE_USER)
+    }
+
+    /**
+     * 获取用户被浏览用户的未读提醒数量
+     *
+     * @param {number} receiverId
+     * @return {number}
+     */
+    async getViewUserUnreadRemindCount(receiverId) {
+      const { trace } = this.service
+      return await trace.viewRemind.getUnreadViewRemindCount(receiverId, TYPE_USER)
+    }
+
+    /**
+     * 标记已读
+     *
+     * @param {number} receiverId
+     */
+    async readViewUserRemind(receiverId) {
+      const { trace } = this.service
+      return await trace.viewRemind.readViewRemind(receiverId, TYPE_USER)
     }
 
   }
