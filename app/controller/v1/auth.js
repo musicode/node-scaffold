@@ -14,7 +14,7 @@ module.exports = app => {
         company: 'trim',
         job: 'trim',
         mobile: 'trim',
-        password: ['trim', 'lower'],
+        password: 'trim',
         verify_code: 'trim',
         invite_code: 'trim',
       })
