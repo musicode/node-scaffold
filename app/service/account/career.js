@@ -17,9 +17,20 @@ module.exports = app => {
     }
 
     format(career) {
-      if (career.end_date === '0000-00-00') {
-        career.end_date = ''
+      if (!career.end_date || career.end_date === '0000-00-00') {
+        career.end_date = limit.SOFAR
       }
+    }
+
+    async toExternal(career) {
+      career.start_date = career.start_date.getTime()
+      if (util.type(career.end_date) === 'date') {
+        career.end_date = career.end_date.getTime()
+      }
+
+      career.create_time = career.create_time.getTime()
+      career.update_time = career.update_time.getTime()
+      return career
     }
 
     /**
@@ -78,6 +89,9 @@ module.exports = app => {
 
       const fields = this.getFields(data)
       if (fields) {
+        if (fields.end_date === limit.SOFAR) {
+          fields.end_date = ''
+        }
         return await this.insert(fields)
       }
 
@@ -99,6 +113,9 @@ module.exports = app => {
       await this.checkCareerOwner(careerId)
       const fields = this.getFields(data)
       if (fields) {
+        if (fields.end_date === limit.SOFAR) {
+          fields.end_date = ''
+        }
         const rows = await this.update(fields, { id: careerId })
         if (rows === 1) {
           await this.updateRedis(`career:${careerId}`, fields)
@@ -135,7 +152,9 @@ module.exports = app => {
       const careerList = await this.findBy({
         where: {
           user_id: userId,
-        }
+        },
+        sort_by: 'create_time',
+        sort_order: 'asc',
       })
 
       careerList.forEach(

@@ -612,4 +612,9 @@ module.exports = app => {
     v1.system.sync
   )
 
+  app.post(
+    '/v1/search',
+    v1.system.search
+  )
+
 }

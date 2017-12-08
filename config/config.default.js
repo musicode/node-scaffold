@@ -20,6 +20,7 @@ module.exports = appInfo => {
 
   config.system = {
     signupByInvite: false,
+    ignoreInviteCode: true,
     ignoreVerifyCode: true,
     userViewByGuest: false,
     postViewByGuest: false,

@@ -2,7 +2,7 @@
 
 module.exports = app => {
 
-  const { limit } = app
+  const { util, limit } = app
 
   class EducationController extends app.BaseController {
 
@@ -28,22 +28,21 @@ module.exports = app => {
         },
         degree: limit.EDUCATION_DEGREE_VALUES,
         description: {
+          allowEmpty: true,
           type: 'string',
           max: limit.CAREER_DESCRIPTION_MAX_LENGTH,
         },
-        start_date: {
-          type: 'date',
-        },
-        end_date: {
-          allowEmpty: true,
-          type: 'date',
-        }
+        start_date: 'date',
+        end_date: 'end_date'
       })
 
       const educationService = this.ctx.service.account.education
       const educationId = await educationService.createEducation(input)
+      const education = await educationService.getEducationById(educationId)
 
-      this.output.education = await educatioService.getEducationById(educationId)
+      this.output.education = await educationService.toExternal(education)
+
+
 
     }
 
@@ -71,16 +70,12 @@ module.exports = app => {
         },
         degree: limit.EDUCATION_DEGREE_VALUES,
         description: {
+          allowEmpty: true,
           type: 'string',
           max: limit.CAREER_DESCRIPTION_MAX_LENGTH,
         },
-        start_date: {
-          type: 'date',
-        },
-        end_date: {
-          allowEmpty: true,
-          type: 'date',
-        }
+        start_date: 'date',
+        end_date: 'end_date'
       })
 
       const educationService = this.ctx.service.account.education
@@ -119,6 +114,13 @@ module.exports = app => {
       const user = await account.user.checkUserAvailableByNumber(input.user_id)
 
       const educationList = await account.education.getEducationListByUserId(user.id)
+
+      await util.each(
+        educationList,
+        async (education, index) => {
+          educationList[ index ] = await account.education.toExternal(education)
+        }
+      )
 
       this.output.list = educationList
 

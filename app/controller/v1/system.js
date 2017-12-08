@@ -10,9 +10,10 @@ module.exports = app => {
 
       const { account, relation, privacy } = this.ctx.service
 
-      const currentUser = await account.session.getCurrentUser()
+      let currentUser = await account.session.getCurrentUser()
 
       if (currentUser) {
+        currentUser = await account.user.getFullUserById(currentUser.id)
         this.output.user = await account.user.toExternal(currentUser)
       }
 
@@ -29,6 +30,16 @@ module.exports = app => {
         }
       }
 
+    }
+
+    async search() {
+      this.output.list = [ ]
+      this.output.pager = {
+        page: 0,
+        page_size: 10,
+        total_page: 10,
+        count: 100,
+      }
     }
 
   }

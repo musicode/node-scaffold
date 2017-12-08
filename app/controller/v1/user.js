@@ -159,6 +159,10 @@ module.exports = app => {
 
       await account.userInfo.setUserInfo(input)
 
+      const currentUser = await account.session.getCurrentUser()
+
+      this.output.user =  await account.user.toExternal(currentUser)
+
     }
   }
 

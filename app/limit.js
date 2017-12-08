@@ -2,6 +2,8 @@
 
 module.exports = {
 
+  SOFAR: -1,
+
   ANONYMOUS_YES: 1,
   ANONYMOUS_NO: 0,
 

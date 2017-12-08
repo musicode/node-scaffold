@@ -17,9 +17,20 @@ module.exports = app => {
     }
 
     format(education) {
-      if (education.end_date === '0000-00-00') {
-        education.end_date = ''
+      if (!education.end_date || education.end_date === '0000-00-00') {
+        education.end_date = limit.SOFAR
       }
+    }
+
+    async toExternal(education) {
+      education.start_date = education.start_date.getTime()
+      if (util.type(education.end_date) === 'date') {
+        education.end_date = education.end_date.getTime()
+      }
+
+      education.create_time = education.create_time.getTime()
+      education.update_time = education.update_time.getTime()
+      return education
     }
 
     /**
@@ -79,6 +90,9 @@ module.exports = app => {
 
       const fields = this.getFields(data)
       if (fields) {
+        if (fields.end_date === limit.SOFAR) {
+          fields.end_date = ''
+        }
         return await this.insert(fields)
       }
 
@@ -101,6 +115,9 @@ module.exports = app => {
       await this.checkEducationOwner(educationId)
       const fields = this.getFields(data)
       if (fields) {
+        if (fields.end_date === limit.SOFAR) {
+          fields.end_date = ''
+        }
         const rows = await this.update(fields, { id: educationId })
         if (rows === 1) {
           await this.updateRedis(`education:${educationId}`, fields)
@@ -134,7 +151,9 @@ module.exports = app => {
       const educationList = await this.findBy({
         where: {
           user_id: userId,
-        }
+        },
+        sort_by: 'create_time',
+        sort_order: 'asc',
       })
 
       educationList.forEach(

@@ -2,7 +2,7 @@
 
 module.exports = app => {
 
-  const { limit } = app
+  const { util, limit } = app
 
   class CareerController extends app.BaseController {
 
@@ -26,22 +26,19 @@ module.exports = app => {
           max: limit.CAREER_JOB_MAX_LENGTH,
         },
         description: {
+          allowEmpty: true,
           type: 'string',
           max: limit.CAREER_DESCRIPTION_MAX_LENGTH,
         },
-        start_date: {
-          type: 'date',
-        },
-        end_date: {
-          allowEmpty: true,
-          type: 'date',
-        }
+        start_date: 'date',
+        end_date: 'end_date'
       })
 
       const careerService = this.ctx.service.account.career
       const careerId = await careerService.createCareer(input)
+      const career = await careerService.getCareerById(careerId)
 
-      this.output.career = await careerService.getCareerById(careerId)
+      this.output.career = await careerService.toExternal(career)
 
     }
 
@@ -67,16 +64,12 @@ module.exports = app => {
           max: limit.CAREER_JOB_MAX_LENGTH,
         },
         description: {
+          allowEmpty: true,
           type: 'string',
           max: limit.CAREER_DESCRIPTION_MAX_LENGTH,
         },
-        start_date: {
-          type: 'date',
-        },
-        end_date: {
-          allowEmpty: true,
-          type: 'date',
-        }
+        start_date: 'date',
+        end_date: 'end_date'
       })
 
       const careerService = this.ctx.service.account.career
@@ -115,6 +108,13 @@ module.exports = app => {
       const user = await account.user.checkUserAvailableByNumber(input.user_id)
 
       const careerList = await account.career.getCareerListByUserId(user.id)
+
+      await util.each(
+        careerList,
+        async (career, index) => {
+          careerList[ index ] = await account.career.toExternal(career)
+        }
+      )
 
       this.output.list = careerList
 

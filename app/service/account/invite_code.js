@@ -3,7 +3,7 @@
 
 module.exports = app => {
 
-  const { code, util, limit, moment } = app
+  const { code, util, limit, config, moment } = app
 
   class InviteCode extends app.BaseService {
 
@@ -107,6 +107,10 @@ module.exports = app => {
      * @return {Object} 如果邀请码可用，返回该邀请码数据
      */
     async checkInviteCodeAvailable(inviteCode) {
+
+      if (config.system.ignoreInviteCode) {
+        return
+      }
 
       const { account } = this.service
 

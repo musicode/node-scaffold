@@ -4,12 +4,34 @@ const Parameter = require('parameter')
 
 const validator = new Parameter()
 const util = require('./util')
+const limit = require('./limit')
 
 validator.addRule(
   'mobile',
   (rule, value) => {
     if (typeof value !== 'string' || !/1\d{10}/.test(value)) {
       return '手机号码格式错误'
+    }
+  }
+)
+
+validator.addRule(
+  'verify_code',
+  (rule, value) => {
+    if (typeof value !== 'string' || !/\d{6}/.test(value)) {
+      return '验证码格式错误'
+    }
+  }
+)
+
+validator.addRule(
+  'end_date',
+  (rule, value) => {
+    if (!value || util.type('value') !== 'string') {
+      return '缺少结束日期'
+    }
+    if (value != limit.SOFAR && !/\d{4}-\d{2}-\d{2}/.test(value)) {
+      return '结束日期格式错误'
     }
   }
 )
