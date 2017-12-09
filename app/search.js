@@ -10,8 +10,7 @@ async function upsertUser(data) {
 
   service.search.upsert(
     'account',
-    user,
-    userId
+    user
   )
 }
 
@@ -23,8 +22,7 @@ async function upsertPost(data) {
 
   service.search.upsert(
     'post',
-    post,
-    postId
+    post
   )
 }
 
@@ -36,8 +34,7 @@ async function upsertComment(data) {
 
   service.search.upsert(
     'comment',
-    comment,
-    commentId
+    comment
   )
 }
 
@@ -49,8 +46,7 @@ async function upsertDemand(data) {
 
   service.search.upsert(
     'demand',
-    demand,
-    demandId
+    demand
   )
 }
 
@@ -62,8 +58,7 @@ async function upsertConsult(data) {
 
   service.search.upsert(
     'consult',
-    consult,
-    consultId
+    consult
   )
 }
 
@@ -75,8 +70,7 @@ async function upsertQuestion(data) {
 
   service.search.upsert(
     'question',
-    question,
-    questionId
+    question
   )
 }
 
@@ -88,8 +82,7 @@ async function upsertReply(data) {
 
   service.search.upsert(
     'reply',
-    reply,
-    replyId
+    reply
   )
 }
 

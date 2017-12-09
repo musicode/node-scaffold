@@ -6,23 +6,24 @@ module.exports = (options, app) => {
 
   return async function errorHandler(ctx, next) {
 
-    const body = { }
-
     // 方便在控制台区分请求
     console.log('')
     console.log('')
     console.log('')
 
+    let responseCode
+    let responseMsg
+
     try {
       await next()
       if (ctx._matchedRoute) {
-        body.code = code.SUCCESS
-        body.msg = 'success'
+        responseCode = code.SUCCESS
+        responseMsg = 'success'
       }
       // 未匹配路由，表示 404 了
       else {
-        body.code = code.RESOURCE_NOT_FOUND
-        body.msg = 'not found'
+        responseCode = code.RESOURCE_NOT_FOUND
+        responseMsg = 'not found'
       }
     }
     catch (err) {
@@ -30,15 +31,17 @@ module.exports = (options, app) => {
       // 框架会统一监听，并打印对应的错误日志
       ctx.app.emit('error', err, ctx)
       // 自定义错误时异常返回的格式
-      body.code = err.code || code.FAILURE
-      body.msg = err.message
+      responseCode = err.code || code.FAILURE
+      responseMsg = err.message
     }
 
-    body.data = ctx.output
-    body.ts = Date.now()
-
     if (!ctx.body) {
-      ctx.body = body
+      ctx.body = {
+        code: responseCode,
+        data: ctx.output,
+        msg: responseMsg,
+        ts: Date.now(),
+      }
     }
 
   }

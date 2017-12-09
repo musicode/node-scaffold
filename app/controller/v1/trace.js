@@ -8,30 +8,54 @@ module.exports = app => {
 
     async friend() {
 
-      const { account, relation, privacy } = this.ctx.service
+      const input = this.filter(this.input, {
+        page: 'number',
+        page_size: 'number',
+        sort_by: 'trim',
+        sort_order: 'trim',
+      })
 
-      const currentUser = await account.session.checkCurrentUser()
+      this.validate(input, {
+        page: 'page',
+        page_size: 'page_size',
+        sort_by: {
+          required: false,
+          type: 'sort_by',
+        },
+        sort_order: {
+          required: false,
+          type: 'sort_order',
+        },
+      })
 
-      const friendList = await relation.friend.getFriendList(currentUser.id)
-      const blockedIds = await privacy.activityBlocked.getBlockedUserListByUserId(currentUser.id)
+      const { account, relation, search } = this.ctx.service
 
-      let ids = [ ]
+      const friendIds = await relation.friend.getFrienIdListForNews()
 
-      await util.each(
-        friendList,
-        async (item, index) => {
+      if (friendIds.length) {
+        input.type = this.input.type
 
-          if (blockedIds.indexOf(item.friend_id) < 0) {
-            const deniedIds = await privacy.activityDenied.getDeniedUserListByUserId(item.friend_id)
-            if (deniedIds.indexOf(currentUser.id) < 0) {
-              ids.push(item.friend_id)
-            }
+        const friendNumbers = [ ]
+        await util.each(
+          friendIds,
+          async id => {
+            const { number } = await account.user.getUserById(id)
+            friendNumbers.push(number)
           }
+        )
 
-        }
-      )
+        input.user_number = friendNumbers
 
-      // [TODO] 搜索
+        const result = await search.news(input)
+
+        this.ctx.body = result
+
+      }
+      else {
+        this.output.list = [ ]
+        this.output.pager = this.createPager(input, 0)
+      }
+
 
     }
 

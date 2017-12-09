@@ -3,32 +3,36 @@
 
 module.exports = app => {
 
-  const { code, config } = app
+  const { code, util, config } = app
 
   class Search extends app.BaseService {
 
-    async upsert(type, entity, author) {
+    async upsert(type, entity) {
 
       const url = config.server.search + '/upsert'
 
       entity.type = type
 
-      if (author) {
-        entity.user_id = author.id
-        entity.user_number = author.number
+      const { account } = this.service
+      const currentUser = await account.session.getCurrentUser()
+
+      if (currentUser) {
+        entity.user_id = currentUser.id
+        entity.user_number = currentUser.number
       }
 
+      // [TODO] 这里用 GET 有隐患
       const response = await this.ctx.curl(
         config.server.search + '/upsert',
         {
-          method: 'POST',
+          method: 'GET',
           contentType: 'json',
           dataType: 'json',
           data: entity,
         }
       )
 
-      if (response.status_code !== 200) {
+      if (response.status !== 200) {
         this.throw(
           code.INNER_ERROR,
           'UPSERT 索引错误'
@@ -52,7 +56,7 @@ module.exports = app => {
         }
       )
 
-      if (response.status_code !== 200) {
+      if (response.status !== 200) {
         this.throw(
           code.INNER_ERROR,
           'REMOVE 索引错误'
@@ -61,7 +65,7 @@ module.exports = app => {
 
     }
 
-    async search(params, currentUserId) {
+    async search(params) {
 
       const data = util.filterObject(
         params,
@@ -73,7 +77,10 @@ module.exports = app => {
 
       data.type = params.types.join(',')
       data._and = 'and' in params ? params.and : 0
-      data._user_id = currentUserId || ''
+
+      const { account } = this.service
+      const currentUser = await account.session.getCurrentUser()
+      data._user_id = currentUser ? currentUser.id : ''
 
       // 搜索字段
       const fields = params.fields
@@ -97,21 +104,19 @@ module.exports = app => {
         }
       )
 
-      if (response.status_code !== 200) {
+      // status/headers/res/data
+      if (response.status !== 200) {
         this.throw(
           code.INNER_ERROR,
           'SEARCH 索引错误'
         )
       }
 
-      return {
-        list: response.data.list,
-        ts: 0,
-      }
+      return response.data.data
 
     }
 
-    async news(params, currentUserId) {
+    async news(params) {
 
       const data = util.filterObject(
         params,
@@ -120,7 +125,9 @@ module.exports = app => {
         ]
       )
 
-      data._user_id = currentUserId || ''
+      const { account } = this.service
+      const currentUser = await account.session.getCurrentUser()
+      data._user_id = currentUser ? currentUser.id : ''
 
       const response = await this.ctx.curl(
         config.server.search + '/news',
@@ -132,17 +139,14 @@ module.exports = app => {
         }
       )
 
-      if (response.status_code !== 200) {
+      if (response.status !== 200) {
         this.throw(
           code.INNER_ERROR,
           'NEWS 索引错误'
         )
       }
 
-      return {
-        list: response.data.list,
-        ts: 0,
-      }
+      return response.data.data
 
     }
 

@@ -3,6 +3,8 @@
 
 module.exports = app => {
 
+  const { util } = app
+
   class Friend extends app.BaseService {
 
     get tableName() {
@@ -51,9 +53,38 @@ module.exports = app => {
      */
     _formatQuerySQL(userId, columns) {
 
-      return `
-        SELECT ${columns} FROM ${this.tableName} AS a INNER JOIN ${this.tableName} AS b ON a.user_id = b.followee_id AND a.followee_id = b.user_id AND a.user_id = ${userId}
-      `
+      return `SELECT ${columns} FROM ${this.tableName} AS a INNER JOIN ${this.tableName} AS b `
+        + `ON a.user_id = b.followee_id AND a.followee_id = b.user_id AND a.user_id = ${userId}`
+
+    }
+
+    /**
+     * 好友动态
+     */
+    async getFrienIdListForNews() {
+
+      const { account, relation, privacy } = this.service
+
+      const currentUser = await account.session.checkCurrentUser()
+
+      const friendList = await this.getFriendList(currentUser.id)
+      const blockedIds = await privacy.activityBlocked.getBlockedUserListByUserId(currentUser.id)
+
+      const ids = [ ]
+
+      await util.each(
+        friendList,
+        async item => {
+          if (blockedIds.indexOf(item.friend_id) < 0) {
+            const deniedIds = await privacy.activityDenied.getDeniedUserListByUserId(item.friend_id)
+            if (deniedIds.indexOf(currentUser.id) < 0) {
+              ids.push(item.friend_id)
+            }
+          }
+        }
+      )
+
+      return ids
 
     }
 

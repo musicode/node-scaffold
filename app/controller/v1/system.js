@@ -70,13 +70,22 @@ module.exports = app => {
         )
       }
 
-      this.output.list = [ ]
-      this.output.pager = {
-        page: 0,
-        page_size: 10,
-        total_page: 10,
-        count: 100,
-      }
+      const { search } = this.ctx.service
+
+      input.types = this.input.types
+      input.fields = this.input.fields
+
+      const result = await search.search(input)
+
+      // await util.each(
+      //   list,
+      //   async (item, index) => {
+      //     // [TODO] 已关注逻辑
+      //   }
+      // )
+
+      this.ctx.body = result
+
     }
 
   }
