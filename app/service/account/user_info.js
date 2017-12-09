@@ -22,7 +22,7 @@ module.exports = app => {
     }
 
     format(userInfo) {
-      if (userInfo.birthday === '0000-00-00') {
+      if (userInfo && userInfo.birthday === '0000-00-00') {
         userInfo.birthday = ''
       }
     }

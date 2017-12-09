@@ -6,8 +6,12 @@ module.exports = (options, app) => {
 
   return async function errorHandler(ctx, next) {
 
-    // 方便在控制台区分请求
+    // 方便在控制台查看请求
     console.log('')
+    console.log('')
+    console.log('')
+    console.log('')
+    console.log(ctx.request.url)
     console.log('')
     console.log('')
 

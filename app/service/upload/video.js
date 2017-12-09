@@ -60,12 +60,12 @@ module.exports = app => {
       }
 
       // 删除源文件
-      fs.unlink(
-        file.path,
-        err => {
-          throw err
-        }
-      )
+      // fs.unlink(
+      //   file.path,
+      //   err => {
+      //     throw err
+      //   }
+      // )
 
       return {
         url: record.url,

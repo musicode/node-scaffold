@@ -489,9 +489,69 @@ module.exports = app => {
 
     async inviteSuggestion() {
 
-      const question = await this.checkQuestion()
+      const input = this.filter(this.input, {
+        question_id: 'number',
+        page: 'number',
+        page_size: 'number',
+        sort_order: 'string',
+        sort_by: 'string',
+      })
 
-      // 待完善
+      this.validate(input, {
+        question_id: {
+          required: false,
+          type: 'number'
+        },
+        page: 'page',
+        page_size: 'page_size',
+        sort_by: {
+          required: false,
+          type: 'sort_by',
+        },
+        sort_order: {
+          required: false,
+          type: 'sort_order'
+        },
+      })
+
+
+      const { account, qa, search, trace } = this.ctx.service
+
+      const question = await qa.question.checkQuestionAvailableByNumber(input.question_id)
+
+      const currentUser = await account.session.checkCurrentUser()
+
+      input.types = [ 'account' ]
+      input.fields = [ 'nickname', 'company', 'job', 'email', 'mobile', 'domain' ]
+
+      const result = await search.search(input)
+
+      const { list, pager } = result
+
+      const users = [ ]
+      let count = pager.total_size
+
+      await util.each(
+        list,
+        async item => {
+          const user = item.master
+          if (user.user_number !== currentUser.number) {
+            const hasInvite = await trace.invite.hasInviteQuestion(currentUser.id, user.id, question.id)
+            users.push({
+              user,
+              has_invite: hasInvite,
+            })
+          }
+          else {
+            count--
+          }
+          users
+        }
+      )
+
+      this.output.list = users
+      this.output.pager = this.createPager(input, count)
+
     }
 
   }
