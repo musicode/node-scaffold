@@ -635,8 +635,68 @@ module.exports = app => {
   )
 
   app.post(
+    '/v1/remind/follow/read',
+    v1.remind.userFollowRead
+  )
+
+  app.post(
     '/v1/remind/view/list',
-    v1.remind.viewList
+    v1.remind.userViewList
+  )
+
+  app.post(
+    '/v1/remind/view/read',
+    v1.remind.userViewRead
+  )
+
+  app.post(
+    '/v1/remind/like/list',
+    v1.remind.likeList
+  )
+
+  app.post(
+    '/v1/remind/like/read',
+    v1.remind.likeRead
+  )
+
+  app.post(
+    '/v1/remind/question/inviteList',
+    v1.remind.questionInviteList
+  )
+
+  app.post(
+    '/v1/remind/question/inviteRead',
+    v1.remind.questionInviteRead
+  )
+
+  app.post(
+    '/v1/remind/answer/createList',
+    v1.remind.answerCreateList
+  )
+
+  app.post(
+    '/v1/remind/answer/createRead',
+    v1.remind.answerCreateRead
+  )
+
+  app.post(
+    '/v1/remind/consult/createList',
+    v1.remind.consultCreateList
+  )
+
+  app.post(
+    '/v1/remind/consult/createRead',
+    v1.remind.consultCreateRead
+  )
+
+  app.post(
+    '/v1/remind/comment/createList',
+    v1.remind.commentCreateList
+  )
+
+  app.post(
+    '/v1/remind/comment/createRead',
+    v1.remind.commentCreateRead
   )
 
   // =============================================

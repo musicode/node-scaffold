@@ -1141,6 +1141,36 @@ module.exports = app => {
 
 
     /**
+     * 获取被点赞的提醒列表
+     *
+     * @param {number} receiverId
+     * @param {Object} options
+     * @return {Array}
+     */
+    async getLikeRemindList(receiverId, options) {
+      const { trace } = this.service
+      return await trace.likeRemind.getLikeRemindList(
+        {
+          receiver_id: receiverId,
+        },
+        options
+      )
+    }
+
+    /**
+     * 获取被点赞的提醒数量
+     *
+     * @param {number} receiverId
+     * @return {number}
+     */
+    async getLikeRemindCount(receiverId) {
+      const { trace } = this.service
+      return await trace.likeRemind.getLikeRemindCount({
+        receiver_id: receiverId,
+      })
+    }
+
+    /**
      * 获取被点赞的未读提醒数量
      *
      * @param {number} receiverId

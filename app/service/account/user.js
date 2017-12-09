@@ -2,6 +2,8 @@
 
 const bcrypt = require('bcryptjs')
 
+const checkUserNumberCache = { }
+
 module.exports = app => {
 
   const { code, util, limit, redis, config, eventEmitter } = app
@@ -107,10 +109,14 @@ module.exports = app => {
      * @return {Object}
      */
     async checkUserAvailableByNumber(userNumber) {
-      const user = await this.findOneBy({
+      if (checkUserNumberCache[ userNumber ]) {
+        return checkUserNumberCache[ userNumber ]
+      }
+      let user = await this.findOneBy({
         number: userNumber,
       })
-      return await this.checkUserAvailableById(user)
+      user = await this.checkUserAvailableById(user)
+      return checkUserNumberCache[ userNumber ] = user
     }
 
     /**

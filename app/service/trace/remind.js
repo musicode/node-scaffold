@@ -9,6 +9,34 @@ const BaseService = require('../base')
 
 class BaseRemindService extends BaseService {
 
+  get STATUS_UNREAD() {
+    return STATUS_UNREAD
+  }
+
+  get STATUS_READED() {
+    return STATUS_READED
+  }
+
+  get STATUS_DELETED() {
+    return STATUS_DELETED
+  }
+
+  async toExternal(record) {
+
+    const trace = await this.traceService.findOneBy({
+      id: record.trace_id,
+    })
+
+    return {
+      id: record.id,
+      type: record.type,
+      resource: trace.resource,
+      status: record.status,
+      sender: trace.creator,
+      create_time: record.update_time.getTime(),
+    }
+  }
+
   /**
    * 添加提醒
    *
@@ -175,7 +203,6 @@ class BaseRemindService extends BaseService {
       ...where.values,
     ]
 
-console.log('!!!!!', sql, values)
     await this.query(sql, values)
 
   }

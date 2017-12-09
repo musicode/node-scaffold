@@ -17,6 +17,30 @@ module.exports = app => {
 
   class Create extends app.BaseService {
 
+    get TYPE_QUESTION() {
+      return TYPE_QUESTION
+    }
+
+    get TYPE_REPLY() {
+      return TYPE_REPLY
+    }
+
+    get TYPE_DEMAND() {
+      return TYPE_DEMAND
+    }
+
+    get TYPE_CONSULT() {
+      return TYPE_CONSULT
+    }
+
+    get TYPE_POST() {
+      return TYPE_POST
+    }
+
+    get TYPE_COMMENT() {
+      return TYPE_COMMENT
+    }
+
     get tableName() {
       return 'trace_create'
     }
@@ -1216,59 +1240,107 @@ module.exports = app => {
     }
 
     /**
+     * 获取用户被回复问题的提醒列表
+     *
+     * @param {number} receiverId
+     * @param {Object} options
+     * @return {Array}
+     */
+    async getCreateAnswerRemindList(receiverId, options) {
+      const { trace } = this.service
+      return await trace.createRemind.getCreateRemindList(
+        {
+          receiver_id: receiverId,
+          resource_type: TYPE_REPLY,
+          resource_parent_id: 0,
+        },
+        options
+      )
+    }
+
+    /**
      * 获取用户被回复问题的提醒数量
      *
      * @param {number} receiverId
-     * @param {boolean} isAnswer
      * @return {number}
      */
-    async getCreateReplyRemindCount(receiverId, isAnswer) {
+    async getCreateReplyRemindCount(receiverId) {
       const { trace } = this.service
-      const where = {
+      return await trace.createRemind.getCreateRemindCount({
         receiver_id: receiverId,
         resource_type: TYPE_REPLY,
-      }
-      if (isAnswer) {
-        where.resource_parent_id = 0
-      }
-      return await trace.createRemind.getCreateRemindCount(where)
+      })
+    }
+
+    /**
+     * 获取用户被回复问题的提醒数量
+     *
+     * @param {number} receiverId
+     * @return {number}
+     */
+    async getCreateAnswerRemindCount(receiverId) {
+      const { trace } = this.service
+      return await trace.createRemind.getCreateRemindCount({
+        receiver_id: receiverId,
+        resource_type: TYPE_REPLY,
+        resource_parent_id: 0,
+      })
     }
 
     /**
      * 获取用户被回复问题的未读提醒数量
      *
      * @param {number} receiverId
-     * @param {boolean} isAnswer
      * @return {number}
      */
-    async getCreateReplyUnreadRemindCount(receiverId, isAnswer) {
+    async getCreateReplyUnreadRemindCount(receiverId) {
       const { trace } = this.service
-      const where = {
+      return await trace.createRemind.getUnreadCreateRemindCount({
         receiver_id: receiverId,
         resource_type: TYPE_REPLY,
-      }
-      if (isAnswer) {
-        where.resource_parent_id = 0
-      }
-      return await trace.createRemind.getUnreadCreateRemindCount(where)
+      })
+    }
+
+    /**
+     * 获取用户被回答的未读提醒数量
+     *
+     * @param {number} receiverId
+     * @return {number}
+     */
+    async getCreateAnswerUnreadRemindCount(receiverId) {
+      const { trace } = this.service
+      return await trace.createRemind.getUnreadCreateRemindCount({
+        receiver_id: receiverId,
+        resource_type: TYPE_REPLY,
+        resource_parent_id: 0,
+      })
     }
 
     /**
      * 标记已读
      *
      * @param {number} receiverId
-     * @param {boolean} isAnswer
      */
-    async readCreateReplyRemind(receiverId, isAnswer) {
+    async readCreateReplyRemind(receiverId) {
       const { trace } = this.service
-      const where = {
+      return await trace.createRemind.readCreateRemind({
         receiver_id: receiverId,
         resource_type: TYPE_REPLY,
-      }
-      if (isAnswer) {
-        where.resource_parent_id = 0
-      }
-      return await trace.createRemind.readCreateRemind(where)
+      })
+    }
+
+    /**
+     * 标记已读
+     *
+     * @param {number} receiverId
+     */
+    async readCreateAnswerRemind(receiverId) {
+      const { trace } = this.service
+      return await trace.createRemind.readCreateRemind({
+        receiver_id: receiverId,
+        resource_type: TYPE_REPLY,
+        resource_parent_id: 0,
+      })
     }
 
   }

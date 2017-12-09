@@ -18,6 +18,10 @@ module.exports = app => {
       ]
     }
 
+    get traceService() {
+      return this.service.trace.follow
+    }
+
     /**
      * 关注提醒
      *

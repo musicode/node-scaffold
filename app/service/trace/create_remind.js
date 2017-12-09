@@ -20,6 +20,10 @@ module.exports = app => {
       ]
     }
 
+    get traceService() {
+      return this.service.trace.create
+    }
+
     /**
      * 创建提醒
      *

@@ -47,6 +47,14 @@ module.exports = {
     return result
   },
 
+  pushArray(array, values) {
+    values.forEach(
+      value => {
+        array.push(value)
+      }
+    )
+  },
+
   toNumber(value, defaultValue = 0) {
     value = + value
     return isNaN(value) ? defaultValue : value
@@ -107,6 +115,24 @@ module.exports = {
       return {
         sql: wheres.join(' AND '),
         values,
+      }
+    }
+  },
+
+  formatSorter(sortBy, sortOrder) {
+    if (sortBy) {
+      return {
+        sql: 'ORDER BY `?` ?',
+        values: [ sortBy, sortOrder && sortOrder.toLowerCase() === 'desc' ? 'DESC' : 'ASC' ]
+      }
+    }
+  },
+
+  formatPager(page, pageSize) {
+    if (page > 0 && pageSize > 0) {
+      return {
+        sql: 'LIMIT ?, ?',
+        values: [ page - 1 * pageSize, pageSize ]
       }
     }
   },

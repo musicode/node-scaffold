@@ -1,5 +1,7 @@
 'use strict'
 
+const cache = { }
+
 module.exports = app => {
 
   const { code, eventEmitter } = app
@@ -27,13 +29,17 @@ module.exports = app => {
 
     async getUserInfoByUserId(userId) {
 
+      if (cache[ userId ]) {
+        return cache[ userId ]
+      }
+
       const userInfo = await this.findOneBy({
         user_id: userId,
       })
 
       this.format(userInfo)
 
-      return userInfo
+      return cache[ userId ] = userInfo
 
     }
 
@@ -42,6 +48,11 @@ module.exports = app => {
       const { account } = this.service
 
       const currentUser = await account.session.checkCurrentUser()
+      const userId = currentUser.id
+
+      if (cache[ userId ]) {
+        delete cache[ userId ]
+      }
 
       const fields = this.getFields(data)
       if (fields) {
@@ -49,7 +60,7 @@ module.exports = app => {
           // 小写化
           fields.domain = fields.domain.toLowerCase()
         }
-        const userId = currentUser.id
+
         const rows = await this.update(fields, { user_id: userId })
         if (rows === 1) {
           await this.updateRedis(`user:${userId}`, fields)
