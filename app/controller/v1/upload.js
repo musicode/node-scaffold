@@ -14,7 +14,11 @@ module.exports = app => {
 
       form.hash = 'md5'
       form.keepExtensions = true
-      form.uploadDir = config.upload.dir
+      form.maxFieldsSize = 50 * 1024 * 1024
+      // if (config.upload.dir) {
+      //   form.uploadDir = config.upload.dir
+      // }
+
 
       return new Promise(resolve => {
 
@@ -41,7 +45,7 @@ module.exports = app => {
 
       const { files } = await this.uploading()
 
-      this.output = await upload.image.addImage(files.upload)
+      this.output = await upload.image.addImage(files.file)
 
     }
 
@@ -62,7 +66,7 @@ module.exports = app => {
 
       const { files } = await this.uploading()
 
-      this.output = await upload.audio.addAudio(files.upload, input.duration)
+      this.output = await upload.audio.addAudio(files.file, input.duration)
 
     }
 
@@ -83,7 +87,7 @@ module.exports = app => {
 
       const { files } = await this.uploading()
 
-      this.output = await upload.video.addVideo(files.upload, input.duration)
+      this.output = await upload.video.addVideo(files.file, input.duration)
 
     }
 

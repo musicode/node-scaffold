@@ -25,10 +25,10 @@ return;
 // show a file upload form
 res.writeHead(200, {'content-type': 'text/html'});
 res.end(
-'<form action="/upload" enctype="multipart/form-data" method="post">'+
+'<form action="http://localhost:8989/v1/upload/image" enctype="multipart/form-data" method="post">'+
 '<input type="text" name="title"><br>'+
 '<input type="file" name="upload" multiple="multiple"><br>'+
 '<input type="submit" value="Upload">'+
 '</form>'
 );
-}).listen(8080);
+}).listen(8180);

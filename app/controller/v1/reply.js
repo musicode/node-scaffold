@@ -103,9 +103,12 @@ module.exports = app => {
         const reply = await qa.reply.checkReplyAvailableByNumber(input.parent_id)
         where.parent_id = reply.id
       }
-      else if (input.question_id) {
-        const question = await qa.question.checkQuestionAvailableByNumber(input.question_id)
-        where.question_id = question.id
+      else {
+        where.parent_id = 0
+        if (input.question_id) {
+          const question = await qa.question.checkQuestionAvailableByNumber(input.question_id)
+          where.question_id = question.id
+        }
       }
 
       if (util.type(input.status) === 'number') {
@@ -122,6 +125,7 @@ module.exports = app => {
         sort_order: input.sort_order || 'desc',
         sort_by: input.sort_by || 'create_time'
       }
+
       const list = await qa.reply.getReplyList(where, options)
       const count = await qa.reply.getReplyCount(where)
 

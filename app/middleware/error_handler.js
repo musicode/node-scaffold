@@ -8,6 +8,11 @@ module.exports = (options, app) => {
 
     const body = { }
 
+    // 方便在控制台区分请求
+    console.log('')
+    console.log('')
+    console.log('')
+
     try {
       await next()
       if (ctx._matchedRoute) {

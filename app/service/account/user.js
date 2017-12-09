@@ -419,7 +419,7 @@ module.exports = app => {
             eventEmitter.USER_UPDATE,
             {
               userId: currentUser.id,
-              fields,
+              service: this.service,
             }
           )
           return true
@@ -457,7 +457,7 @@ module.exports = app => {
             eventEmitter.USER_UPDATE,
             {
               userId: currentUser.id,
-              fields,
+              service: this.service,
             }
           )
           return true
@@ -512,7 +512,7 @@ module.exports = app => {
           eventEmitter.USER_UPDATE,
           {
             userId: currentUser.id,
-            fields,
+            service: this.service,
           }
         )
         return true
@@ -560,7 +560,7 @@ module.exports = app => {
           eventEmitter.USER_UPDATE,
           {
             userId: user.id,
-            fields,
+            service: this.service,
           }
         )
         return true
