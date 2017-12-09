@@ -237,7 +237,7 @@ module.exports = app => {
       }
 
       eventEmitter.emit(
-        eventEmitter.QUESTION_ADD,
+        eventEmitter.QUESTION_CREATE,
         {
           questionId,
           service: this.service,
@@ -322,7 +322,7 @@ module.exports = app => {
         await this.updateRedis(`question:${question.id}`, fields)
 
         eventEmitter.emit(
-          eventEmitter.QUESTION_UDPATE,
+          eventEmitter.QUESTION_UPDATE,
           {
             questionId: question.id,
             service: this.service,
@@ -391,7 +391,7 @@ module.exports = app => {
       await this.updateRedis(`question:${question.id}`, fields)
 
       eventEmitter.emit(
-        eventEmitter.QUESTION_UDPATE,
+        eventEmitter.QUESTION_UPDATE,
         {
           questionId: question.id,
           service: this.service,

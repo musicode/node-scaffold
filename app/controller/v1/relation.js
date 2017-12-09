@@ -228,9 +228,32 @@ module.exports = app => {
 
     async friendList() {
 
+      const input = this.filter(this.input, {
+        user_id: 'number',
+        page: 'number',
+        page_size: 'number',
+        sort_by: 'trim',
+        sort_order: 'trim',
+      })
+
+      this.validate(input, {
+        user_id: 'number',
+        page: 'page',
+        page_size: 'page_size',
+        sort_by: {
+          required: false,
+          type: 'sort_by',
+        },
+        sort_order: {
+          required: false,
+          type: 'sort_order',
+        },
+      })
+
+
       const { account, relation } = this.ctx.service
 
-      const user = await this.checkUser()
+      const user = await account.user.checkUserAvailableByNumber(input.user_id)
 
       const list = await relation.friend.getFriendList(user.id)
 

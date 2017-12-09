@@ -214,6 +214,11 @@ module.exports = app => {
     v1.relation.followerList
   )
 
+  app.post(
+    '/v1/relation/friend/list',
+    v1.relation.friendList
+  )
+
   // =============================================
   // 文章
   // =============================================

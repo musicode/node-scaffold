@@ -172,6 +172,7 @@ module.exports = app => {
         }
       }
 
+      user.view_count = await this.getUserViewCount(user.id)
       user.like_count = await this.getUserLikeCount(user.id)
       user.write_count = await this.getUserWriteCount(user.id)
       user.followee_count = await this.getUserFolloweeCount(user.id)
@@ -274,9 +275,10 @@ module.exports = app => {
       await account.session.set(currentUser, userId)
 
       eventEmitter.emit(
-        eventEmitter.USER_ADD,
+        eventEmitter.USER_CREATE,
         {
           userId,
+          service: this.service,
         }
       )
 
@@ -414,7 +416,7 @@ module.exports = app => {
         if (rows === 1) {
           await this.updateRedis(`user:${currentUser.id}`, fields)
           eventEmitter.emit(
-            eventEmitter.USER_UDPATE,
+            eventEmitter.USER_UPDATE,
             {
               userId: currentUser.id,
               fields,
@@ -452,7 +454,7 @@ module.exports = app => {
         if (rows === 1) {
           await this.updateRedis(`user:${currentUser.id}`, fields)
           eventEmitter.emit(
-            eventEmitter.USER_UDPATE,
+            eventEmitter.USER_UPDATE,
             {
               userId: currentUser.id,
               fields,
@@ -507,7 +509,7 @@ module.exports = app => {
       if (rows === 1) {
         await this.updateRedis(`user:${currentUser.id}`, fields)
         eventEmitter.emit(
-          eventEmitter.USER_UDPATE,
+          eventEmitter.USER_UPDATE,
           {
             userId: currentUser.id,
             fields,
@@ -528,7 +530,7 @@ module.exports = app => {
      * @property {string} data.verify_code
      * @return {boolean}
      */
-    async resetPassword(data) {
+    async resetPassword(data) {_UPDATE
 
       const { account } = this.service
 
@@ -555,7 +557,7 @@ module.exports = app => {
       if (rows === 1) {
         await this.updateRedis(`user:${user.id}`, fields)
         eventEmitter.emit(
-          eventEmitter.USER_UDPATE,
+          eventEmitter.USER_UPDATE,
           {
             userId: user.id,
             fields,

@@ -232,7 +232,7 @@ module.exports = app => {
       }
 
       eventEmitter.emit(
-        eventEmitter.DEMAND_ADD,
+        eventEmitter.DEMAND_CREATE,
         {
           demandId,
           service: this.service,
@@ -301,7 +301,7 @@ module.exports = app => {
         await this.updateRedis(`demand:${demand.id}`, fields)
 
         eventEmitter.emit(
-          eventEmitter.DEMAND_UDPATE,
+          eventEmitter.DEMAND_UPDATE,
           {
             demandId: demand.id,
             service: this.service,
@@ -370,7 +370,7 @@ module.exports = app => {
       await this.updateRedis(`demand:${demand.id}`, fields)
 
       eventEmitter.emit(
-        eventEmitter.DEMAND_UDPATE,
+        eventEmitter.DEMAND_UPDATE,
         {
           demandId: demand.id,
           service: this.service,

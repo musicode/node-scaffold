@@ -242,7 +242,7 @@ module.exports = app => {
       }
 
       eventEmitter.emit(
-        eventEmitter.CONSULT_ADD,
+        eventEmitter.CONSULT_CREATE,
         {
           consultId,
           service: this.service,
@@ -308,7 +308,7 @@ module.exports = app => {
 
       if (fields && content) {
         eventEmitter.emit(
-          eventEmitter.CONSULT_UDPATE,
+          eventEmitter.CONSULT_UPDATE,
           {
             consultId: consult.id,
             service: this.service,
@@ -381,7 +381,7 @@ module.exports = app => {
       }
 
       eventEmitter.emit(
-        eventEmitter.CONSULT_UDPATE,
+        eventEmitter.CONSULT_UPDATE,
         {
           consultId: consult.id,
           service: this.service,

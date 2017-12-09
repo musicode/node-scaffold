@@ -292,7 +292,7 @@ module.exports = app => {
       }
 
       eventEmitter.emit(
-        eventEmitter.REPLY_ADD,
+        eventEmitter.REPLY_CREATE,
         {
           replyId,
           service: this.service,
@@ -377,7 +377,7 @@ module.exports = app => {
         await this.updateRedis(`reply:${reply.id}`, fields)
 
         eventEmitter.emit(
-          eventEmitter.REPLY_UDPATE,
+          eventEmitter.REPLY_UPDATE,
           {
             replyId: reply.id,
             service: this.service,
@@ -456,7 +456,7 @@ module.exports = app => {
       await this.updateRedis(`reply:${reply.id}`, fields)
 
       eventEmitter.emit(
-        eventEmitter.REPLY_UDPATE,
+        eventEmitter.REPLY_UPDATE,
         {
           replyId: reply.id,
           service: this.service,

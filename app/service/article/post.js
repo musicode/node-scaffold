@@ -242,7 +242,7 @@ module.exports = app => {
       await account.user.increaseUserWriteCount(currentUser.id)
 
       eventEmitter.emit(
-        eventEmitter.POST_ADD,
+        eventEmitter.POST_CREATE,
         {
           postId,
           service: this.service,
@@ -327,7 +327,7 @@ module.exports = app => {
         await this.updateRedis(`post:${post.id}`, fields)
 
         eventEmitter.emit(
-          eventEmitter.POST_UDPATE,
+          eventEmitter.POST_UPDATE,
           {
             postId: post.id,
             service: this.service,
@@ -398,7 +398,7 @@ module.exports = app => {
       await account.user.decreaseUserWriteCount(post.user_id)
 
       eventEmitter.emit(
-        eventEmitter.POST_UDPATE,
+        eventEmitter.POST_UPDATE,
         {
           postId: post.id,
           service: this.service,

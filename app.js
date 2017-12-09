@@ -9,6 +9,8 @@ const validator = require('./app/validator')
 const eventEmitter = require('./app/eventEmitter')
 const BaseService = require('./app/service/base')
 
+require('./app/search')
+
 module.exports = app => {
 
   class BaseController extends app.Controller {

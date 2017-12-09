@@ -33,6 +33,10 @@ module.exports = appInfo => {
     reportViewByGuest: false,
   }
 
+  config.server = {
+    search: '',
+  }
+
   config.avatar = {
     male: '',
     female: '',

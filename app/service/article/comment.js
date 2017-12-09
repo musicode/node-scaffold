@@ -256,7 +256,7 @@ module.exports = app => {
       }
 
       eventEmitter.emit(
-        eventEmitter.COMMENT_ADD,
+        eventEmitter.COMMENT_CREATE,
         {
           commentId,
           service: this.service,
@@ -338,7 +338,7 @@ module.exports = app => {
 
       if (fields && content) {
         eventEmitter.emit(
-          eventEmitter.COMMENT_UDPATE,
+          eventEmitter.COMMENT_UPDATE,
           {
             commentId: comment.id,
             service: this.service,
@@ -411,7 +411,7 @@ module.exports = app => {
       }
 
       eventEmitter.emit(
-        eventEmitter.COMMENT_UDPATE,
+        eventEmitter.COMMENT_UPDATE,
         {
           commentId: comment.id,
           service: this.service,

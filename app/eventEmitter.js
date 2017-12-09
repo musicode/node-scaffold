@@ -7,41 +7,27 @@
 const events = require('events')
 const eventEmitter = new events.EventEmitter()
 
-/**
-* 用户注册
-*/
-eventEmitter.USER_SIGN_UP = 'user_sign_up'
 
-/**
-* 用户登录
-*/
-eventEmitter.USER_SIGN_IN = 'user_sign_in'
-
-/**
-* 用户登出
-*/
-eventEmitter.USER_SIGN_OUT = 'user_sign_out'
-
-/**
-* 用户修改个人资料
-*/
+eventEmitter.USER_CREATE = 'user_create'
 eventEmitter.USER_UPDATE = 'user_update'
 
 
-eventEmitter.POST_ADD = 'post_add'
+eventEmitter.POST_CREATE = 'post_create'
 eventEmitter.POST_UPDATE = 'post_update'
 
-eventEmitter.POST_LIKE = 'post_like'
-eventEmitter.POST_UNLIKE = 'post_unlike'
+eventEmitter.COMMENT_CREATE = 'comment_create'
+eventEmitter.COMMENT_UPDATE = 'comment_update'
 
+eventEmitter.DEMAND_CREATE = 'demand_create'
+eventEmitter.DEMAND_UPDATE = 'demand_update'
 
-eventEmitter
-.on(
-  eventEmitter.POST_ADD,
-  data => {
-    const { postId, service } = data
+eventEmitter.CONSULT_CREATE = 'consult_create'
+eventEmitter.CONSULT_UPDATE = 'consult_update'
 
-  }
-)
+eventEmitter.QUESTION_CREATE = 'question_create'
+eventEmitter.QUESTION_UPDATE = 'question_update'
+
+eventEmitter.REPLY_CREATE = 'reply_create'
+eventEmitter.REPLY_UPDATE = 'reply_update'
 
 module.exports = eventEmitter

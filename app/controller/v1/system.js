@@ -33,6 +33,43 @@ module.exports = app => {
     }
 
     async search() {
+
+      const input = this.filter(this.input, {
+        page: 'number',
+        page_size: 'number',
+        sort_by: 'trim',
+        sort_order: 'trim',
+      })
+
+      this.validate(input, {
+        page: 'page',
+        page_size: 'page_size',
+        sort_by: {
+          required: false,
+          type: 'sort_by',
+        },
+        sort_order: {
+          required: false,
+          type: 'sort_order',
+        },
+      })
+
+      const { types, fields } = this.input
+
+      if (!types || util.type(types) !== 'array') {
+        this.throw(
+          code.PARAM_INVALID,
+          'types 必须传数组'
+        )
+      }
+
+      if (!fields || util.type(fields) !== 'array') {
+        this.throw(
+          code.PARAM_INVALID,
+          'fields 必须传数组'
+        )
+      }
+
       this.output.list = [ ]
       this.output.pager = {
         page: 0,

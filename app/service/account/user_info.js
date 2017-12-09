@@ -65,7 +65,7 @@ module.exports = app => {
         if (rows === 1) {
           await this.updateRedis(`user:${userId}`, fields)
           eventEmitter.emit(
-            eventEmitter.USER_UDPATE,
+            eventEmitter.USER_UPDATE,
             {
               userId,
               service: this.service,

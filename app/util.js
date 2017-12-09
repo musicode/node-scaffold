@@ -55,6 +55,18 @@ module.exports = {
     )
   },
 
+  filterObject(data, fields) {
+    const result = { }
+    fields.forEach(
+      field => {
+        if (field in data) {
+          result[ field ] = data[ field ]
+        }
+      }
+    )
+    return result
+  },
+
   toNumber(value, defaultValue = 0) {
     value = + value
     return isNaN(value) ? defaultValue : value
