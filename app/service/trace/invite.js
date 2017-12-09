@@ -389,7 +389,13 @@ module.exports = app => {
      */
     async getInviteQuestionRemindList(receiverId, options) {
       const { trace } = this.service
-      return await trace.inviteRemind.getInviteRemindList(receiverId, TYPE_QUESTION, options)
+      return await trace.inviteRemind.getInviteRemindList(
+        {
+          receiver_id: receiverId,
+          resource_type: TYPE_QUESTION,
+        },
+        options
+      )
     }
 
     /**
@@ -400,7 +406,10 @@ module.exports = app => {
      */
     async getInviteQuestionRemindCount(receiverId) {
       const { trace } = this.service
-      return await trace.inviteRemind.getInviteRemindCount(receiverId, TYPE_QUESTION)
+      return await trace.inviteRemind.getInviteRemindCount({
+        receiver_id: receiverId,
+        resource_type: TYPE_QUESTION,
+      })
     }
 
     /**
@@ -411,7 +420,10 @@ module.exports = app => {
      */
     async getInviteQuestionUnreadRemindCount(receiverId) {
       const { trace } = this.service
-      return await trace.inviteRemind.getUnreadInviteRemindCount(receiverId, TYPE_QUESTION)
+      return await trace.inviteRemind.getUnreadInviteRemindCount({
+        receiver_id: receiverId,
+        resource_type: TYPE_QUESTION,
+      })
     }
 
     /**
@@ -421,7 +433,10 @@ module.exports = app => {
      */
     async readInviteQuestionRemind(receiverId) {
       const { trace } = this.service
-      return await trace.inviteRemind.readInviteRemind(receiverId, TYPE_QUESTION)
+      return await trace.inviteRemind.readInviteRemind({
+        receiver_id: receiverId,
+        resource_type: TYPE_QUESTION,
+      })
     }
   }
   return Invite

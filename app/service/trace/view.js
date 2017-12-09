@@ -219,7 +219,13 @@ module.exports = app => {
      */
     async getViewPostRemindList(receiverId, options) {
       const { trace } = this.service
-      return await trace.viewRemind.getViewRemindList(receiverId, TYPE_POST, options)
+      return await trace.viewRemind.getViewRemindList(
+        {
+          receiver_id: receiverId,
+          resource_type: TYPE_POST,
+        },
+        options
+      )
     }
 
     /**
@@ -230,7 +236,10 @@ module.exports = app => {
      */
     async getViewPostRemindCount(receiverId) {
       const { trace } = this.service
-      return await trace.viewRemind.getViewRemindCount(receiverId, TYPE_POST)
+      return await trace.viewRemind.getViewRemindCount({
+        receiver_id: receiverId,
+        resource_type: TYPE_POST,
+      })
     }
 
     /**
@@ -241,7 +250,10 @@ module.exports = app => {
      */
     async getViewPostUnreadRemindCount(receiverId) {
       const { trace } = this.service
-      return await trace.viewRemind.getUnreadViewRemindCount(receiverId, TYPE_POST)
+      return await trace.viewRemind.getUnreadViewRemindCount({
+        receiver_id: receiverId,
+        resource_type: TYPE_POST,
+      })
     }
 
     /**
@@ -251,7 +263,10 @@ module.exports = app => {
      */
     async readViewPostRemind(receiverId) {
       const { trace } = this.service
-      return await trace.viewRemind.readViewRemind(receiverId, TYPE_POST)
+      return await trace.viewRemind.readViewRemind({
+        receiver_id: receiverId,
+        resource_type: TYPE_POST,
+      })
     }
 
 
@@ -410,7 +425,13 @@ module.exports = app => {
      */
     async getViewDemandRemindList(receiverId, options) {
       const { trace } = this.service
-      return await trace.viewRemind.getViewRemindList(receiverId, TYPE_DEMAND, options)
+      return await trace.viewRemind.getViewRemindList(
+        {
+          receiver_id: receiverId,
+          resource_type: TYPE_DEMAND,
+        },
+        options
+      )
     }
 
     /**
@@ -421,7 +442,10 @@ module.exports = app => {
      */
     async getViewDemandRemindCount(receiverId) {
       const { trace } = this.service
-      return await trace.viewRemind.getViewRemindCount(receiverId, TYPE_DEMAND)
+      return await trace.viewRemind.getViewRemindCount({
+        receiver_id: receiverId,
+        resource_type: TYPE_DEMAND,
+      })
     }
 
     /**
@@ -432,7 +456,10 @@ module.exports = app => {
      */
     async getViewDemandUnreadRemindCount(receiverId) {
       const { trace } = this.service
-      return await trace.viewRemind.getUnreadViewRemindCount(receiverId, TYPE_DEMAND)
+      return await trace.viewRemind.getUnreadViewRemindCount({
+        receiver_id: receiverId,
+        resource_type: TYPE_DEMAND,
+      })
     }
 
     /**
@@ -442,7 +469,10 @@ module.exports = app => {
      */
     async readViewDemandRemind(receiverId) {
       const { trace } = this.service
-      return await trace.viewRemind.readViewRemind(receiverId, TYPE_DEMAND)
+      return await trace.viewRemind.readViewRemind({
+        receiver_id: receiverId,
+        resource_type: TYPE_DEMAND,
+      })
     }
 
 
@@ -604,7 +634,13 @@ module.exports = app => {
      */
     async getViewQuestionRemindList(receiverId, options) {
       const { trace } = this.service
-      return await trace.viewRemind.getViewRemindList(receiverId, TYPE_QUESTION, options)
+      return await trace.viewRemind.getViewRemindList(
+        {
+          receiver_id: receiverId,
+          resource_type: TYPE_QUESTION,
+        },
+        options
+      )
     }
 
     /**
@@ -615,7 +651,10 @@ module.exports = app => {
      */
     async getViewQuestionRemindCount(receiverId) {
       const { trace } = this.service
-      return await trace.viewRemind.getViewRemindCount(receiverId, TYPE_QUESTION)
+      return await trace.viewRemind.getViewRemindCount({
+        receiver_id: receiverId,
+        resource_type: TYPE_QUESTION,
+      })
     }
 
     /**
@@ -626,7 +665,10 @@ module.exports = app => {
      */
     async getViewQuestionUnreadRemindCount(receiverId) {
       const { trace } = this.service
-      return await trace.viewRemind.getUnreadViewRemindCount(receiverId, TYPE_QUESTION)
+      return await trace.viewRemind.getUnreadViewRemindCount({
+        receiver_id: receiverId,
+        resource_type: TYPE_QUESTION,
+      })
     }
 
     /**
@@ -636,7 +678,10 @@ module.exports = app => {
      */
     async readViewQuestionRemind(receiverId) {
       const { trace } = this.service
-      return await trace.viewRemind.readViewRemind(receiverId, TYPE_QUESTION)
+      return await trace.viewRemind.readViewRemind({
+        receiver_id: receiverId,
+        resource_type: TYPE_QUESTION,
+      })
     }
 
 
@@ -800,7 +845,13 @@ module.exports = app => {
      */
     async getViewUserRemindList(receiverId, options) {
       const { trace } = this.service
-      return await trace.viewRemind.getViewRemindList(receiverId, TYPE_USER, options)
+      return await trace.viewRemind.getViewRemindList(
+        {
+          receiver_id: receiverId,
+          resource_type: TYPE_USER,
+        },
+        options
+      )
     }
 
     /**
@@ -811,7 +862,10 @@ module.exports = app => {
      */
     async getViewUserRemindCount(receiverId) {
       const { trace } = this.service
-      return await trace.viewRemind.getViewRemindCount(receiverId, TYPE_USER)
+      return await trace.viewRemind.getViewRemindCount({
+        receiver_id: receiverId,
+        resource_type: TYPE_USER,
+      })
     }
 
     /**
@@ -822,7 +876,10 @@ module.exports = app => {
      */
     async getViewUserUnreadRemindCount(receiverId) {
       const { trace } = this.service
-      return await trace.viewRemind.getUnreadViewRemindCount(receiverId, TYPE_USER)
+      return await trace.viewRemind.getUnreadViewRemindCount({
+        receiver_id: receiverId,
+        resource_type: TYPE_USER,
+      })
     }
 
     /**
@@ -832,7 +889,10 @@ module.exports = app => {
      */
     async readViewUserRemind(receiverId) {
       const { trace } = this.service
-      return await trace.viewRemind.readViewRemind(receiverId, TYPE_USER)
+      return await trace.viewRemind.readViewRemind({
+        receiver_id: receiverId,
+        resource_type: TYPE_USER,
+      })
     }
 
   }

@@ -1,15 +1,13 @@
 
 'use strict'
 
-const STATUS_UNREAD = 0
-const STATUS_READED = 1
-const STATUS_DELETED = 2
+const BaseRemindService = require('./remind')
 
 module.exports = app => {
 
   const { code, } = app
 
-  class CreateRemind extends app.BaseService {
+  class CreateRemind extends BaseRemindService {
 
     get tableName() {
       return 'trace_create_remind'
@@ -33,180 +31,68 @@ module.exports = app => {
      * @property {number} data.resource_parent_id
      */
     async addCreateRemind(data) {
-
-      const record = await this.findOneBy({
-        trace_id: data.trace_id,
-      })
-
-      // 如果已经存在该记录
-      // 改成未读状态
-      if (record) {
-        if (record.status !== STATUS_UNREAD) {
-          await this.update(
-            {
-              status: STATUS_UNREAD,
-            },
-            {
-              id: record.id,
-            }
-          )
-        }
-      }
-      else {
-        if (data.sender_id !== data.receiver_id) {
-          await this.insert(data)
-        }
-      }
-
+      await this.addRemind(data)
     }
 
     /**
      * 取消创建提醒
      *
-     * @param {number} receiverId
      * @param {number} traceId
+     * @param {number} receiverId
      */
-    async removeCreateRemind(receiverId, traceId) {
-
-      const record = await this.findOneBy({
-        receiver_id: receiverId,
-        trace_id: traceId,
-      })
-
-      if (record) {
-        await this.update(
-          {
-            status: STATUS_DELETED,
-          },
-          {
-            id: record.id,
-          }
-        )
-      }
-
+    async removeCreateRemind(traceId, receiverId) {
+      await this.removeRemind(traceId, receiverId)
     }
 
     /**
      * 是否已提醒创建
      *
-     * @param {number} receiverId
      * @param {number} traceId
+     * @param {number} receiverId
      * @return {boolean}
      */
-    async hasCreateRemind(receiverId, traceId) {
-
-      const record = await this.findOneBy({
-        receiver_id: receiverId,
-        trace_id: traceId,
-      })
-
-      return record && record.status !== STATUS_DELETED ? true : false
-
+    async hasCreateRemind(traceId, receiverId) {
+      return await this.hasRemind(traceId, receiverId)
     }
 
     /**
      * 获取用户被创建的提醒列表
      *
-     * @param {number} receiverId
-     * @param {number} resourceType
+     * @param {Object} where
      * @param {Object} options
      * @return {Array}
      */
-    async getCreateRemindList(receiverId, resourceType, options) {
-
-      const where = {
-        receiver_id: receiverId,
-        status: [ STATUS_UNREAD, STATUS_READED ],
-      }
-
-      if (resourceType != null) {
-        where.resource_type = resourceType
-      }
-
-      options.where = where
-
-      return await this.findBy(options)
-
+    async getCreateRemindList(where, options) {
+      return await this.getRemindList(where, options)
     }
 
     /**
      * 获取用户被创建的提醒数量
      *
-     * @param {number} receiverId
-     * @param {number} resourceType
-     * @param {number} parentId
+     * @param {Object} where
      * @return {number}
      */
-    async getCreateRemindCount(receiverId, resourceType, parentId) {
-
-      const where = {
-        receiver_id: receiverId,
-        status: [ STATUS_UNREAD, STATUS_READED ],
-      }
-
-      if (resourceType != null) {
-        where.resource_type = resourceType
-      }
-
-      if (parentId != null) {
-        where.resource_type = parentId
-      }
-
-      return await this.countBy(where)
-
+    async getCreateRemindCount(where) {
+      return await this.getRemindCount(where)
     }
 
     /**
      * 获取用户被创建的未读提醒数量
      *
-     * @param {number} receiverId
-     * @param {number} resourceType
-     * @param {number} parentId
+     * @param {Object} where
      * @return {number}
      */
-    async getUnreadCreateRemindCount(receiverId, resourceType, parentId) {
-
-      const where = {
-        receiver_id: receiverId,
-        status: STATUS_UNREAD,
-      }
-
-      if (resourceType != null) {
-        where.resource_type = resourceType
-      }
-
-      if (parentId != null) {
-        where.resource_type = parentId
-      }
-
-      return await this.countBy(where)
-
+    async getUnreadCreateRemindCount(where) {
+      return await this.getUnreadRemindCount(where)
     }
 
     /**
      * 标记已读
      *
-     * @param {number} receiverId
-     * @param {number} resourceType
-     * @param {number} parentId
+     * @param {Object} where
      */
-    async readCreateRemind(receiverId, resourceType, parentId) {
-
-      // https://github.com/ali-sdk/ali-rds/issues/42
-      let sql = `
-        UPDATE \`${this.tableName}\` SET \`status\` = ${STATUS_READED} WHERE \`receiver_id\` = ${receiverId} AND \`status\` = ${STATUS_UNREAD}
-      `
-
-      if (resourceType != null) {
-        sql += ` AND \`resource_type\` = ${resourceType}`
-      }
-
-      if (parentId != null) {
-        sql += ` AND \`resource_parent_id\` = ${parentId}`
-      }
-
-      await this.query(sql)
-
+    async readCreateRemind(where) {
+      await this.readRemind(where)
     }
 
   }

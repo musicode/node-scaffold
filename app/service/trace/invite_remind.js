@@ -1,15 +1,11 @@
 
 'use strict'
 
-const STATUS_UNREAD = 0
-const STATUS_READED = 1
-const STATUS_DELETED = 2
+const BaseRemindService = require('./remind')
 
 module.exports = app => {
 
-  const { code, } = app
-
-  class InviteRemind extends app.BaseService {
+  class InviteRemind extends BaseRemindService {
 
     get tableName() {
       return 'trace_invite_remind'
@@ -32,31 +28,7 @@ module.exports = app => {
      * @property {number} data.resource_type
      */
     async addInviteRemind(data) {
-
-      const record = await this.findOneBy({
-        trace_id: data.trace_id,
-      })
-
-      // 如果已经存在该记录
-      // 改成未读状态
-      if (record) {
-        if (record.status !== STATUS_UNREAD) {
-          await this.update(
-            {
-              status: STATUS_UNREAD,
-            },
-            {
-              id: record.id,
-            }
-          )
-        }
-      }
-      else {
-        if (data.sender_id !== data.receiver_id) {
-          await this.insert(data)
-        }
-      }
-
+      await this.addRemind(data)
     }
 
     /**
@@ -65,20 +37,7 @@ module.exports = app => {
      * @param {number} traceId
      */
     async removeInviteRemind(traceId) {
-
-      const hasInviteRemind = await this.hasInviteRemind(traceId)
-
-      if (hasInviteRemind) {
-        await this.update(
-          {
-            status: STATUS_DELETED,
-          },
-          {
-            trace_id: traceId,
-          }
-        )
-      }
-
+      await this.removeRemind(traceId)
     }
 
     /**
@@ -88,103 +47,47 @@ module.exports = app => {
      * @return {boolean}
      */
     async hasInviteRemind(traceId) {
-
-      const record = await this.findOneBy({
-        trace_id: traceId,
-      })
-
-      return record && record.status !== STATUS_DELETED ? true : false
-
+      return await this.hasRemind(traceId)
     }
 
     /**
      * 获取用户被邀请的提醒列表
      *
-     * @param {number} receiverId
-     * @param {number} resourceType
+     * @param {Object} where
      * @param {Object} options
      * @return {Array}
      */
-    async getInviteRemindList(receiverId, resourceType, options) {
-
-      const where = {
-        receiver_id: receiverId,
-        status: [ STATUS_UNREAD, STATUS_READED ],
-      }
-
-      if (resourceType != null) {
-        where.resource_type = resourceType
-      }
-
-      options.where = where
-
-      return await this.findBy(options)
-
+    async getInviteRemindList(where, options) {
+      return await this.getRemindList(where, options)
     }
 
     /**
      * 获取用户被邀请的提醒数量
      *
-     * @param {number} receiverId
-     * @param {number} resourceType
+     * @param {Object} where
      * @return {number}
      */
-    async getInviteRemindCount(receiverId, resourceType) {
-
-      const where = {
-        receiver_id: receiverId,
-        status: [ STATUS_UNREAD, STATUS_READED ],
-      }
-
-      if (resourceType != null) {
-        where.resource_type = resourceType
-      }
-
-      return await this.countBy(where)
-
+    async getInviteRemindCount(where) {
+      return await this.getRemindCount(where)
     }
 
     /**
      * 获取用户被邀请的未读提醒数量
      *
-     * @param {number} receiverId
-     * @param {number} resourceType
+     * @param {Object} where
      * @return {number}
      */
-    async getUnreadInviteRemindCount(receiverId, resourceType) {
-
-      const where = {
-        receiver_id: receiverId,
-        status: STATUS_UNREAD,
-      }
-
-      if (resourceType != null) {
-        where.resource_type = resourceType
-      }
-
-      return await this.countBy(where)
-
+    async getUnreadInviteRemindCount(where) {
+      return await this.getUnreadRemindCount(where)
     }
 
     /**
      * 标记已读
      *
-     * @param {number} receiverId
-     * @param {number} resourceType
+     * @param {Object} where
      */
-    async readInviteRemind(receiverId, resourceType) {
-
-      // https://github.com/ali-sdk/ali-rds/issues/42
-      let sql = `
-        UPDATE \`${this.tableName}\` SET \`status\` = ${STATUS_READED} WHERE \`receiver_id\` = ${receiverId} AND \`status\` = ${STATUS_UNREAD}
-      `
-
-      if (resourceType != null) {
-        sql += ` AND \`resource_type\` = ${resourceType}`
-      }
-
-      await this.query(sql)
-
+    async readInviteRemind(where) {
+      await this.readRemind(where)
     }
 
   }

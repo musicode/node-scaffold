@@ -89,6 +89,28 @@ module.exports = {
     return mobile.replace(/(\d{3})(\d{5})(\d{3})/, '$1*****$3')
   },
 
+  formatWhere(where) {
+    const wheres = []
+    const values = []
+    for (const key in where) {
+      const value = where[ key ]
+      if (Array.isArray(value)) {
+        wheres.push('?? IN (?)')
+      }
+      else {
+        wheres.push('?? = ?')
+      }
+      values.push(key)
+      values.push(value)
+    }
+    if (wheres.length > 0) {
+      return {
+        sql: wheres.join(' AND '),
+        values,
+      }
+    }
+  },
+
   parseDate(str) {
     const [ year, month, date ] = str.split('-')
     return new Date(year, month - 1, date)

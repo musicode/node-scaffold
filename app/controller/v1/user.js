@@ -20,10 +20,11 @@ module.exports = app => {
 
       const { account } = this.ctx.service
 
-      const user = await account.user.checkUserAvailableByNumber(input.user_id)
+      let user = await account.user.checkUserAvailableByNumber(input.user_id)
+      user = await account.user.viewUser(user.id)
 
       try {
-        this.output.user = await account.user.viewUser(user.id)
+        this.output.user = await account.user.toExternal(user)
       }
       catch (err) {
         if (err.code === code.PERMISSION_DENIED) {

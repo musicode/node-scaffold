@@ -346,7 +346,13 @@ module.exports = app => {
      */
     async getFollowPostRemindList(receiverId, options) {
       const { trace } = this.service
-      return await trace.followRemind.getFollowRemindList(receiverId, TYPE_POST, options)
+      return await trace.followRemind.getFollowRemindList(
+        {
+          receiver_id: receiverId,
+          resource_type: TYPE_POST,
+        },
+        options
+      )
     }
 
     /**
@@ -357,7 +363,10 @@ module.exports = app => {
      */
     async getFollowPostRemindCount(receiverId) {
       const { trace } = this.service
-      return await trace.followRemind.getFollowRemindCount(receiverId, TYPE_POST)
+      return await trace.followRemind.getFollowRemindCount({
+        receiver_id: receiverId,
+        resource_type: TYPE_POST,
+      })
     }
 
     /**
@@ -368,7 +377,10 @@ module.exports = app => {
      */
     async getFollowPostUnreadRemindCount(receiverId) {
       const { trace } = this.service
-      return await trace.followRemind.getUnreadFollowRemindCount(receiverId, TYPE_POST)
+      return await trace.followRemind.getUnreadFollowRemindCount({
+        receiver_id: receiverId,
+        resource_type: TYPE_POST,
+      })
     }
 
     /**
@@ -378,7 +390,10 @@ module.exports = app => {
      */
     async readFollowPostRemind(receiverId) {
       const { trace } = this.service
-      return await trace.followRemind.readFollowRemind(receiverId, TYPE_POST)
+      return await trace.followRemind.readFollowRemind({
+        receiver_id: receiverId,
+        resource_type: TYPE_POST,
+      })
     }
 
 
@@ -573,7 +588,13 @@ module.exports = app => {
      */
     async getFollowDemandRemindList(receiverId, options) {
       const { trace } = this.service
-      return await trace.followRemind.getFollowRemindList(receiverId, TYPE_DEMAND, options)
+      return await trace.followRemind.getFollowRemindList(
+        {
+          receiver_id: receiverId,
+          resource_type: TYPE_DEMAND,
+        },
+        options
+      )
     }
 
     /**
@@ -584,7 +605,10 @@ module.exports = app => {
      */
     async getFollowDemandRemindCount(receiverId) {
       const { trace } = this.service
-      return await trace.followRemind.getFollowRemindCount(receiverId, TYPE_DEMAND)
+      return await trace.followRemind.getFollowRemindCount({
+        receiver_id: receiverId,
+        resource_type: TYPE_DEMAND,
+      })
     }
 
     /**
@@ -595,7 +619,10 @@ module.exports = app => {
      */
     async getFollowDemandUnreadRemindCount(receiverId) {
       const { trace } = this.service
-      return await trace.followRemind.getUnreadFollowRemindCount(receiverId, TYPE_DEMAND)
+      return await trace.followRemind.getUnreadFollowRemindCount({
+        receiver_id: receiverId,
+        resource_type: TYPE_DEMAND,
+      })
     }
 
     /**
@@ -605,7 +632,10 @@ module.exports = app => {
      */
     async readFollowDemandRemind(receiverId) {
       const { trace } = this.service
-      return await trace.followRemind.readFollowRemind(receiverId, TYPE_DEMAND)
+      return await trace.followRemind.readFollowRemind({
+        receiver_id: receiverId,
+        resource_type: TYPE_DEMAND,
+      })
     }
 
 
@@ -802,7 +832,13 @@ module.exports = app => {
      */
     async getFollowQuestionRemindList(receiverId, options) {
       const { trace } = this.service
-      return await trace.followRemind.getFollowRemindList(receiverId, TYPE_QUESTION, options)
+      return await trace.followRemind.getFollowRemindList(
+        {
+          receiver_id: receiverId,
+          resource_type: TYPE_QUESTION,
+        },
+        options
+      )
     }
 
     /**
@@ -813,7 +849,10 @@ module.exports = app => {
      */
     async getFollowQuestionRemindCount(receiverId) {
       const { trace } = this.service
-      return await trace.followRemind.getFollowRemindCount(receiverId, TYPE_QUESTION)
+      return await trace.followRemind.getFollowRemindCount({
+        receiver_id: receiverId,
+        resource_type: TYPE_QUESTION,
+      })
     }
 
     /**
@@ -824,7 +863,10 @@ module.exports = app => {
      */
     async getFollowQuestionUnreadRemindCount(receiverId) {
       const { trace } = this.service
-      return await trace.followRemind.getUnreadFollowRemindCount(receiverId, TYPE_QUESTION)
+      return await trace.followRemind.getUnreadFollowRemindCount({
+        receiver_id: receiverId,
+        resource_type: TYPE_QUESTION,
+      })
     }
 
     /**
@@ -834,7 +876,10 @@ module.exports = app => {
      */
     async readFollowQuestionRemind(receiverId) {
       const { trace } = this.service
-      return await trace.followRemind.readFollowRemind(receiverId, TYPE_QUESTION)
+      return await trace.followRemind.readFollowRemind({
+        receiver_id: receiverId,
+        resource_type: TYPE_QUESTION,
+      })
     }
 
 
@@ -1031,7 +1076,13 @@ module.exports = app => {
      */
     async getFollowReplyRemindList(receiverId, options) {
       const { trace } = this.service
-      return await trace.followRemind.getFollowRemindList(receiverId, TYPE_REPLY, options)
+      return await trace.followRemind.getFollowRemindList(
+        {
+          receiver_id: receiverId,
+          resource_type: TYPE_REPLY,
+        },
+        options
+      )
     }
 
     /**
@@ -1042,7 +1093,10 @@ module.exports = app => {
      */
     async getFollowReplyRemindCount(receiverId) {
       const { trace } = this.service
-      return await trace.followRemind.getFollowRemindCount(receiverId, TYPE_REPLY)
+      return await trace.followRemind.getFollowRemindCount({
+        receiver_id: receiverId,
+        resource_type: TYPE_REPLY,
+      })
     }
 
     /**
@@ -1053,7 +1107,10 @@ module.exports = app => {
      */
     async getFollowReplyUnreadRemindCount(receiverId) {
       const { trace } = this.service
-      return await trace.followRemind.getUnreadFollowRemindCount(receiverId, TYPE_REPLY)
+      return await trace.followRemind.getUnreadFollowRemindCount({
+        receiver_id: receiverId,
+        resource_type: TYPE_REPLY,
+      })
     }
 
     /**
@@ -1063,7 +1120,10 @@ module.exports = app => {
      */
     async readFollowReplyRemind(receiverId) {
       const { trace } = this.service
-      return await trace.followRemind.readFollowRemind(receiverId, TYPE_REPLY)
+      return await trace.followRemind.readFollowRemind({
+        receiver_id: receiverId,
+        resource_type: TYPE_REPLY,
+      })
     }
 
   }

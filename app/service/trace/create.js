@@ -289,11 +289,11 @@ module.exports = app => {
             resource_type: TYPE_COMMENT,
           })
 
-          await trace.createRemind.removeCreateRemind(post.user_id, record.id)
+          await trace.createRemind.removeCreateRemind(record.id, post.user_id)
 
           if (comment.parent_id) {
             const parentComment = await await article.comment.checkCommentAvailableById(comment.parent_id)
-            await trace.createRemind.removeCreateRemind(parentComment.user_id, record.id)
+            await trace.createRemind.removeCreateRemind(record.id, parentComment.user_id)
           }
 
           return true
@@ -372,10 +372,10 @@ module.exports = app => {
       let hasParentRemind = true
       if (comment.parent_id) {
         const parentComment = await article.comment.checkCommentAvailableById(comment.parent_id)
-        hasParentRemind = await trace.createRemind.hasCreateRemind(parentComment.user_id, record.id)
+        hasParentRemind = await trace.createRemind.hasCreateRemind(record.id, parentComment.user_id)
       }
 
-      const hasPostRemind = await trace.createRemind.hasCreateRemind(post.user_id, record.id)
+      const hasPostRemind = await trace.createRemind.hasCreateRemind(record.id, post.user_id)
 
       return hasPostRemind && hasParentRemind
 
@@ -434,7 +434,13 @@ module.exports = app => {
      */
     async getCreateCommentRemindList(receiverId, options) {
       const { trace } = this.service
-      return await trace.createRemind.getCreateRemindList(receiverId, TYPE_COMMENT, options)
+      return await trace.createRemind.getCreateRemindList(
+        {
+          receiver_id: receiverId,
+          resource_type: TYPE_COMMENT,
+        },
+        options
+      )
     }
 
     /**
@@ -445,7 +451,10 @@ module.exports = app => {
      */
     async getCreateCommentRemindCount(receiverId) {
       const { trace } = this.service
-      return await trace.createRemind.getCreateRemindCount(receiverId, TYPE_COMMENT)
+      return await trace.createRemind.getCreateRemindCount({
+        receiver_id: receiverId,
+        resource_type: TYPE_COMMENT,
+      })
     }
 
     /**
@@ -456,7 +465,10 @@ module.exports = app => {
      */
     async getCreateCommentUnreadRemindCount(receiverId) {
       const { trace } = this.service
-      return await trace.createRemind.getUnreadCreateRemindCount(receiverId, TYPE_COMMENT)
+      return await trace.createRemind.getUnreadCreateRemindCount({
+        receiver_id: receiverId,
+        resource_type: TYPE_COMMENT,
+      })
     }
 
     /**
@@ -466,7 +478,10 @@ module.exports = app => {
      */
     async readCreateCommentRemind(receiverId) {
       const { trace } = this.service
-      return await trace.createRemind.readCreateRemind(receiverId, TYPE_COMMENT)
+      return await trace.createRemind.readCreateRemind({
+        receiver_id: receiverId,
+        resource_type: TYPE_COMMENT,
+      })
     }
 
 
@@ -646,11 +661,11 @@ module.exports = app => {
             resource_type: TYPE_CONSULT,
           })
 
-          await trace.createRemind.removeCreateRemind(demand.user_id, record.id)
+          await trace.createRemind.removeCreateRemind(record.id, demand.user_id)
 
           if (consult.parent_id) {
             const parentConsult = await await project.consult.checkConsultAvailableById(consult.parent_id)
-            await trace.createRemind.removeCreateRemind(parentConsult.user_id, record.id)
+            await trace.createRemind.removeCreateRemind(record.id, parentConsult.user_id)
           }
 
           return true
@@ -729,10 +744,10 @@ module.exports = app => {
       let hasParentRemind = true
       if (consult.parent_id) {
         const parentConsult = await project.consult.checkConsultAvailableById(consult.parent_id)
-        hasParentRemind = await trace.createRemind.hasCreateRemind(parentConsult.user_id, record.id)
+        hasParentRemind = await trace.createRemind.hasCreateRemind(record.id, parentConsult.user_id)
       }
 
-      const hasDemandRemind = await trace.createRemind.hasCreateRemind(demand.user_id, record.id)
+      const hasDemandRemind = await trace.createRemind.hasCreateRemind(record.id, demand.user_id)
 
       return hasDemandRemind && hasParentRemind
 
@@ -791,7 +806,13 @@ module.exports = app => {
      */
     async getCreateConsultRemindList(receiverId, options) {
       const { trace } = this.service
-      return await trace.createRemind.getCreateRemindList(receiverId, TYPE_CONSULT, options)
+      return await trace.createRemind.getCreateRemindList(
+        {
+          receiver_id: receiverId,
+          resource_type: TYPE_CONSULT,
+        },
+        options
+      )
     }
 
     /**
@@ -802,7 +823,10 @@ module.exports = app => {
      */
     async getCreateConsultRemindCount(receiverId) {
       const { trace } = this.service
-      return await trace.createRemind.getCreateRemindCount(receiverId, TYPE_CONSULT)
+      return await trace.createRemind.getCreateRemindCount({
+        receiver_id: receiverId,
+        resource_type: TYPE_CONSULT,
+      })
     }
 
     /**
@@ -813,7 +837,10 @@ module.exports = app => {
      */
     async getCreateConsultUnreadRemindCount(receiverId) {
       const { trace } = this.service
-      return await trace.createRemind.getUnreadCreateRemindCount(receiverId, TYPE_CONSULT)
+      return await trace.createRemind.getUnreadCreateRemindCount({
+        receiver_id: receiverId,
+        resource_type: TYPE_CONSULT,
+      })
     }
 
     /**
@@ -823,7 +850,10 @@ module.exports = app => {
      */
     async readCreateConsultRemind(receiverId) {
       const { trace } = this.service
-      return await trace.createRemind.readCreateRemind(receiverId, TYPE_CONSULT)
+      return await trace.createRemind.readCreateRemind({
+        receiver_id: receiverId,
+        resource_type: TYPE_CONSULT,
+      })
     }
 
 
@@ -1020,16 +1050,16 @@ module.exports = app => {
             resource_type: TYPE_REPLY,
           })
 
-          await trace.createRemind.removeCreateRemind(question.user_id, record.id)
+          await trace.createRemind.removeCreateRemind(record.id, question.user_id)
 
           if (reply.root_id) {
             const rootReply = await await qa.reply.checkReplyAvailableById(reply.root_id)
-            await trace.createRemind.removeCreateRemind(rootReply.user_id, record.id)
+            await trace.createRemind.removeCreateRemind(record.id, rootReply.user_id)
           }
 
           if (reply.parent_id && reply.parent_id !== reply.root_id) {
             const parentReply = await await qa.reply.checkReplyAvailableById(reply.parent_id)
-            await trace.createRemind.removeCreateRemind(parentReply.user_id, record.id)
+            await trace.createRemind.removeCreateRemind(record.id, parentReply.user_id)
           }
 
           return true
@@ -1108,16 +1138,16 @@ module.exports = app => {
       let hasRootRemind = true
       if (reply.root_id) {
         const rootReply = await qa.reply.checkReplyAvailableById(reply.root_id)
-        hasRootRemind = await trace.createRemind.hasCreateRemind(rootReply.user_id, record.id)
+        hasRootRemind = await trace.createRemind.hasCreateRemind(record.id, rootReply.user_id)
       }
 
       let hasParentRemind = true
       if (reply.parent_id && reply.parent_id !== reply.root_id) {
         const parentReply = await qa.reply.checkReplyAvailableById(reply.parent_id)
-        hasParentRemind = await trace.createRemind.hasCreateRemind(parentReply.user_id, record.id)
+        hasParentRemind = await trace.createRemind.hasCreateRemind(record.id, parentReply.user_id)
       }
 
-      const hasQuestionRemind = await trace.createRemind.hasCreateRemind(question.user_id, record.id)
+      const hasQuestionRemind = await trace.createRemind.hasCreateRemind(record.id, question.user_id)
 
       return hasQuestionRemind && hasRootRemind && hasParentRemind
 
@@ -1176,7 +1206,13 @@ module.exports = app => {
      */
     async getCreateReplyRemindList(receiverId, options) {
       const { trace } = this.service
-      return await trace.createRemind.getCreateRemindList(receiverId, TYPE_REPLY, options)
+      return await trace.createRemind.getCreateRemindList(
+        {
+          receiver_id: receiverId,
+          resource_type: TYPE_REPLY,
+        },
+        options
+      )
     }
 
     /**
@@ -1188,7 +1224,14 @@ module.exports = app => {
      */
     async getCreateReplyRemindCount(receiverId, isAnswer) {
       const { trace } = this.service
-      return await trace.createRemind.getCreateRemindCount(receiverId, TYPE_REPLY, isAnswer ? 0 : null)
+      const where = {
+        receiver_id: receiverId,
+        resource_type: TYPE_REPLY,
+      }
+      if (isAnswer) {
+        where.resource_parent_id = 0
+      }
+      return await trace.createRemind.getCreateRemindCount(where)
     }
 
     /**
@@ -1200,7 +1243,14 @@ module.exports = app => {
      */
     async getCreateReplyUnreadRemindCount(receiverId, isAnswer) {
       const { trace } = this.service
-      return await trace.createRemind.getUnreadCreateRemindCount(receiverId, TYPE_REPLY, isAnswer ? 0 : null)
+      const where = {
+        receiver_id: receiverId,
+        resource_type: TYPE_REPLY,
+      }
+      if (isAnswer) {
+        where.resource_parent_id = 0
+      }
+      return await trace.createRemind.getUnreadCreateRemindCount(where)
     }
 
     /**
@@ -1211,7 +1261,14 @@ module.exports = app => {
      */
     async readCreateReplyRemind(receiverId, isAnswer) {
       const { trace } = this.service
-      return await trace.createRemind.readCreateRemind(receiverId, TYPE_REPLY, isAnswer ? 0 : null)
+      const where = {
+        receiver_id: receiverId,
+        resource_type: TYPE_REPLY,
+      }
+      if (isAnswer) {
+        where.resource_parent_id = 0
+      }
+      return await trace.createRemind.readCreateRemind(where)
     }
 
   }
