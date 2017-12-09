@@ -183,7 +183,6 @@ module.exports = app => {
 
       let currentUser = await account.session.getCurrentUser()
       currentUser = await account.user.getFullUserById(currentUser)
-
       this.output.user =  await account.user.toExternal(currentUser)
 
     }
