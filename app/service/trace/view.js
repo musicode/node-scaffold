@@ -29,6 +29,46 @@ module.exports = app => {
       return this.service.trace.viewRemind
     }
 
+    async toExternal(view) {
+
+      const { account, article, project, qa } = this.service
+      const { resource_id, resource_type, creator_id } = view
+
+      let type, resource
+      if (resource_type == TYPE_QUESTION) {
+        type = 'question'
+        resource = await qa.question.getFullQuestionById(resource_id)
+        resource = await qa.question.toExternal(resource)
+      }
+      else if (resource_type == TYPE_DEMAND) {
+        type = 'demand'
+        resource = await project.demand.getFullDemandById(resource_id)
+        resource = await project.demand.toExternal(resource)
+      }
+      else if (resource_type == TYPE_POST) {
+        type = 'post'
+        resource = await article.post.getFullPostById(resource_id)
+        resource = await article.post.toExternal(resource)
+      }
+      else if (resource_type == TYPE_USER) {
+        type = 'user'
+        resource = await account.user.getFullUserById(resource_id)
+        resource = await account.user.toExternal(resource)
+      }
+
+      let creator = await account.user.getFullUserById(creator_id)
+      creator = await account.user.toExternal(creator)
+
+      return {
+        id: view.id,
+        type,
+        resource,
+        creator,
+        create_time: view.create_time.getTime(),
+      }
+
+    }
+
     /**
      * 浏览
      *

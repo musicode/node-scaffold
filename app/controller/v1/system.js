@@ -39,6 +39,8 @@ module.exports = app => {
         page_size: 'number',
         sort_by: 'trim',
         sort_order: 'trim',
+        types: 'array',
+        fields: 'array',
       })
 
       this.validate(input, {
@@ -54,16 +56,16 @@ module.exports = app => {
         },
       })
 
-      const { types, fields } = this.input
+      const { types, fields } = input
 
-      if (!types || util.type(types) !== 'array') {
+      if (util.type(types) !== 'array') {
         this.throw(
           code.PARAM_INVALID,
           'types 必须传数组'
         )
       }
 
-      if (!fields || util.type(fields) !== 'array') {
+      if (util.type(fields) !== 'array') {
         this.throw(
           code.PARAM_INVALID,
           'fields 必须传数组'
@@ -72,8 +74,8 @@ module.exports = app => {
 
       const { account, search, qa, article, project, trace } = this.ctx.service
 
-      input.types = this.input.types
-      input.fields = this.input.fields
+      input.types = input.types
+      input.fields = input.fields
 
       const currentUser = await account.session.getCurrentUser()
       const result = await search.search(input)

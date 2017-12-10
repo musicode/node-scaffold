@@ -7,7 +7,7 @@
     "@alicloud/sms-sdk": "^1.0.2",
     "bcryptjs": "^2.4.3",
     "egg": "^2.0.0",
-    "egg-filter": "^1.0.2",
+    "egg-filter": "^1.0.3",
     "egg-mysql": "^3.0.0",
     "egg-redis": "^1.0.2",
     "egg-scripts": "^2.4.0",
@@ -34,7 +34,7 @@
     "node": ">=8.9.0"
   },
   "scripts": {
-    "start": "egg-scripts start --daemon --port 8989",
+    "start": "egg-scripts start --daemon --port 8989 --title=egg-server",
     "stop": "egg-scripts stop",
     "dev": "egg-bin dev --port 8989",
     "start-dev": "egg-bin dev --daemon --port 8989",

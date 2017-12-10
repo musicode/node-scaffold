@@ -55,7 +55,7 @@ module.exports = app => {
       const { account, article, project, qa } = this.service
       const { resource_id, resource_type, creator_id } = follow
 
-      let type, resource, resourceService
+      let type, resource
       if (resource_type == TYPE_QUESTION) {
         type = 'question'
         resource = await qa.question.getFullQuestionById(resource_id)
