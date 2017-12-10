@@ -586,7 +586,7 @@ module.exports = app => {
               trace_id: traceId,
               resource_type: record.resource_type,
               sender_id: record.creator_id,
-              receiver_id: user.user_id,
+              receiver_id: user.id,
             })
           }
 

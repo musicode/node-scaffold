@@ -597,6 +597,8 @@ module.exports = app => {
      */
     async checkViewAvailable(visitorId, userId) {
 
+      const { privacy } = this.service
+
       if (visitorId) {
         if (userId !== visitorId) {
           await privacy.profileAllowed.checkAllowedType(visitorId, userId)
