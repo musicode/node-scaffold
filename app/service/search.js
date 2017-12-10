@@ -48,7 +48,6 @@ module.exports = app => {
         config.server.search + '/remove',
         {
           method: 'GET',
-          contentType: 'json',
           dataType: 'json',
           data: {
             type,
@@ -99,7 +98,6 @@ module.exports = app => {
         config.server.search + '/search',
         {
           method: 'GET',
-          contentType: 'json',
           dataType: 'json',
           data,
         }
@@ -134,7 +132,6 @@ module.exports = app => {
         config.server.search + '/news',
         {
           method: 'GET',
-          contentType: 'json',
           dataType: 'json',
           data,
         }
