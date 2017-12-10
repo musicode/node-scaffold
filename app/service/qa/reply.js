@@ -335,7 +335,7 @@ module.exports = app => {
           if (fields) {
             if ('anonymous' in fields) {
               fields.anonymous = fields.anonymous ? limit.ANONYMOUS_YES : limit.ANONYMOUS_NO
-              if (fields.anonymous === question.anonymous) {
+              if (fields.anonymous === reply.anonymous) {
                 delete fields.anonymous
               }
             }
