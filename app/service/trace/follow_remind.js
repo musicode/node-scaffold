@@ -1,7 +1,7 @@
 
 'use strict'
 
-const BaseRemindService = require('./remind')
+const BaseRemindService = require('./base_remind')
 
 module.exports = app => {
 

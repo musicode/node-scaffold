@@ -104,7 +104,7 @@ module.exports = app => {
             }
 
             if (resourceType) {
-              master.has_follow = await trace.follow.hasFollow(
+              master.has_follow = await trace.follow.hasTrace(
                 currentUser.id,
                 resource.id,
                 resourceType

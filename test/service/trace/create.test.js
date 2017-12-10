@@ -68,9 +68,6 @@ describe('test/service/trace/create.test.js', () => {
 
       post.id = await article.post.createPost(post)
 
-      let createRecord = await trace.create.getCreatePost(post.id)
-      assert(createRecord.anonymous === post.anonymous)
-
       let hasCreate = await trace.create.hasCreatePost(post.id)
       assert(hasCreate === true)
 
@@ -81,17 +78,11 @@ describe('test/service/trace/create.test.js', () => {
         post.id
       )
 
-      createRecord = await trace.create.getCreatePost(post.id)
-      assert(createRecord.anonymous === app.limit.ANONYMOUS_YES)
-
 
       await article.post.deletePost(post.id)
 
       hasCreate = await trace.create.hasCreatePost(post.id)
       assert(hasCreate === false)
-
-      createRecord = await trace.create.getCreatePost(post.id)
-      assert(createRecord == null)
 
     })
 
@@ -133,9 +124,6 @@ describe('test/service/trace/create.test.js', () => {
 
       let hasCreateComment = await trace.create.hasCreateComment(commentId)
       assert(hasCreateComment === true)
-
-      let createComment = await trace.create.getCreateComment(commentId)
-      assert(app.util.type(createComment) === 'object')
 
       // 评论自己的文章不用提醒
       let hasCreateCommentRemind = await trace.create.hasCreateCommentRemind(commentId)
@@ -182,9 +170,6 @@ describe('test/service/trace/create.test.js', () => {
       hasCreateComment = await trace.create.hasCreateComment(commentId)
       assert(hasCreateComment === true)
 
-      createComment = await trace.create.getCreateComment(commentId)
-      assert(app.util.type(createComment) === 'object')
-
       hasCreateCommentRemind = await trace.create.hasCreateCommentRemind(commentId)
       assert(hasCreateCommentRemind === true)
 
@@ -230,9 +215,6 @@ describe('test/service/trace/create.test.js', () => {
       hasCreateComment = await trace.create.hasCreateComment(commentId)
       assert(hasCreateComment === true)
 
-      createComment = await trace.create.getCreateComment(commentId)
-      assert(app.util.type(createComment) === 'object')
-
       hasCreateCommentRemind = await trace.create.hasCreateCommentRemind(commentId)
       assert(hasCreateCommentRemind === true)
 
@@ -271,9 +253,6 @@ describe('test/service/trace/create.test.js', () => {
 
       hasCreateComment = await trace.create.hasCreateComment(commentId)
       assert(hasCreateComment === false)
-
-      createComment = await trace.create.getCreateComment(commentId)
-      assert(createComment == null)
 
       hasCreateCommentRemind = await trace.create.hasCreateCommentRemind(commentId)
       assert(hasCreateCommentRemind === false)
@@ -345,8 +324,6 @@ describe('test/service/trace/create.test.js', () => {
 
       demand.id = await project.demand.createDemand(demand)
 
-      let createRecord = await trace.create.getCreateDemand(demand.id)
-
       let hasCreate = await trace.create.hasCreateDemand(demand.id)
       assert(hasCreate === true)
 
@@ -355,9 +332,6 @@ describe('test/service/trace/create.test.js', () => {
 
       hasCreate = await trace.create.hasCreateDemand(demand.id)
       assert(hasCreate === false)
-
-      createRecord = await trace.create.getCreateDemand(demand.id)
-      assert(createRecord == null)
 
     })
 
@@ -397,9 +371,6 @@ describe('test/service/trace/create.test.js', () => {
 
       let hasCreateConsult = await trace.create.hasCreateConsult(consultId)
       assert(hasCreateConsult === true)
-
-      let createConsult = await trace.create.getCreateConsult(consultId)
-      assert(app.util.type(createConsult) === 'object')
 
       // 咨询自己的项目不用提醒
       let hasCreateConsultRemind = await trace.create.hasCreateConsultRemind(consultId)
@@ -445,9 +416,6 @@ describe('test/service/trace/create.test.js', () => {
       hasCreateConsult = await trace.create.hasCreateConsult(consultId)
       assert(hasCreateConsult === true)
 
-      createConsult = await trace.create.getCreateConsult(consultId)
-      assert(app.util.type(createConsult) === 'object')
-
       hasCreateConsultRemind = await trace.create.hasCreateConsultRemind(consultId)
       assert(hasCreateConsultRemind === true)
 
@@ -492,9 +460,6 @@ describe('test/service/trace/create.test.js', () => {
       hasCreateConsult = await trace.create.hasCreateConsult(consultId)
       assert(hasCreateConsult === true)
 
-      createConsult = await trace.create.getCreateConsult(consultId)
-      assert(app.util.type(createConsult) === 'object')
-
       hasCreateConsultRemind = await trace.create.hasCreateConsultRemind(consultId)
       assert(hasCreateConsultRemind === true)
 
@@ -533,9 +498,6 @@ describe('test/service/trace/create.test.js', () => {
 
       hasCreateConsult = await trace.create.hasCreateConsult(consultId)
       assert(hasCreateConsult === false)
-
-      createConsult = await trace.create.getCreateConsult(consultId)
-      assert(createConsult == null)
 
       hasCreateConsultRemind = await trace.create.hasCreateConsultRemind(consultId)
       assert(hasCreateConsultRemind === false)
@@ -608,9 +570,6 @@ describe('test/service/trace/create.test.js', () => {
 
       question.id = await qa.question.createQuestion(question)
 
-      let createRecord = await trace.create.getCreateQuestion(question.id)
-      assert(createRecord.anonymous === question.anonymous)
-
       let hasCreate = await trace.create.hasCreateQuestion(question.id)
       assert(hasCreate === true)
 
@@ -621,17 +580,11 @@ describe('test/service/trace/create.test.js', () => {
         question.id
       )
 
-      createRecord = await trace.create.getCreateQuestion(question.id)
-      assert(createRecord.anonymous === app.limit.ANONYMOUS_YES)
-
 
       await qa.question.deleteQuestion(question.id)
 
       hasCreate = await trace.create.hasCreateQuestion(question.id)
       assert(hasCreate === false)
-
-      createRecord = await trace.create.getCreateQuestion(question.id)
-      assert(createRecord == null)
 
     })
 

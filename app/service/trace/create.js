@@ -8,14 +8,13 @@ const TYPE_CONSULT = 4
 const TYPE_POST = 5
 const TYPE_COMMENT = 6
 
-const STATUS_ACTIVE = 0
-const STATUS_DELETED = 1
+const BaseTraceService = require('./base')
 
 module.exports = app => {
 
   const { code, util, } = app
 
-  class Create extends app.BaseService {
+  class Create extends BaseTraceService {
 
     get TYPE_QUESTION() {
       return TYPE_QUESTION
@@ -50,6 +49,10 @@ module.exports = app => {
         'resource_id', 'resource_type', 'resource_master_id', 'resource_parent_id',
         'creator_id', 'anonymous', 'status',
       ]
+    }
+
+    get remindService() {
+      return this.service.trace.createRemind
     }
 
     async toExternal(create) {
@@ -155,7 +158,7 @@ module.exports = app => {
 
       if (record) {
         const fields = {
-          status: STATUS_ACTIVE,
+          status: this.STATUS_ACTIVE,
         }
         if (util.type(data.anonymous) === 'number') {
           fields.anonymous = data.anonymous
@@ -195,7 +198,7 @@ module.exports = app => {
         creator_id: currentUser.id,
       })
 
-      if (!record || record.status === STATUS_DELETED) {
+      if (!record || record.status === this.STATUS_DELETED) {
         this.throw(
           code.RESOURCE_NOT_FOUND,
           '未创建，不能取消创建'
@@ -204,7 +207,7 @@ module.exports = app => {
 
       await this.update(
         {
-          status: STATUS_DELETED,
+          status: this.STATUS_DELETED,
         },
         {
           id: record.id,
@@ -269,28 +272,9 @@ module.exports = app => {
      * @return {boolean}
      */
     async hasCreatePost(postId) {
-
-      const record = await this.getCreatePost(postId)
-
-      return record ? true : false
-
+      return await this.hasTrace(null, postId, TYPE_POST)
     }
 
-    /**
-     * 用户是否已创建文章
-     *
-     * @param {number} postId
-     * @return {boolean}
-     */
-    async getCreatePost(postId) {
-
-      return await this.findOneBy({
-        resource_id: postId,
-        resource_type: TYPE_POST,
-        status: STATUS_ACTIVE,
-      })
-
-    }
 
 
 
@@ -422,27 +406,7 @@ module.exports = app => {
      * @return {boolean}
      */
     async hasCreateComment(commentId) {
-
-      const record = await this.getCreateComment(commentId)
-
-      return record ? true : false
-
-    }
-
-    /**
-     * 用户是否已创建评论
-     *
-     * @param {number} commentId
-     * @return {boolean}
-     */
-    async getCreateComment(commentId) {
-
-      return await this.findOneBy({
-        resource_id: commentId,
-        resource_type: TYPE_COMMENT,
-        status: STATUS_ACTIVE,
-      })
-
+      return await this.hasTrace(null, commentId, TYPE_COMMENT)
     }
 
 
@@ -496,7 +460,7 @@ module.exports = app => {
     async getCreateCommentCount(creatorId, postId) {
       const where = {
         resource_type: TYPE_COMMENT,
-        status: STATUS_ACTIVE,
+        status: this.STATUS_ACTIVE,
       }
       if (creatorId) {
         where.creator_id = creatorId
@@ -518,7 +482,7 @@ module.exports = app => {
     async getCreateCommentList(creatorId, postId, options) {
       const where = {
         resource_type: TYPE_COMMENT,
-        status: STATUS_ACTIVE,
+        status: this.STATUS_ACTIVE,
       }
       if (creatorId) {
         where.creator_id = creatorId
@@ -538,8 +502,7 @@ module.exports = app => {
      * @return {Array}
      */
     async getCreateCommentRemindList(receiverId, options) {
-      const { trace } = this.service
-      return await trace.createRemind.getCreateRemindList(
+      return await this.remindService.getCreateRemindList(
         {
           receiver_id: receiverId,
           resource_type: TYPE_COMMENT,
@@ -555,8 +518,7 @@ module.exports = app => {
      * @return {number}
      */
     async getCreateCommentRemindCount(receiverId) {
-      const { trace } = this.service
-      return await trace.createRemind.getCreateRemindCount({
+      return await this.remindService.getCreateRemindCount({
         receiver_id: receiverId,
         resource_type: TYPE_COMMENT,
       })
@@ -569,8 +531,7 @@ module.exports = app => {
      * @return {number}
      */
     async getCreateCommentUnreadRemindCount(receiverId) {
-      const { trace } = this.service
-      return await trace.createRemind.getUnreadCreateRemindCount({
+      return await this.remindService.getUnreadCreateRemindCount({
         receiver_id: receiverId,
         resource_type: TYPE_COMMENT,
       })
@@ -582,8 +543,7 @@ module.exports = app => {
      * @param {number} receiverId
      */
     async readCreateCommentRemind(receiverId) {
-      const { trace } = this.service
-      return await trace.createRemind.readCreateRemind({
+      return await this.remindService.readCreateRemind({
         receiver_id: receiverId,
         resource_type: TYPE_COMMENT,
       })
@@ -643,27 +603,7 @@ module.exports = app => {
      * @return {boolean}
      */
     async hasCreateDemand(demandId) {
-
-      const record = await this.getCreateDemand(demandId)
-
-      return record ? true : false
-
-    }
-
-    /**
-     * 用户是否已创建项目
-     *
-     * @param {number} demandId
-     * @return {boolean}
-     */
-    async getCreateDemand(demandId) {
-
-      return await this.findOneBy({
-        resource_id: demandId,
-        resource_type: TYPE_DEMAND,
-        status: STATUS_ACTIVE,
-      })
-
+      return await this.hasTrace(null, demandId, TYPE_DEMAND)
     }
 
 
@@ -794,29 +734,8 @@ module.exports = app => {
      * @return {boolean}
      */
     async hasCreateConsult(consultId) {
-
-      const record = await this.getCreateConsult(consultId)
-
-      return record ? true : false
-
+      return await this.hasTrace(null, consultId, TYPE_CONSULT)
     }
-
-    /**
-     * 用户是否已创建咨询
-     *
-     * @param {number} consultId
-     * @return {boolean}
-     */
-    async getCreateConsult(consultId) {
-
-      return await this.findOneBy({
-        resource_id: consultId,
-        resource_type: TYPE_CONSULT,
-        status: STATUS_ACTIVE,
-      })
-
-    }
-
 
     /**
      * 用户咨询项目是否已提醒作者
@@ -868,7 +787,7 @@ module.exports = app => {
     async getCreateConsultCount(creatorId, demandId) {
       const where = {
         resource_type: TYPE_CONSULT,
-        status: STATUS_ACTIVE,
+        status: this.STATUS_ACTIVE,
       }
       if (creatorId) {
         where.creator_id = creatorId
@@ -890,7 +809,7 @@ module.exports = app => {
     async getCreateConsultList(creatorId, demandId, options) {
       const where = {
         resource_type: TYPE_CONSULT,
-        status: STATUS_ACTIVE,
+        status: this.STATUS_ACTIVE,
       }
       if (creatorId) {
         where.creator_id = creatorId
@@ -910,8 +829,7 @@ module.exports = app => {
      * @return {Array}
      */
     async getCreateConsultRemindList(receiverId, options) {
-      const { trace } = this.service
-      return await trace.createRemind.getCreateRemindList(
+      return await this.remindService.getCreateRemindList(
         {
           receiver_id: receiverId,
           resource_type: TYPE_CONSULT,
@@ -927,8 +845,7 @@ module.exports = app => {
      * @return {number}
      */
     async getCreateConsultRemindCount(receiverId) {
-      const { trace } = this.service
-      return await trace.createRemind.getCreateRemindCount({
+      return await this.remindService.getCreateRemindCount({
         receiver_id: receiverId,
         resource_type: TYPE_CONSULT,
       })
@@ -941,8 +858,7 @@ module.exports = app => {
      * @return {number}
      */
     async getCreateConsultUnreadRemindCount(receiverId) {
-      const { trace } = this.service
-      return await trace.createRemind.getUnreadCreateRemindCount({
+      return await this.remindService.getUnreadCreateRemindCount({
         receiver_id: receiverId,
         resource_type: TYPE_CONSULT,
       })
@@ -954,8 +870,7 @@ module.exports = app => {
      * @param {number} receiverId
      */
     async readCreateConsultRemind(receiverId) {
-      const { trace } = this.service
-      return await trace.createRemind.readCreateRemind({
+      return await this.remindService.readCreateRemind({
         receiver_id: receiverId,
         resource_type: TYPE_CONSULT,
       })
@@ -1019,28 +934,9 @@ module.exports = app => {
      * @return {boolean}
      */
     async hasCreateQuestion(questionId) {
-
-      const record = await this.getCreateQuestion(questionId)
-
-      return record ? true : false
-
+      return await this.hasTrace(null, questionId, TYPE_QUESTION)
     }
 
-    /**
-     * 用户是否已创建问题
-     *
-     * @param {number} questionId
-     * @return {boolean}
-     */
-    async getCreateQuestion(questionId) {
-
-      return await this.findOneBy({
-        resource_id: questionId,
-        resource_type: TYPE_QUESTION,
-        status: STATUS_ACTIVE,
-      })
-
-    }
 
 
 
@@ -1188,29 +1084,8 @@ module.exports = app => {
      * @return {boolean}
      */
     async hasCreateReply(replyId) {
-
-      const record = await this.getCreateReply(replyId)
-
-      return record ? true : false
-
+      return await this.hasTrace(null, replyId, TYPE_REPLY)
     }
-
-    /**
-     * 用户是否已创建回复
-     *
-     * @param {number} replyId
-     * @return {boolean}
-     */
-    async getCreateReply(replyId) {
-
-      return await this.findOneBy({
-        resource_id: replyId,
-        resource_type: TYPE_REPLY,
-        status: STATUS_ACTIVE,
-      })
-
-    }
-
 
     /**
      * 用户回复问题是否已提醒作者
@@ -1268,7 +1143,7 @@ module.exports = app => {
     async getCreateReplyCount(creatorId, questionId) {
       const where = {
         resource_type: TYPE_REPLY,
-        status: STATUS_ACTIVE,
+        status: this.STATUS_ACTIVE,
       }
       if (creatorId) {
         where.creator_id = creatorId
@@ -1290,7 +1165,7 @@ module.exports = app => {
     async getCreateReplyList(creatorId, questionId, options) {
       const where = {
         resource_type: TYPE_REPLY,
-        status: STATUS_ACTIVE,
+        status: this.STATUS_ACTIVE,
       }
       if (creatorId) {
         where.creator_id = creatorId
@@ -1310,8 +1185,7 @@ module.exports = app => {
      * @return {Array}
      */
     async getCreateReplyRemindList(receiverId, options) {
-      const { trace } = this.service
-      return await trace.createRemind.getCreateRemindList(
+      return await this.remindService.getCreateRemindList(
         {
           receiver_id: receiverId,
           resource_type: TYPE_REPLY,
@@ -1328,8 +1202,7 @@ module.exports = app => {
      * @return {Array}
      */
     async getCreateAnswerRemindList(receiverId, options) {
-      const { trace } = this.service
-      return await trace.createRemind.getCreateRemindList(
+      return await this.remindService.getCreateRemindList(
         {
           receiver_id: receiverId,
           resource_type: TYPE_REPLY,
@@ -1346,8 +1219,7 @@ module.exports = app => {
      * @return {number}
      */
     async getCreateReplyRemindCount(receiverId) {
-      const { trace } = this.service
-      return await trace.createRemind.getCreateRemindCount({
+      return await this.remindService.getCreateRemindCount({
         receiver_id: receiverId,
         resource_type: TYPE_REPLY,
       })
@@ -1360,8 +1232,7 @@ module.exports = app => {
      * @return {number}
      */
     async getCreateAnswerRemindCount(receiverId) {
-      const { trace } = this.service
-      return await trace.createRemind.getCreateRemindCount({
+      return await this.remindService.getCreateRemindCount({
         receiver_id: receiverId,
         resource_type: TYPE_REPLY,
         resource_parent_id: 0,
@@ -1375,8 +1246,7 @@ module.exports = app => {
      * @return {number}
      */
     async getCreateReplyUnreadRemindCount(receiverId) {
-      const { trace } = this.service
-      return await trace.createRemind.getUnreadCreateRemindCount({
+      return await this.remindService.getUnreadCreateRemindCount({
         receiver_id: receiverId,
         resource_type: TYPE_REPLY,
       })
@@ -1389,8 +1259,7 @@ module.exports = app => {
      * @return {number}
      */
     async getCreateAnswerUnreadRemindCount(receiverId) {
-      const { trace } = this.service
-      return await trace.createRemind.getUnreadCreateRemindCount({
+      return await this.remindService.getUnreadCreateRemindCount({
         receiver_id: receiverId,
         resource_type: TYPE_REPLY,
         resource_parent_id: 0,
@@ -1403,8 +1272,7 @@ module.exports = app => {
      * @param {number} receiverId
      */
     async readCreateReplyRemind(receiverId) {
-      const { trace } = this.service
-      return await trace.createRemind.readCreateRemind({
+      return await this.remindService.readCreateRemind({
         receiver_id: receiverId,
         resource_type: TYPE_REPLY,
       })
@@ -1416,8 +1284,7 @@ module.exports = app => {
      * @param {number} receiverId
      */
     async readCreateAnswerRemind(receiverId) {
-      const { trace } = this.service
-      return await trace.createRemind.readCreateRemind({
+      return await this.remindService.readCreateRemind({
         receiver_id: receiverId,
         resource_type: TYPE_REPLY,
         resource_parent_id: 0,

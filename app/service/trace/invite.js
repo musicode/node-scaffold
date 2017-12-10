@@ -2,15 +2,19 @@
 
 const TYPE_QUESTION = 1
 
-const STATUS_ACTIVE = 0
-const STATUS_DELETED = 1
 const STATUS_IGNORED = 2
+
+const BaseTraceService = require('./base')
 
 module.exports = app => {
 
   const { code, util, } = app
 
-  class Invite extends app.BaseService {
+  class Invite extends BaseTraceService {
+
+    get STATUS_IGNORED() {
+      return STATUS_IGNORED
+    }
 
     get tableName() {
       return 'trace_invite'
@@ -21,6 +25,10 @@ module.exports = app => {
         'resource_id', 'resource_type', 'user_id',
         'creator_id', 'anonymous', 'status',
       ]
+    }
+
+    get remindService() {
+      return this.service.trace.inviteRemind
     }
 
     async toExternal(invite) {
@@ -69,7 +77,7 @@ module.exports = app => {
       })
 
       if (record) {
-        if (record.status === STATUS_ACTIVE) {
+        if (record.status === this.STATUS_ACTIVE) {
           this.throw(
             code.RESOURCE_EXISTS,
             '已邀请，不能再次邀请'
@@ -77,7 +85,7 @@ module.exports = app => {
         }
         await this.update(
           {
-            status: STATUS_ACTIVE,
+            status: this.STATUS_ACTIVE,
           },
           {
             id: record.id,
@@ -114,7 +122,7 @@ module.exports = app => {
         user_id: data.user_id,
       })
 
-      if (!record || record.status === STATUS_DELETED) {
+      if (!record || record.status === this.STATUS_DELETED) {
         this.throw(
           code.RESOURCE_NOT_FOUND,
           '未邀请，不能取消邀请'
@@ -123,7 +131,7 @@ module.exports = app => {
 
       await this.update(
         {
-          status: STATUS_DELETED,
+          status: this.STATUS_DELETED,
         },
         {
           id: record.id,
@@ -256,7 +264,7 @@ module.exports = app => {
 
           await this.update(
             {
-              status: STATUS_IGNORED,
+              status: this.STATUS_IGNORED,
             },
             {
               id: record.id,
@@ -294,7 +302,7 @@ module.exports = app => {
         resource_type: TYPE_QUESTION,
         creator_id: creatorId,
         user_id: userId,
-        status: STATUS_ACTIVE,
+        status: this.STATUS_ACTIVE,
       })
 
       return record ? true : false
@@ -339,7 +347,7 @@ module.exports = app => {
     async getInviteQuestionCount(creatorId, userId, questionId) {
       const where = {
         resource_type: TYPE_QUESTION,
-        status: STATUS_ACTIVE,
+        status: this.STATUS_ACTIVE,
       }
       if (creatorId) {
         where.creator_id = creatorId
@@ -365,7 +373,7 @@ module.exports = app => {
     async getInviteQuestionList(creatorId, userId, questionId, options) {
       const where = {
         resource_type: TYPE_QUESTION,
-        status: STATUS_ACTIVE,
+        status: this.STATUS_ACTIVE,
       }
       if (creatorId) {
         where.creator_id = creatorId
@@ -388,8 +396,7 @@ module.exports = app => {
      * @return {Array}
      */
     async getInviteQuestionRemindList(receiverId, options) {
-      const { trace } = this.service
-      return await trace.inviteRemind.getInviteRemindList(
+      return await this.remindService.getInviteRemindList(
         {
           receiver_id: receiverId,
           resource_type: TYPE_QUESTION,
@@ -405,8 +412,7 @@ module.exports = app => {
      * @return {number}
      */
     async getInviteQuestionRemindCount(receiverId) {
-      const { trace } = this.service
-      return await trace.inviteRemind.getInviteRemindCount({
+      return await this.remindService.getInviteRemindCount({
         receiver_id: receiverId,
         resource_type: TYPE_QUESTION,
       })
@@ -419,8 +425,7 @@ module.exports = app => {
      * @return {number}
      */
     async getInviteQuestionUnreadRemindCount(receiverId) {
-      const { trace } = this.service
-      return await trace.inviteRemind.getUnreadInviteRemindCount({
+      return await this.remindService.getUnreadInviteRemindCount({
         receiver_id: receiverId,
         resource_type: TYPE_QUESTION,
       })
@@ -432,8 +437,7 @@ module.exports = app => {
      * @param {number} receiverId
      */
     async readInviteQuestionRemind(receiverId) {
-      const { trace } = this.service
-      return await trace.inviteRemind.readInviteRemind({
+      return await this.remindService.readInviteRemind({
         receiver_id: receiverId,
         resource_type: TYPE_QUESTION,
       })

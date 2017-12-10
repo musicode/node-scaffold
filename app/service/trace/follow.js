@@ -7,14 +7,13 @@ const TYPE_POST = 3
 const TYPE_USER = 4
 const TYPE_REPLY = 5
 
-const STATUS_ACTIVE = 0
-const STATUS_DELETED = 1
+const BaseTraceService = require('./base')
 
 module.exports = app => {
 
   const { code, util, } = app
 
-  class Follow extends app.BaseService {
+  class Follow extends BaseTraceService {
 
     get tableName() {
       return 'trace_follow'
@@ -25,6 +24,10 @@ module.exports = app => {
         'resource_id', 'resource_type',
         'creator_id', 'anonymous', 'status',
       ]
+    }
+
+    get remindService() {
+      return this.service.trace.followRemind
     }
 
     get TYPE_QUESTION() {
@@ -112,7 +115,7 @@ module.exports = app => {
       })
 
       if (record) {
-        if (record.status === STATUS_ACTIVE) {
+        if (record.status === this.STATUS_ACTIVE) {
           this.throw(
             code.RESOURCE_EXISTS,
             '已关注，不能再次关注'
@@ -120,7 +123,7 @@ module.exports = app => {
         }
         await this.update(
           {
-            status: STATUS_ACTIVE,
+            status: this.STATUS_ACTIVE,
           },
           {
             id: record.id,
@@ -155,7 +158,7 @@ module.exports = app => {
         creator_id: currentUser.id,
       })
 
-      if (!record || record.status === STATUS_DELETED) {
+      if (!record || record.status === this.STATUS_DELETED) {
         this.throw(
           code.RESOURCE_NOT_FOUND,
           '未关注，不能取消关注'
@@ -164,7 +167,7 @@ module.exports = app => {
 
       await this.update(
         {
-          status: STATUS_DELETED,
+          status: this.STATUS_DELETED,
         },
         {
           id: record.id,
@@ -276,16 +279,7 @@ module.exports = app => {
      * @return {boolean}
      */
     async hasFollowPost(creatorId, postId) {
-
-      const record = await this.findOneBy({
-        resource_id: postId,
-        resource_type: TYPE_POST,
-        creator_id: creatorId,
-        status: STATUS_ACTIVE,
-      })
-
-      return record ? true : false
-
+      return await this.hasTrace(creatorId, postId, TYPE_POST)
     }
 
     /**
@@ -296,21 +290,7 @@ module.exports = app => {
      * @return {boolean}
      */
     async hasFollowPostRemind(creatorId, postId) {
-
-      const { trace } = this.service
-
-      const record = await this.findOneBy({
-        resource_id: postId,
-        resource_type: TYPE_POST,
-        creator_id: creatorId,
-      })
-
-      if (record) {
-        return await trace.followRemind.hasFollowRemind(record.id)
-      }
-
-      return false
-
+      return await this.hasTraceRemind(creatorId, postId, TYPE_POST)
     }
 
     /**
@@ -321,17 +301,7 @@ module.exports = app => {
      * @return {number}
      */
     async getFollowPostCount(creatorId, postId) {
-      const where = {
-        resource_type: TYPE_POST,
-        status: STATUS_ACTIVE,
-      }
-      if (creatorId) {
-        where.creator_id = creatorId
-      }
-      if (postId) {
-        where.resource_id = postId
-      }
-      return await this.countBy(where)
+      return await this.getTraceCount(creatorId, postId, TYPE_POST)
     }
 
     /**
@@ -343,18 +313,7 @@ module.exports = app => {
      * @return {Array}
      */
     async getFollowPostList(creatorId, postId, options) {
-      const where = {
-        resource_type: TYPE_POST,
-        status: STATUS_ACTIVE,
-      }
-      if (creatorId) {
-        where.creator_id = creatorId
-      }
-      if (postId) {
-        where.resource_id = postId
-      }
-      options.where = where
-      return await this.findBy(options)
+      return await this.getTraceList(creatorId, postId, TYPE_POST, options)
     }
 
     /**
@@ -365,8 +324,7 @@ module.exports = app => {
      * @return {Array}
      */
     async getFollowPostRemindList(receiverId, options) {
-      const { trace } = this.service
-      return await trace.followRemind.getFollowRemindList(
+      return await this.remindService.getFollowRemindList(
         {
           receiver_id: receiverId,
           resource_type: TYPE_POST,
@@ -382,8 +340,7 @@ module.exports = app => {
      * @return {number}
      */
     async getFollowPostRemindCount(receiverId) {
-      const { trace } = this.service
-      return await trace.followRemind.getFollowRemindCount({
+      return await this.remindService.getFollowRemindCount({
         receiver_id: receiverId,
         resource_type: TYPE_POST,
       })
@@ -396,8 +353,7 @@ module.exports = app => {
      * @return {number}
      */
     async getFollowPostUnreadRemindCount(receiverId) {
-      const { trace } = this.service
-      return await trace.followRemind.getUnreadFollowRemindCount({
+      return await this.remindService.getUnreadFollowRemindCount({
         receiver_id: receiverId,
         resource_type: TYPE_POST,
       })
@@ -409,8 +365,7 @@ module.exports = app => {
      * @param {number} receiverId
      */
     async readFollowPostRemind(receiverId) {
-      const { trace } = this.service
-      return await trace.followRemind.readFollowRemind({
+      return await this.remindService.readFollowRemind({
         receiver_id: receiverId,
         resource_type: TYPE_POST,
       })
@@ -518,16 +473,7 @@ module.exports = app => {
      * @return {boolean}
      */
     async hasFollowDemand(creatorId, demandId) {
-
-      const record = await this.findOneBy({
-        resource_id: demandId,
-        resource_type: TYPE_DEMAND,
-        creator_id: creatorId,
-        status: STATUS_ACTIVE,
-      })
-
-      return record ? true : false
-
+      return await this.hasTrace(creatorId, demandId, TYPE_DEMAND)
     }
 
     /**
@@ -538,21 +484,7 @@ module.exports = app => {
      * @return {boolean}
      */
     async hasFollowDemandRemind(creatorId, demandId) {
-
-      const { trace } = this.service
-
-      const record = await this.findOneBy({
-        resource_id: demandId,
-        resource_type: TYPE_DEMAND,
-        creator_id: creatorId,
-      })
-
-      if (record) {
-        return await trace.followRemind.hasFollowRemind(record.id)
-      }
-
-      return false
-
+      return await this.hasTraceRemind(creatorId, demandId, TYPE_DEMAND)
     }
 
     /**
@@ -563,17 +495,7 @@ module.exports = app => {
      * @return {number}
      */
     async getFollowDemandCount(creatorId, demandId) {
-      const where = {
-        resource_type: TYPE_DEMAND,
-        status: STATUS_ACTIVE,
-      }
-      if (creatorId) {
-        where.creator_id = creatorId
-      }
-      if (demandId) {
-        where.resource_id = demandId
-      }
-      return await this.countBy(where)
+      return await this.getTraceCount(creatorId, demandId, TYPE_DEMAND)
     }
 
     /**
@@ -585,18 +507,7 @@ module.exports = app => {
      * @return {Array}
      */
     async getFollowDemandList(creatorId, demandId, options) {
-      const where = {
-        resource_type: TYPE_DEMAND,
-        status: STATUS_ACTIVE,
-      }
-      if (creatorId) {
-        where.creator_id = creatorId
-      }
-      if (demandId) {
-        where.resource_id = demandId
-      }
-      options.where = where
-      return await this.findBy(options)
+      return await this.getTraceList(creatorId, demandId, TYPE_DEMAND, options)
     }
 
     /**
@@ -607,8 +518,7 @@ module.exports = app => {
      * @return {Array}
      */
     async getFollowDemandRemindList(receiverId, options) {
-      const { trace } = this.service
-      return await trace.followRemind.getFollowRemindList(
+      return await this.remindService.getFollowRemindList(
         {
           receiver_id: receiverId,
           resource_type: TYPE_DEMAND,
@@ -624,8 +534,7 @@ module.exports = app => {
      * @return {number}
      */
     async getFollowDemandRemindCount(receiverId) {
-      const { trace } = this.service
-      return await trace.followRemind.getFollowRemindCount({
+      return await this.remindService.getFollowRemindCount({
         receiver_id: receiverId,
         resource_type: TYPE_DEMAND,
       })
@@ -638,8 +547,7 @@ module.exports = app => {
      * @return {number}
      */
     async getFollowDemandUnreadRemindCount(receiverId) {
-      const { trace } = this.service
-      return await trace.followRemind.getUnreadFollowRemindCount({
+      return await this.remindService.getUnreadFollowRemindCount({
         receiver_id: receiverId,
         resource_type: TYPE_DEMAND,
       })
@@ -651,8 +559,7 @@ module.exports = app => {
      * @param {number} receiverId
      */
     async readFollowDemandRemind(receiverId) {
-      const { trace } = this.service
-      return await trace.followRemind.readFollowRemind({
+      return await this.remindService.readFollowRemind({
         receiver_id: receiverId,
         resource_type: TYPE_DEMAND,
       })
@@ -762,16 +669,7 @@ module.exports = app => {
      * @return {boolean}
      */
     async hasFollowQuestion(creatorId, questionId) {
-
-      const record = await this.findOneBy({
-        resource_id: questionId,
-        resource_type: TYPE_QUESTION,
-        creator_id: creatorId,
-        status: STATUS_ACTIVE,
-      })
-
-      return record ? true : false
-
+      return await this.hasTrace(creatorId, questionId, TYPE_QUESTION)
     }
 
     /**
@@ -782,21 +680,7 @@ module.exports = app => {
      * @return {boolean}
      */
     async hasFollowQuestionRemind(creatorId, questionId) {
-
-      const { trace } = this.service
-
-      const record = await this.findOneBy({
-        resource_id: questionId,
-        resource_type: TYPE_QUESTION,
-        creator_id: creatorId,
-      })
-
-      if (record) {
-        return await trace.followRemind.hasFollowRemind(record.id)
-      }
-
-      return false
-
+      return await this.hasTraceRemind(creatorId, questionId, TYPE_QUESTION)
     }
 
     /**
@@ -807,17 +691,7 @@ module.exports = app => {
      * @return {number}
      */
     async getFollowQuestionCount(creatorId, questionId) {
-      const where = {
-        resource_type: TYPE_QUESTION,
-        status: STATUS_ACTIVE,
-      }
-      if (creatorId) {
-        where.creator_id = creatorId
-      }
-      if (questionId) {
-        where.resource_id = questionId
-      }
-      return await this.countBy(where)
+      return await this.getTraceCount(creatorId, questionId, TYPE_QUESTION)
     }
 
     /**
@@ -829,18 +703,7 @@ module.exports = app => {
      * @return {Array}
      */
     async getFollowQuestionList(creatorId, questionId, options) {
-      const where = {
-        resource_type: TYPE_QUESTION,
-        status: STATUS_ACTIVE,
-      }
-      if (creatorId) {
-        where.creator_id = creatorId
-      }
-      if (questionId) {
-        where.resource_id = questionId
-      }
-      options.where = where
-      return await this.findBy(options)
+      return await this.getTraceList(creatorId, questionId, TYPE_QUESTION, options)
     }
 
     /**
@@ -851,8 +714,7 @@ module.exports = app => {
      * @return {Array}
      */
     async getFollowQuestionRemindList(receiverId, options) {
-      const { trace } = this.service
-      return await trace.followRemind.getFollowRemindList(
+      return await this.remindService.getFollowRemindList(
         {
           receiver_id: receiverId,
           resource_type: TYPE_QUESTION,
@@ -868,8 +730,7 @@ module.exports = app => {
      * @return {number}
      */
     async getFollowQuestionRemindCount(receiverId) {
-      const { trace } = this.service
-      return await trace.followRemind.getFollowRemindCount({
+      return await this.remindService.getFollowRemindCount({
         receiver_id: receiverId,
         resource_type: TYPE_QUESTION,
       })
@@ -882,8 +743,7 @@ module.exports = app => {
      * @return {number}
      */
     async getFollowQuestionUnreadRemindCount(receiverId) {
-      const { trace } = this.service
-      return await trace.followRemind.getUnreadFollowRemindCount({
+      return await this.remindService.getUnreadFollowRemindCount({
         receiver_id: receiverId,
         resource_type: TYPE_QUESTION,
       })
@@ -895,8 +755,7 @@ module.exports = app => {
      * @param {number} receiverId
      */
     async readFollowQuestionRemind(receiverId) {
-      const { trace } = this.service
-      return await trace.followRemind.readFollowRemind({
+      return await this.remindService.readFollowRemind({
         receiver_id: receiverId,
         resource_type: TYPE_QUESTION,
       })
@@ -1006,16 +865,7 @@ module.exports = app => {
      * @return {boolean}
      */
     async hasFollowReply(creatorId, replyId) {
-
-      const record = await this.findOneBy({
-        resource_id: replyId,
-        resource_type: TYPE_REPLY,
-        creator_id: creatorId,
-        status: STATUS_ACTIVE,
-      })
-
-      return record ? true : false
-
+      return await this.hasTrace(creatorId, replyId, TYPE_REPLY)
     }
 
     /**
@@ -1026,21 +876,7 @@ module.exports = app => {
      * @return {boolean}
      */
     async hasFollowReplyRemind(creatorId, replyId) {
-
-      const { trace } = this.service
-
-      const record = await this.findOneBy({
-        resource_id: replyId,
-        resource_type: TYPE_REPLY,
-        creator_id: creatorId,
-      })
-
-      if (record) {
-        return await trace.followRemind.hasFollowRemind(record.id)
-      }
-
-      return false
-
+      return await this.hasTraceRemind(creatorId, replyId, TYPE_REPLY)
     }
 
     /**
@@ -1051,17 +887,7 @@ module.exports = app => {
      * @return {number}
      */
     async getFollowReplyCount(creatorId, replyId) {
-      const where = {
-        resource_type: TYPE_REPLY,
-        status: STATUS_ACTIVE,
-      }
-      if (creatorId) {
-        where.creator_id = creatorId
-      }
-      if (replyId) {
-        where.resource_id = replyId
-      }
-      return await this.countBy(where)
+      return await this.getTraceCount(creatorId, replyId, TYPE_REPLY)
     }
 
     /**
@@ -1073,18 +899,7 @@ module.exports = app => {
      * @return {Array}
      */
     async getFollowReplyList(creatorId, replyId, options) {
-      const where = {
-        resource_type: TYPE_REPLY,
-        status: STATUS_ACTIVE,
-      }
-      if (creatorId) {
-        where.creator_id = creatorId
-      }
-      if (replyId) {
-        where.resource_id = replyId
-      }
-      options.where = where
-      return await this.findBy(options)
+      return await this.getTraceList(creatorId, replyId, TYPE_REPLY, options)
     }
 
     /**
@@ -1095,8 +910,7 @@ module.exports = app => {
      * @return {Array}
      */
     async getFollowReplyRemindList(receiverId, options) {
-      const { trace } = this.service
-      return await trace.followRemind.getFollowRemindList(
+      return await this.remindService.getFollowRemindList(
         {
           receiver_id: receiverId,
           resource_type: TYPE_REPLY,
@@ -1112,8 +926,7 @@ module.exports = app => {
      * @return {number}
      */
     async getFollowReplyRemindCount(receiverId) {
-      const { trace } = this.service
-      return await trace.followRemind.getFollowRemindCount({
+      return await this.remindService.getFollowRemindCount({
         receiver_id: receiverId,
         resource_type: TYPE_REPLY,
       })
@@ -1126,8 +939,7 @@ module.exports = app => {
      * @return {number}
      */
     async getFollowReplyUnreadRemindCount(receiverId) {
-      const { trace } = this.service
-      return await trace.followRemind.getUnreadFollowRemindCount({
+      return await this.remindService.getUnreadFollowRemindCount({
         receiver_id: receiverId,
         resource_type: TYPE_REPLY,
       })
@@ -1139,8 +951,7 @@ module.exports = app => {
      * @param {number} receiverId
      */
     async readFollowReplyRemind(receiverId) {
-      const { trace } = this.service
-      return await trace.followRemind.readFollowRemind({
+      return await this.remindService.readFollowRemind({
         receiver_id: receiverId,
         resource_type: TYPE_REPLY,
       })
@@ -1247,16 +1058,7 @@ module.exports = app => {
      * @return {boolean}
      */
     async hasFollowUser(creatorId, userId) {
-
-      const record = await this.findOneBy({
-        resource_id: userId,
-        resource_type: TYPE_USER,
-        creator_id: creatorId,
-        status: STATUS_ACTIVE,
-      })
-
-      return record ? true : false
-
+      return await this.hasTrace(creatorId, userId, TYPE_USER)
     }
 
     /**
@@ -1267,21 +1069,7 @@ module.exports = app => {
      * @return {boolean}
      */
     async hasFollowUserRemind(creatorId, userId) {
-
-      const { trace } = this.service
-
-      const record = await this.findOneBy({
-        resource_id: userId,
-        resource_type: TYPE_USER,
-        creator_id: creatorId,
-      })
-
-      if (record) {
-        return await trace.followRemind.hasFollowRemind(record.id)
-      }
-
-      return false
-
+      return await this.hasTraceRemind(creatorId, userId, TYPE_USER)
     }
 
     /**
@@ -1292,17 +1080,7 @@ module.exports = app => {
      * @return {number}
      */
     async getFollowUserCount(creatorId, userId) {
-      const where = {
-        resource_type: TYPE_USER,
-        status: STATUS_ACTIVE,
-      }
-      if (creatorId) {
-        where.creator_id = creatorId
-      }
-      if (userId) {
-        where.resource_id = userId
-      }
-      return await this.countBy(where)
+      return await this.getTraceCount(creatorId, userId, TYPE_USER)
     }
 
     /**
@@ -1314,18 +1092,7 @@ module.exports = app => {
      * @return {Array}
      */
     async getFollowUserList(creatorId, userId, options) {
-      const where = {
-        resource_type: TYPE_USER,
-        status: STATUS_ACTIVE,
-      }
-      if (creatorId) {
-        where.creator_id = creatorId
-      }
-      if (userId) {
-        where.resource_id = userId
-      }
-      options.where = where
-      return await this.findBy(options)
+      return await this.getTraceList(creatorId, userId, TYPE_USER, options)
     }
 
     /**
@@ -1336,8 +1103,7 @@ module.exports = app => {
      * @return {Array}
      */
     async getFollowUserRemindList(receiverId, options) {
-      const { trace } = this.service
-      return await trace.followRemind.getFollowRemindList(
+      return await this.remindService.getFollowRemindList(
         {
           receiver_id: receiverId,
           resource_type: TYPE_USER,
@@ -1353,8 +1119,7 @@ module.exports = app => {
      * @return {number}
      */
     async getFollowUserRemindCount(receiverId) {
-      const { trace } = this.service
-      return await trace.followRemind.getFollowRemindCount({
+      return await this.remindService.getFollowRemindCount({
         receiver_id: receiverId,
         resource_type: TYPE_USER,
       })
@@ -1367,8 +1132,7 @@ module.exports = app => {
      * @return {number}
      */
     async getFollowUserUnreadRemindCount(receiverId) {
-      const { trace } = this.service
-      return await trace.followRemind.getUnreadFollowRemindCount({
+      return await this.remindService.getUnreadFollowRemindCount({
         receiver_id: receiverId,
         resource_type: TYPE_USER,
       })
@@ -1380,26 +1144,12 @@ module.exports = app => {
      * @param {number} receiverId
      */
     async readFollowUserRemind(receiverId) {
-      const { trace } = this.service
-      return await trace.followRemind.readFollowRemind({
+      return await this.remindService.readFollowRemind({
         receiver_id: receiverId,
         resource_type: TYPE_USER,
       })
     }
 
-
-    async hasFollow(creatorId, resourceId, resourceType) {
-
-      const record = await this.findOneBy({
-        resource_id: resourceId,
-        resource_type: resourceType,
-        creator_id: creatorId,
-        status: STATUS_ACTIVE,
-      })
-
-      return record ? true : false
-
-    }
   }
   return Follow
 }

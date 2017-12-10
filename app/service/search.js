@@ -32,7 +32,7 @@ module.exports = app => {
           data: entity,
         }
       )
-      console.log(config.server.search, response, entity)
+
       if (response.status !== 200) {
         this.throw(
           code.INNER_ERROR,
@@ -55,7 +55,7 @@ module.exports = app => {
           }
         }
       )
-      console.log(response)
+
       if (response.status !== 200) {
         this.throw(
           code.INNER_ERROR,
@@ -136,7 +136,7 @@ module.exports = app => {
           data,
         }
       )
-console.log(response)
+
       if (response.status !== 200) {
         this.throw(
           code.INNER_ERROR,
