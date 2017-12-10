@@ -23,14 +23,18 @@ class BaseRemindService extends BaseService {
 
   async toExternal(record) {
 
-    const trace = await this.traceService.findOneBy({
+    let trace = await this.traceService.findOneBy({
       id: record.trace_id,
     })
 
+    trace = await this.traceService.toExternal(trace)
+
     return {
       id: record.id,
-      type: record.type,
+      type: trace.type,
       resource: trace.resource,
+      parent: trace.parent,
+      master: trace.master,
       status: record.status,
       sender: trace.creator,
       create_time: record.update_time.getTime(),

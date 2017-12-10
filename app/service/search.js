@@ -24,12 +24,10 @@ module.exports = app => {
       entity.create_time = util.formatDateTime(entity.create_time, true)
       entity.update_time = util.formatDateTime(entity.update_time, true)
 
-      // [TODO] 这里用 GET 有隐患
       const response = await this.ctx.curl(
         config.server.search + '/upsert',
         {
-          method: 'GET',
-          contentType: 'json',
+          method: 'POST',
           dataType: 'json',
           data: entity,
         }

@@ -180,8 +180,8 @@ module.exports = {
   formatSorter(sortBy, sortOrder) {
     if (sortBy) {
       return {
-        sql: 'ORDER BY `?` ?',
-        values: [ sortBy, sortOrder && sortOrder.toLowerCase() === 'desc' ? 'DESC' : 'ASC' ]
+        sql: 'ORDER BY ?? ' + (sortOrder && sortOrder.toLowerCase() === 'desc' ? 'DESC' : 'ASC'),
+        values: [ sortBy ]
       }
     }
   },
@@ -190,7 +190,7 @@ module.exports = {
     if (page > 0 && pageSize > 0) {
       return {
         sql: 'LIMIT ?, ?',
-        values: [ page - 1 * pageSize, pageSize ]
+        values: [ (page - 1) * pageSize, pageSize ]
       }
     }
   },

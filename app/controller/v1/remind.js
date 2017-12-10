@@ -73,7 +73,7 @@ module.exports = app => {
       await util.each(
         list,
         async (item, index) => {
-          list[ index ] = await trace.remind.toExternal(item)
+          list[ index ] = await trace.viewRemind.toExternal(item)
         }
       )
 
@@ -131,7 +131,7 @@ module.exports = app => {
       await util.each(
         list,
         async (item, index) => {
-          item = await trace.remind.toExternal(item)
+          item = await trace.likeRemind.toExternal(item)
           if (item.resource.content && input.content_max_length > 0) {
             item.resource.content = util.renderSummary(item.resource.content, input.content_max_length)
           }
@@ -202,7 +202,7 @@ module.exports = app => {
       await util.each(
         list,
         async (item, index) => {
-          item = await trace.remind.toExternal(item)
+          item = await trace.inviteRemind.toExternal(item)
           if (item.resource.content && input.content_max_length > 0) {
             item.resource.content = util.renderSummary(item.resource.content, input.content_max_length)
           }
@@ -263,7 +263,7 @@ module.exports = app => {
       await util.each(
         list,
         async (item, index) => {
-          item = await trace.remind.toExternal(item)
+          item = await trace.createRemind.toExternal(item)
           if (item.resource.content && input.content_max_length > 0) {
             item.resource.content = util.renderSummary(item.resource.content, input.content_max_length)
           }
@@ -326,7 +326,7 @@ module.exports = app => {
       await util.each(
         list,
         async (item, index) => {
-          item = await trace.remind.toExternal(item)
+          item = await trace.createRemind.toExternal(item)
           if (item.resource.content && input.content_max_length > 0) {
             item.resource.content = util.renderSummary(item.resource.content, input.content_max_length)
           }
@@ -391,10 +391,10 @@ module.exports = app => {
         trace.create.TYPE_COMMENT, trace.create.TYPE_REPLY
       ]
 
-      let sql = 'SELECT * count' + whereSql
+      let sql = 'SELECT *' + whereSql
       let values = Array.from(originalValues)
 
-      const sorter = util.formatSorter(input.er_by, input.er_order)
+      const sorter = util.formatSorter(input.sort_by, input.sort_order)
       if (sorter) {
         sql += ' ' + sorter.sql
         util.pushArray(values, sorter.values)
@@ -409,7 +409,7 @@ module.exports = app => {
       await util.each(
         list,
         async (item, index) => {
-          item = await trace.remind.toExternal(item)
+          item = await trace.createRemind.toExternal(item)
           if (item.resource.content && input.content_max_length > 0) {
             item.resource.content = util.renderSummary(item.resource.content, input.content_max_length)
           }
@@ -438,7 +438,7 @@ module.exports = app => {
       await trace.createRemind.query(
         sql,
         [
-          trace.createRemind.tableName, trace.createRemind.STATUS_RAEDED, currentUser.id,
+          trace.createRemind.tableName, trace.createRemind.STATUS_READED, currentUser.id,
           trace.createRemind.STATUS_UNREAD, trace.create.TYPE_COMMENT, trace.create.TYPE_REPLY
         ]
       )

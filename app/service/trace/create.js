@@ -52,6 +52,87 @@ module.exports = app => {
       ]
     }
 
+    async toExternal(create) {
+
+      const { account, article, project, qa } = this.service
+      const { resource_id, resource_type, resource_master_id, resource_parent_id, creator_id } = create
+
+      let type, resource, master, parent
+      if (resource_type == TYPE_QUESTION) {
+        type = 'question'
+        resource = await qa.question.getFullQuestionById(resource_id)
+        resource = await qa.question.toExternal(resource)
+      }
+      else if (resource_type == TYPE_REPLY) {
+        type = 'reply'
+        resource = await qa.reply.getFullReplyById(resource_id)
+        resource = await qa.reply.toExternal(resource)
+        if (resource_master_id) {
+          master = await qa.question.getFullQuestionById(resource_master_id)
+          master = await qa.question.toExternal(master)
+        }
+        if (resource_parent_id) {
+          parent = await qa.reply.getFullReplyById(resource_parent_id)
+          parent = await qa.reply.toExternal(parent)
+        }
+      }
+      else if (resource_type == TYPE_DEMAND) {
+        type = 'demand'
+        resource = await project.demand.getFullDemandById(resource_id)
+        resource = await project.demand.toExternal(resource)
+      }
+      else if (resource_type == TYPE_CONSULT) {
+        type = 'consult'
+        resource = await project.consult.getFullConsultById(resource_id)
+        resource = await project.consult.toExternal(resource)
+        if (resource_master_id) {
+          master = await project.demand.getFullDemandById(resource_master_id)
+          master = await project.demand.toExternal(master)
+        }
+        if (resource_parent_id) {
+          parent = await project.consult.getFullConsultById(resource_parent_id)
+          parent = await project.consult.toExternal(parent)
+        }
+      }
+      else if (resource_type == TYPE_POST) {
+        type = 'post'
+        resource = await article.post.getFullPostById(resource_id)
+        resource = await article.post.toExternal(resource)
+      }
+      else if (resource_type == TYPE_COMMENT) {
+        type = 'comment'
+        resource = await article.comment.getFullCommentById(resource_id)
+        resource = await article.comment.toExternal(resource)
+        if (resource_master_id) {
+          master = await article.post.getFullPostById(resource_master_id)
+          master = await article.post.toExternal(master)
+        }
+        if (resource_parent_id) {
+          parent = await article.comment.getFullCommentById(resource_parent_id)
+          parent = await article.comment.toExternal(parent)
+        }
+      }
+      else if (resource_type == TYPE_USER) {
+        type = 'user'
+        resource = await account.user.getFullUserById(resource_id)
+        resource = await account.user.toExternal(resource)
+      }
+
+      let creator = await account.user.getFullUserById(creator_id)
+      creator = await account.user.toExternal(creator)
+
+      return {
+        id: create.id,
+        type,
+        resource,
+        master,
+        parent,
+        creator,
+        create_time: create.create_time.getTime(),
+      }
+
+    }
+
     /**
      * 创建
      *

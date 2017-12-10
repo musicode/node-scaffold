@@ -27,6 +27,26 @@ module.exports = app => {
       ]
     }
 
+    get TYPE_QUESTION() {
+      return TYPE_QUESTION
+    }
+
+    get TYPE_DEMAND() {
+      return TYPE_DEMAND
+    }
+
+    get TYPE_POST() {
+      return TYPE_POST
+    }
+
+    get TYPE_USER() {
+      return TYPE_USER
+    }
+
+    get TYPE_REPLY() {
+      return TYPE_REPLY
+    }
+
     async toExternal(follow) {
 
       const { account, article, project, qa } = this.service
@@ -1367,6 +1387,19 @@ module.exports = app => {
       })
     }
 
+
+    async hasFollow(creatorId, resourceId, resourceType) {
+
+      const record = await this.findOneBy({
+        resource_id: resourceId,
+        resource_type: resourceType,
+        creator_id: creatorId,
+        status: STATUS_ACTIVE,
+      })
+
+      return record ? true : false
+
+    }
   }
   return Follow
 }

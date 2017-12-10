@@ -70,19 +70,50 @@ module.exports = app => {
         )
       }
 
-      const { search } = this.ctx.service
+      const { account, search, qa, article, project, trace } = this.ctx.service
 
       input.types = this.input.types
       input.fields = this.input.fields
 
+      const currentUser = await account.session.getCurrentUser()
       const result = await search.search(input)
 
-      // await util.each(
-      //   list,
-      //   async (item, index) => {
-      //     // [TODO] 已关注逻辑
-      //   }
-      // )
+      if (result.code === 0) {
+        await util.each(
+          result.data.list,
+          async (item, index) => {
+
+            const { master } = item
+
+            let resource
+            let resourceType
+
+            switch (item.type) {
+              case 'question':
+                resource = await qa.question.checkQuestionAvailableByNumber(master.id)
+                resourceType = trace.follow.TYPE_QUESTION
+                break
+              case 'post':
+                resource = await article.post.checkPostAvailableByNumber(master.id)
+                resourceType = trace.follow.TYPE_POST
+                break
+              case 'demand':
+                resource = await project.demand.checkDemandAvailableByNumber(master.id)
+                resourceType = trace.follow.TYPE_DEMAND
+                break
+            }
+
+            if (resourceType) {
+              master.has_follow = await trace.follow.hasFollow(
+                currentUser.id,
+                resource.id,
+                resourceType
+              )
+            }
+
+          }
+        )
+      }
 
       this.ctx.body = result
 
