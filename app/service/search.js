@@ -21,6 +21,9 @@ module.exports = app => {
         entity.user_number = currentUser.number
       }
 
+      entity.create_time = util.formatDateTime(entity.create_time, true)
+      entity.update_time = util.formatDateTime(entity.update_time, true)
+
       // [TODO] 这里用 GET 有隐患
       const response = await this.ctx.curl(
         config.server.search + '/upsert',
@@ -31,7 +34,7 @@ module.exports = app => {
           data: entity,
         }
       )
-
+      console.log(response, entity)
       if (response.status !== 200) {
         this.throw(
           code.INNER_ERROR,
@@ -55,7 +58,7 @@ module.exports = app => {
           }
         }
       )
-
+      console.log(response)
       if (response.status !== 200) {
         this.throw(
           code.INNER_ERROR,
@@ -112,7 +115,7 @@ module.exports = app => {
         )
       }
 
-      return response.data.data
+      return response.data
 
     }
 
@@ -138,7 +141,7 @@ module.exports = app => {
           data,
         }
       )
-
+console.log(response)
       if (response.status !== 200) {
         this.throw(
           code.INNER_ERROR,
@@ -146,7 +149,7 @@ module.exports = app => {
         )
       }
 
-      return response.data.data
+      return response.data
 
     }
 

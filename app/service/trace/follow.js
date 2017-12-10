@@ -251,16 +251,16 @@ module.exports = app => {
     /**
      * 用户是否已关注文章
      *
-     * @param {number} userId
+     * @param {number} creatorId
      * @param {number} postId
      * @return {boolean}
      */
-    async hasFollowPost(userId, postId) {
+    async hasFollowPost(creatorId, postId) {
 
       const record = await this.findOneBy({
         resource_id: postId,
         resource_type: TYPE_POST,
-        creator_id: userId,
+        creator_id: creatorId,
         status: STATUS_ACTIVE,
       })
 
@@ -271,18 +271,18 @@ module.exports = app => {
     /**
      * 用户关注文章是否已提醒作者
      *
-     * @param {number} userId
+     * @param {number} creatorId
      * @param {number} postId
      * @return {boolean}
      */
-    async hasFollowPostRemind(userId, postId) {
+    async hasFollowPostRemind(creatorId, postId) {
 
       const { trace } = this.service
 
       const record = await this.findOneBy({
         resource_id: postId,
         resource_type: TYPE_POST,
-        creator_id: userId,
+        creator_id: creatorId,
       })
 
       if (record) {
@@ -493,16 +493,16 @@ module.exports = app => {
     /**
      * 用户是否已关注项目
      *
-     * @param {number} userId
+     * @param {number} creatorId
      * @param {number} demandId
      * @return {boolean}
      */
-    async hasFollowDemand(userId, demandId) {
+    async hasFollowDemand(creatorId, demandId) {
 
       const record = await this.findOneBy({
         resource_id: demandId,
         resource_type: TYPE_DEMAND,
-        creator_id: userId,
+        creator_id: creatorId,
         status: STATUS_ACTIVE,
       })
 
@@ -513,18 +513,18 @@ module.exports = app => {
     /**
      * 用户关注项目是否已提醒作者
      *
-     * @param {number} userId
+     * @param {number} creatorId
      * @param {number} demandId
      * @return {boolean}
      */
-    async hasFollowDemandRemind(userId, demandId) {
+    async hasFollowDemandRemind(creatorId, demandId) {
 
       const { trace } = this.service
 
       const record = await this.findOneBy({
         resource_id: demandId,
         resource_type: TYPE_DEMAND,
-        creator_id: userId,
+        creator_id: creatorId,
       })
 
       if (record) {
@@ -737,16 +737,16 @@ module.exports = app => {
     /**
      * 用户是否已关注问题
      *
-     * @param {number} userId
+     * @param {number} creatorId
      * @param {number} questionId
      * @return {boolean}
      */
-    async hasFollowQuestion(userId, questionId) {
+    async hasFollowQuestion(creatorId, questionId) {
 
       const record = await this.findOneBy({
         resource_id: questionId,
         resource_type: TYPE_QUESTION,
-        creator_id: userId,
+        creator_id: creatorId,
         status: STATUS_ACTIVE,
       })
 
@@ -757,18 +757,18 @@ module.exports = app => {
     /**
      * 用户关注问题是否已提醒作者
      *
-     * @param {number} userId
+     * @param {number} creatorId
      * @param {number} questionId
      * @return {boolean}
      */
-    async hasFollowQuestionRemind(userId, questionId) {
+    async hasFollowQuestionRemind(creatorId, questionId) {
 
       const { trace } = this.service
 
       const record = await this.findOneBy({
         resource_id: questionId,
         resource_type: TYPE_QUESTION,
-        creator_id: userId,
+        creator_id: creatorId,
       })
 
       if (record) {
@@ -981,16 +981,16 @@ module.exports = app => {
     /**
      * 用户是否已关注回复
      *
-     * @param {number} userId
+     * @param {number} creatorId
      * @param {number} replyId
      * @return {boolean}
      */
-    async hasFollowReply(userId, replyId) {
+    async hasFollowReply(creatorId, replyId) {
 
       const record = await this.findOneBy({
         resource_id: replyId,
         resource_type: TYPE_REPLY,
-        creator_id: userId,
+        creator_id: creatorId,
         status: STATUS_ACTIVE,
       })
 
@@ -1001,18 +1001,18 @@ module.exports = app => {
     /**
      * 用户关注回复是否已提醒作者
      *
-     * @param {number} userId
+     * @param {number} creatorId
      * @param {number} replyId
      * @return {boolean}
      */
-    async hasFollowReplyRemind(userId, replyId) {
+    async hasFollowReplyRemind(creatorId, replyId) {
 
       const { trace } = this.service
 
       const record = await this.findOneBy({
         resource_id: replyId,
         resource_type: TYPE_REPLY,
-        creator_id: userId,
+        creator_id: creatorId,
       })
 
       if (record) {

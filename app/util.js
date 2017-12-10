@@ -10,6 +10,21 @@ const TYPE_NUMBER = '2'
 const TYPE_BOOLEAN = '3'
 const TYPE_DATE = '4'
 
+
+function lpad(num, length) {
+
+  if (length == null) {
+    length = 2
+  }
+
+  const arr = new Array(
+    length - ('' + num).length + 1
+  )
+
+  return arr.join('0') + num
+
+}
+
 module.exports = {
 
   uuid() {
@@ -107,6 +122,37 @@ module.exports = {
 
   formatMobile(mobile) {
     return mobile.replace(/(\d{3})(\d{5})(\d{3})/, '$1*****$3')
+  },
+
+  formatDate(date, sep = '-') {
+    return [
+      date.getFullYear(),
+      lpad(date.getMonth() + 1, 2),
+      lpad(date.getDate(), 2)
+    ].join(sep)
+  },
+
+  formatDateTime(date, needSecond) {
+
+    const part1 = [
+      date.getFullYear(),
+      lpad(date.getMonth() + 1, 2),
+      lpad(date.getDate(), 2)
+    ].join('-')
+
+    const part2 = [
+      lpad(date.getHours(), 2),
+      lpad(date.getMinutes(), 2),
+    ]
+
+    if (needSecond) {
+      part2.push(
+        lpad(date.getSeconds(), 2)
+      )
+    }
+
+    return part1 + ' ' + part2.join(':')
+
   },
 
   formatWhere(where) {

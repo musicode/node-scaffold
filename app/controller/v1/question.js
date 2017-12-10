@@ -526,7 +526,7 @@ module.exports = app => {
 
       const result = await search.search(input)
 
-      const { list, pager } = result
+      const { list, pager } = result.data
 
       const users = [ ]
       let count = pager.total_size
