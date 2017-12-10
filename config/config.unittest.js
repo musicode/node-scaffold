@@ -11,6 +11,21 @@ module.exports = appInfo => {
 
   const config = { }
 
+  config.system = {
+    signupByInvite: false,
+    ignoreInviteCode: true,
+    ignoreVerifyCode: true,
+    userViewByGuest: false,
+    postViewByGuest: false,
+    commentViewByGuest: false,
+    demandViewByGuest: false,
+    consultViewByGuest: false,
+    questionViewByGuest: false,
+    replyViewByGuest: false,
+    issueViewByGuest: false,
+    reportViewByGuest: false,
+  }
+
   config.mysql = {
     client: {
       host: '127.0.0.1',

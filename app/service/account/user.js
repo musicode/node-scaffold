@@ -530,7 +530,7 @@ module.exports = app => {
      * @property {string} data.verify_code
      * @return {boolean}
      */
-    async resetPassword(data) {_UPDATE
+    async resetPassword(data) {
 
       const { account } = this.service
 
