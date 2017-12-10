@@ -243,14 +243,12 @@ module.exports = app => {
             number,
             user_id: currentUser.id,
             question_id: data.question_id,
+            parent_id: data.parent_id || 0,
             anonymous,
           }
 
           if (data.root_id) {
             row.root_id = data.root_id
-          }
-          if (data.parent_id) {
-            row.parent_id = data.parent_id
           }
 
           if (!row.root_id && row.parent_id) {
