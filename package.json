@@ -37,6 +37,7 @@
     "start": "egg-scripts start --daemon --port 8989",
     "stop": "egg-scripts stop",
     "dev": "egg-bin dev --port 8989",
+    "start-dev": "egg-bin dev --daemon --port 8989",
     "debug": "egg-bin debug",
     "test": "npm run lint && npm run test-local",
     "test-local": "egg-bin test --full-trace",
