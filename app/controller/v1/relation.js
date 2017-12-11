@@ -23,23 +23,21 @@ module.exports = app => {
 
     async follow() {
 
-      const { relation, trace } = this.ctx.service
+      const { relation } = this.ctx.service
 
       const user = await this.checkUser()
 
       await relation.followee.followUser(user.id)
-      await trace.follow.followUser(user.id)
 
     }
 
     async unfollow() {
 
-      const { relation, trace } = this.ctx.service
+      const { relation } = this.ctx.service
 
       const user = await this.checkUser()
 
       await relation.followee.unfollowUser(user.id)
-      await trace.follow.unfollowUser(user.id)
 
     }
 

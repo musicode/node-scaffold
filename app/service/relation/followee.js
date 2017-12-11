@@ -70,7 +70,7 @@ module.exports = app => {
      */
     async followUser(userId) {
 
-      const { account, relation } = this.service
+      const { account, relation, trace } = this.service
 
       // 确定自己已登录
       const currentUser = await account.session.checkCurrentUser()
@@ -121,6 +121,8 @@ module.exports = app => {
 
           await relation.follower.addFollower(userId, currentUser.id)
 
+          await trace.follow.followUser(userId)
+
           return true
 
         }
@@ -145,7 +147,7 @@ module.exports = app => {
      */
     async unfollowUser(userId) {
 
-      const { account, relation } = this.service
+      const { account, relation, trace } = this.service
 
       // 确定自己已登录
       const currentUser = await account.session.checkCurrentUser()
@@ -174,6 +176,7 @@ module.exports = app => {
             }
           )
           await relation.follower.removeFollower(userId, currentUser.id)
+          await trace.follow.unfollowUser(userId)
           return true
         }
       )
