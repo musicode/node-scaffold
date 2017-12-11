@@ -389,8 +389,8 @@ module.exports = app => {
         sort_order: input.sort_order || 'desc',
         sort_by: input.sort_by || 'update_time'
       }
-      const list = await trace.like.getLikePostList(userId, postId, options)
-      const count = await trace.like.getLikePostCount(userId, postId)
+      const list = await trace.like.getLikePostList(postId, userId, options)
+      const count = await trace.like.getLikePostCount(postId, userId)
 
       await util.each(
         list,
