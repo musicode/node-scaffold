@@ -15,21 +15,6 @@ module.exports = app => {
 
   class Follow extends BaseTraceService {
 
-    get tableName() {
-      return 'trace_follow'
-    }
-
-    get fields() {
-      return [
-        'resource_id', 'resource_type',
-        'creator_id', 'anonymous', 'status',
-      ]
-    }
-
-    get remindService() {
-      return this.service.trace.followRemind
-    }
-
     get TYPE_QUESTION() {
       return TYPE_QUESTION
     }
@@ -48,6 +33,21 @@ module.exports = app => {
 
     get TYPE_REPLY() {
       return TYPE_REPLY
+    }
+
+    get tableName() {
+      return 'trace_follow'
+    }
+
+    get fields() {
+      return [
+        'resource_id', 'resource_type',
+        'creator_id', 'anonymous', 'status',
+      ]
+    }
+
+    get remindService() {
+      return this.service.trace.followRemind
     }
 
     async toExternal(follow) {
@@ -274,46 +274,68 @@ module.exports = app => {
     /**
      * 用户是否已关注文章
      *
-     * @param {number} creatorId
      * @param {number} postId
+     * @param {number} creatorId
      * @return {boolean}
      */
-    async hasFollowPost(creatorId, postId) {
-      return await this.hasTrace(creatorId, postId, TYPE_POST)
+    async hasFollowPost(postId, creatorId) {
+      return await this.hasTrace({
+        creator_id: creatorId,
+        resource_id: postId,
+        resource_type: TYPE_POST,
+      })
     }
 
     /**
      * 用户关注文章是否已提醒作者
      *
-     * @param {number} creatorId
      * @param {number} postId
+     * @param {number} creatorId
      * @return {boolean}
      */
-    async hasFollowPostRemind(creatorId, postId) {
-      return await this.hasTraceRemind(creatorId, postId, TYPE_POST)
+    async hasFollowPostRemind(postId, creatorId) {
+      return await this.hasTraceRemind({
+        creator_id: creatorId,
+        resource_id: postId,
+        resource_type: TYPE_POST,
+      })
     }
 
     /**
      * 读取文章的关注数
      *
-     * @param {number} creatorId
      * @param {number} postId
+     * @param {?number} creatorId
      * @return {number}
      */
-    async getFollowPostCount(creatorId, postId) {
-      return await this.getTraceCount(creatorId, postId, TYPE_POST)
+    async getFollowPostCount(postId, creatorId) {
+      const where = {
+        resource_id: postId,
+        resource_type: TYPE_POST,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      return await this.getTraceCount(where)
     }
 
     /**
      * 获取文章的关注列表
      *
-     * @param {number} creatorId
      * @param {number} postId
+     * @param {?number} creatorId
      * @param {Object} options
      * @return {Array}
      */
-    async getFollowPostList(creatorId, postId, options) {
-      return await this.getTraceList(creatorId, postId, TYPE_POST, options)
+    async getFollowPostList(postId, creatorId, options) {
+      const where = {
+        resource_id: postId,
+        resource_type: TYPE_POST,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      return await this.getTraceList(where, options)
     }
 
     /**
@@ -468,46 +490,68 @@ module.exports = app => {
     /**
      * 用户是否已关注项目
      *
-     * @param {number} creatorId
      * @param {number} demandId
+     * @param {number} creatorId
      * @return {boolean}
      */
-    async hasFollowDemand(creatorId, demandId) {
-      return await this.hasTrace(creatorId, demandId, TYPE_DEMAND)
+    async hasFollowDemand(demandId, creatorId) {
+      return await this.hasTrace({
+        creator_id: creatorId,
+        resource_id: demandId,
+        resource_type: TYPE_DEMAND,
+      })
     }
 
     /**
      * 用户关注项目是否已提醒作者
      *
-     * @param {number} creatorId
      * @param {number} demandId
+     * @param {number} creatorId
      * @return {boolean}
      */
-    async hasFollowDemandRemind(creatorId, demandId) {
-      return await this.hasTraceRemind(creatorId, demandId, TYPE_DEMAND)
+    async hasFollowDemandRemind(demandId, creatorId) {
+      return await this.hasTraceRemind({
+        creator_id: creatorId,
+        resource_id: demandId,
+        resource_type: TYPE_DEMAND,
+      })
     }
 
     /**
      * 读取项目的关注数
      *
-     * @param {number} creatorId
      * @param {number} demandId
+     * @param {?number} creatorId
      * @return {number}
      */
-    async getFollowDemandCount(creatorId, demandId) {
-      return await this.getTraceCount(creatorId, demandId, TYPE_DEMAND)
+    async getFollowDemandCount(demandId, creatorId) {
+      const where = {
+        resource_id: demandId,
+        resource_type: TYPE_DEMAND,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      return await this.getTraceCount(where)
     }
 
     /**
      * 获取项目的关注列表
      *
-     * @param {number} creatorId
      * @param {number} demandId
+     * @param {?number} creatorId
      * @param {Object} options
      * @return {Array}
      */
-    async getFollowDemandList(creatorId, demandId, options) {
-      return await this.getTraceList(creatorId, demandId, TYPE_DEMAND, options)
+    async getFollowDemandList(demandId, creatorId, options) {
+      const where = {
+        resource_id: demandId,
+        resource_type: TYPE_DEMAND,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      return await this.getTraceList(where, options)
     }
 
     /**
@@ -664,46 +708,68 @@ module.exports = app => {
     /**
      * 用户是否已关注问题
      *
-     * @param {number} creatorId
      * @param {number} questionId
+     * @param {number} creatorId
      * @return {boolean}
      */
-    async hasFollowQuestion(creatorId, questionId) {
-      return await this.hasTrace(creatorId, questionId, TYPE_QUESTION)
+    async hasFollowQuestion(questionId, creatorId) {
+      return await this.hasTrace({
+        creator_id: creatorId,
+        resource_id: questionId,
+        resource_type: TYPE_QUESTION,
+      })
     }
 
     /**
      * 用户关注问题是否已提醒作者
      *
-     * @param {number} creatorId
      * @param {number} questionId
+     * @param {number} creatorId
      * @return {boolean}
      */
-    async hasFollowQuestionRemind(creatorId, questionId) {
-      return await this.hasTraceRemind(creatorId, questionId, TYPE_QUESTION)
+    async hasFollowQuestionRemind(questionId, creatorId) {
+      return await this.hasTraceRemind({
+        creator_id: creatorId,
+        resource_id: questionId,
+        resource_type: TYPE_QUESTION,
+      })
     }
 
     /**
      * 读取问题的关注数
      *
-     * @param {number} creatorId
      * @param {number} questionId
+     * @param {?number} creatorId
      * @return {number}
      */
-    async getFollowQuestionCount(creatorId, questionId) {
-      return await this.getTraceCount(creatorId, questionId, TYPE_QUESTION)
+    async getFollowQuestionCount(questionId, creatorId) {
+      const where = {
+        resource_id: questionId,
+        resource_type: TYPE_QUESTION,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      return await this.getTraceCount(where)
     }
 
     /**
      * 获取问题的关注列表
      *
-     * @param {number} creatorId
      * @param {number} questionId
+     * @param {?number} creatorId
      * @param {Object} options
      * @return {Array}
      */
-    async getFollowQuestionList(creatorId, questionId, options) {
-      return await this.getTraceList(creatorId, questionId, TYPE_QUESTION, options)
+    async getFollowQuestionList(questionId, creatorId, options) {
+      const where = {
+        resource_id: questionId,
+        resource_type: TYPE_QUESTION,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      return await this.getTraceList(where, options)
     }
 
     /**
@@ -860,46 +926,68 @@ module.exports = app => {
     /**
      * 用户是否已关注回复
      *
-     * @param {number} creatorId
      * @param {number} replyId
+     * @param {number} creatorId
      * @return {boolean}
      */
-    async hasFollowReply(creatorId, replyId) {
-      return await this.hasTrace(creatorId, replyId, TYPE_REPLY)
+    async hasFollowReply(replyId, creatorId) {
+      return await this.hasTrace({
+        creator_id: creatorId,
+        resource_id: replyId,
+        resource_type: TYPE_REPLY,
+      })
     }
 
     /**
      * 用户关注回复是否已提醒作者
      *
-     * @param {number} creatorId
      * @param {number} replyId
+     * @param {number} creatorId
      * @return {boolean}
      */
-    async hasFollowReplyRemind(creatorId, replyId) {
-      return await this.hasTraceRemind(creatorId, replyId, TYPE_REPLY)
+    async hasFollowReplyRemind(replyId, creatorId) {
+      return await this.hasTraceRemind({
+        creator_id: creatorId,
+        resource_id: replyId,
+        resource_type: TYPE_REPLY,
+      })
     }
 
     /**
      * 读取回复的关注数
      *
-     * @param {number} creatorId
      * @param {number} replyId
+     * @param {?number} creatorId
      * @return {number}
      */
-    async getFollowReplyCount(creatorId, replyId) {
-      return await this.getTraceCount(creatorId, replyId, TYPE_REPLY)
+    async getFollowReplyCount(replyId, creatorId) {
+      const where = {
+        resource_id: replyId,
+        resource_type: TYPE_REPLY,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      return await this.getTraceCount(where)
     }
 
     /**
      * 获取回复的关注列表
      *
-     * @param {number} creatorId
      * @param {number} replyId
+     * @param {?number} creatorId
      * @param {Object} options
      * @return {Array}
      */
-    async getFollowReplyList(creatorId, replyId, options) {
-      return await this.getTraceList(creatorId, replyId, TYPE_REPLY, options)
+    async getFollowReplyList(replyId, creatorId, options) {
+      const where = {
+        resource_id: replyId,
+        resource_type: TYPE_REPLY,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      return await this.getTraceList(where, options)
     }
 
     /**
@@ -1053,46 +1141,68 @@ module.exports = app => {
     /**
      * 用户是否已关注用户
      *
-     * @param {number} creatorId
      * @param {number} userId
+     * @param {number} creatorId
      * @return {boolean}
      */
-    async hasFollowUser(creatorId, userId) {
-      return await this.hasTrace(creatorId, userId, TYPE_USER)
+    async hasFollowUser(userId, creatorId) {
+      return await this.hasTrace({
+        creator_id: creatorId,
+        resource_id: userId,
+        resource_type: TYPE_USER,
+      })
     }
 
     /**
      * 用户关注用户是否已提醒作者
      *
-     * @param {number} creatorId
      * @param {number} userId
+     * @param {number} creatorId
      * @return {boolean}
      */
-    async hasFollowUserRemind(creatorId, userId) {
-      return await this.hasTraceRemind(creatorId, userId, TYPE_USER)
+    async hasFollowUserRemind(userId, creatorId) {
+      return await this.hasTraceRemind({
+        creator_id: creatorId,
+        resource_id: userId,
+        resource_type: TYPE_USER,
+      })
     }
 
     /**
      * 读取用户的关注数
      *
-     * @param {number} creatorId
      * @param {number} userId
+     * @param {number} creatorId
      * @return {number}
      */
-    async getFollowUserCount(creatorId, userId) {
-      return await this.getTraceCount(creatorId, userId, TYPE_USER)
+    async getFollowUserCount(userId, creatorId) {
+      const where = {
+        resource_id: userId,
+        resource_type: TYPE_USER,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      return await this.getTraceCount(where)
     }
 
     /**
      * 获取用户的关注列表
      *
-     * @param {number} creatorId
      * @param {number} userId
+     * @param {number} creatorId
      * @param {Object} options
      * @return {Array}
      */
-    async getFollowUserList(creatorId, userId, options) {
-      return await this.getTraceList(creatorId, userId, TYPE_USER, options)
+    async getFollowUserList(userId, creatorId, options) {
+      const where = {
+        resource_id: userId,
+        resource_type: TYPE_USER,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      return await this.getTraceList(where, options)
     }
 
     /**

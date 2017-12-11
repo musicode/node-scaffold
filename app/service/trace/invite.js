@@ -287,102 +287,84 @@ module.exports = app => {
     /**
      * 用户是否已邀请回答问题
      *
-     * @param {number} creatorId
-     * @param {number} userId
      * @param {number} questionId
+     * @param {number} userId
+     * @param {number} creatorId
      * @return {boolean}
      */
-    async hasInviteQuestion(creatorId, userId, questionId) {
-
-      const record = await this.findOneBy({
+    async hasInviteQuestion(questionId, userId, creatorId) {
+      return await this.hasTrace({
         resource_id: questionId,
         resource_type: TYPE_QUESTION,
         creator_id: creatorId,
         user_id: userId,
-        status: this.STATUS_ACTIVE,
       })
-
-      return record ? true : false
-
     }
 
     /**
      * 用户邀请回答问题是否已提醒作者
      *
-     * @param {number} creatorId
-     * @param {number} userId
      * @param {number} questionId
+     * @param {number} userId
+     * @param {number} creatorId
      * @return {boolean}
      */
-    async hasInviteQuestionRemind(creatorId, userId, questionId) {
-
-      const { trace } = this.service
-
-      const record = await this.findOneBy({
+    async hasInviteQuestionRemind(questionId, userId, creatorId) {
+      return await this.hasTraceRemind({
         resource_id: questionId,
         resource_type: TYPE_QUESTION,
         creator_id: creatorId,
         user_id: userId,
       })
-
-      if (record) {
-        return await trace.inviteRemind.hasInviteRemind(record.id)
-      }
-
-      return false
-
     }
 
     /**
      * 读取回答问题的邀请数
      *
-     * @param {number} creatorId
-     * @param {number} userId
-     * @param {number} questionId
+     * @param {?number} questionId
+     * @param {?number} userId
+     * @param {?number} creatorId
      * @return {number}
      */
-    async getInviteQuestionCount(creatorId, userId, questionId) {
+    async getInviteQuestionCount(questionId, userId, creatorId) {
       const where = {
         resource_type: TYPE_QUESTION,
-        status: this.STATUS_ACTIVE,
-      }
-      if (creatorId) {
-        where.creator_id = creatorId
-      }
-      if (userId) {
-        where.user_id = userId
       }
       if (questionId) {
         where.resource_id = questionId
       }
-      return await this.countBy(where)
+      if (userId) {
+        where.user_id = userId
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      return await this.getTraceCount(where)
     }
 
     /**
      * 获取回答问题的邀请列表
      *
-     * @param {number} creatorId
-     * @param {number} userId
-     * @param {number} questionId
+     * @param {?number} questionId
+     * @param {?number} userId
+     * @param {?number} creatorId
      * @param {Object} options
      * @return {Array}
      */
-    async getInviteQuestionList(creatorId, userId, questionId, options) {
+    async getInviteQuestionList(questionId, userId, creatorId, options) {
       const where = {
         resource_type: TYPE_QUESTION,
-        status: this.STATUS_ACTIVE,
-      }
-      if (creatorId) {
-        where.creator_id = creatorId
-      }
-      if (userId) {
-        where.user_id = userId
       }
       if (questionId) {
         where.resource_id = questionId
       }
-      options.where = where
-      return await this.findBy(options)
+      if (userId) {
+        where.user_id = userId
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      return await this.getTraceList(where, options)
     }
 
     /**

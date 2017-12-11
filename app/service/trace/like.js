@@ -262,46 +262,68 @@ module.exports = app => {
     /**
      * 用户是否已点赞文章
      *
-     * @param {number} creatorId
      * @param {number} postId
+     * @param {number} creatorId
      * @return {boolean}
      */
-    async hasLikePost(creatorId, postId) {
-      return await this.hasTrace(creatorId, postId, TYPE_POST)
+    async hasLikePost(postId, creatorId) {
+      return await this.hasTrace({
+        creator_id: creatorId,
+        resource_id: postId,
+        resource_type: TYPE_POST,
+      })
     }
 
     /**
      * 用户点赞文章是否已提醒作者
      *
-     * @param {number} creatorId
      * @param {number} postId
+     * @param {number} creatorId
      * @return {boolean}
      */
-    async hasLikePostRemind(creatorId, postId) {
-      return await this.hasTraceRemind(creatorId, postId, TYPE_POST)
+    async hasLikePostRemind(postId, creatorId) {
+      return await this.hasTraceRemind({
+        creator_id: creatorId,
+        resource_id: postId,
+        resource_type: TYPE_POST,
+      })
     }
 
     /**
      * 读取文章的点赞数
      *
-     * @param {number} creatorId
      * @param {number} postId
+     * @param {?number} creatorId
      * @return {number}
      */
-    async getLikePostCount(creatorId, postId) {
-      return await this.getTraceCount(creatorId, postId, TYPE_POST)
+    async getLikePostCount(postId, creatorId) {
+      const where = {
+        resource_id: postId,
+        resource_type: TYPE_POST,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      return await this.getTraceCount(where)
     }
 
     /**
      * 获取文章的点赞列表
      *
-     * @param {number} creatorId
      * @param {number} postId
+     * @param {?number} creatorId
      * @param {Object} options
      * @return {Array}
      */
-    async getLikePostList(creatorId, postId, options) {
-      return await this.getTraceList(creatorId, postId, TYPE_POST, options)
+    async getLikePostList(postId, creatorId, options) {
+      const where = {
+        resource_id: postId,
+        resource_type: TYPE_POST,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      return await this.getTraceList(where, options)
     }
 
     /**
@@ -457,46 +479,68 @@ module.exports = app => {
     /**
      * 用户是否已点赞项目
      *
-     * @param {number} creatorId
      * @param {number} demandId
+     * @param {number} creatorId
      * @return {boolean}
      */
-    async hasLikeDemand(creatorId, demandId) {
-      return await this.hasTrace(creatorId, demandId, TYPE_DEMAND)
+    async hasLikeDemand(demandId, creatorId) {
+      return await this.hasTrace({
+        creator_id: creatorId,
+        resource_id: demandId,
+        resource_type: TYPE_DEMAND,
+      })
     }
 
     /**
      * 用户点赞项目是否已提醒作者
      *
-     * @param {number} creatorId
      * @param {number} demandId
+     * @param {number} creatorId
      * @return {boolean}
      */
-    async hasLikeDemandRemind(creatorId, demandId) {
-      return await this.hasTraceRemind(creatorId, demandId, TYPE_DEMAND)
+    async hasLikeDemandRemind(demandId, creatorId) {
+      return await this.hasTraceRemind({
+        creator_id: creatorId,
+        resource_id: demandId,
+        resource_type: TYPE_DEMAND,
+      })
     }
 
     /**
      * 读取项目的点赞数
      *
-     * @param {number} creatorId
      * @param {number} demandId
+     * @param {?number} creatorId
      * @return {number}
      */
-    async getLikeDemandCount(creatorId, demandId) {
-      return await this.getTraceCount(creatorId, demandId, TYPE_DEMAND)
+    async getLikeDemandCount(demandId, creatorId) {
+      const where = {
+        resource_id: demandId,
+        resource_type: TYPE_DEMAND,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      return await this.getTraceCount(where)
     }
 
     /**
      * 获取项目的点赞列表
      *
-     * @param {number} creatorId
      * @param {number} demandId
+     * @param {?number} creatorId
      * @param {Object} options
      * @return {Array}
      */
-    async getLikeDemandList(creatorId, demandId, options) {
-      return await this.getTraceList(creatorId, demandId, TYPE_DEMAND, options)
+    async getLikeDemandList(demandId, creatorId, options) {
+      const where = {
+        resource_id: demandId,
+        resource_type: TYPE_DEMAND,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      return await this.getTraceList(where, options)
     }
 
     /**
@@ -654,46 +698,68 @@ module.exports = app => {
     /**
      * 用户是否已点赞问题
      *
-     * @param {number} creatorId
      * @param {number} questionId
+     * @param {number} creatorId
      * @return {boolean}
      */
-    async hasLikeQuestion(creatorId, questionId) {
-      return await this.hasTrace(creatorId, questionId, TYPE_QUESTION)
+    async hasLikeQuestion(questionId, creatorId) {
+      return await this.hasTrace({
+        creator_id: creatorId,
+        resource_id: questionId,
+        resource_type: TYPE_QUESTION,
+      })
     }
 
     /**
      * 用户点赞问题是否已提醒作者
      *
-     * @param {number} creatorId
      * @param {number} questionId
+     * @param {number} creatorId
      * @return {boolean}
      */
-    async hasLikeQuestionRemind(creatorId, questionId) {
-      return await this.hasTraceRemind(creatorId, questionId, TYPE_QUESTION)
+    async hasLikeQuestionRemind(questionId, creatorId) {
+      return await this.hasTraceRemind({
+        creator_id: creatorId,
+        resource_id: questionId,
+        resource_type: TYPE_QUESTION,
+      })
     }
 
     /**
      * 读取问题的点赞数
      *
-     * @param {number} creatorId
      * @param {number} questionId
+     * @param {?number} creatorId
      * @return {number}
      */
-    async getLikeQuestionCount(creatorId, questionId) {
-      return await this.getTraceCount(creatorId, questionId, TYPE_QUESTION)
+    async getLikeQuestionCount(questionId, creatorId) {
+      const where = {
+        resource_id: questionId,
+        resource_type: TYPE_QUESTION,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      return await this.getTraceCount(where)
     }
 
     /**
      * 获取问题的点赞列表
      *
-     * @param {number} creatorId
      * @param {number} questionId
+     * @param {?number} creatorId
      * @param {Object} options
      * @return {Array}
      */
-    async getLikeQuestionList(creatorId, questionId, options) {
-      return await this.getTraceList(creatorId, questionId, TYPE_QUESTION, options)
+    async getLikeQuestionList(questionId, creatorId, options) {
+      const where = {
+        resource_id: questionId,
+        resource_type: TYPE_QUESTION,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      return await this.getTraceList(where, options)
     }
 
     /**
@@ -852,46 +918,68 @@ module.exports = app => {
     /**
      * 用户是否已点赞回复
      *
-     * @param {number} creatorId
      * @param {number} replyId
+     * @param {number} creatorId
      * @return {boolean}
      */
-    async hasLikeReply(creatorId, replyId) {
-      return await this.hasTrace(creatorId, replyId, TYPE_REPLY)
+    async hasLikeReply(replyId, creatorId) {
+      return await this.hasTrace({
+        creator_id: creatorId,
+        resource_id: replyId,
+        resource_type: TYPE_REPLY,
+      })
     }
 
     /**
      * 用户点赞回复是否已提醒作者
      *
-     * @param {number} creatorId
      * @param {number} replyId
+     * @param {number} creatorId
      * @return {boolean}
      */
-    async hasLikeReplyRemind(creatorId, replyId) {
-      return await this.hasTraceRemind(creatorId, replyId, TYPE_REPLY)
+    async hasLikeReplyRemind(replyId, creatorId) {
+      return await this.hasTraceRemind({
+        creator_id: creatorId,
+        resource_id: replyId,
+        resource_type: TYPE_REPLY,
+      })
     }
 
     /**
      * 读取回复的点赞数
      *
-     * @param {number} creatorId
      * @param {number} replyId
+     * @param {?number} creatorId
      * @return {number}
      */
-    async getLikeReplyCount(creatorId, replyId) {
-      return await this.getTraceCount(creatorId, replyId, TYPE_REPLY)
+    async getLikeReplyCount(replyId, creatorId) {
+      const where = {
+        resource_id: replyId,
+        resource_type: TYPE_REPLY,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      return await this.getTraceCount(where)
     }
 
     /**
      * 获取回复的点赞列表
      *
-     * @param {number} creatorId
      * @param {number} replyId
+     * @param {?number} creatorId
      * @param {Object} options
      * @return {Array}
      */
-    async getLikeReplyList(creatorId, replyId, options) {
-      return await this.getTraceList(creatorId, replyId, TYPE_REPLY, options)
+    async getLikeReplyList(replyId, creatorId, options) {
+      return await this.getTraceList(
+        {
+          creator_id: creatorId,
+          resource_id: replyId,
+          resource_type: TYPE_REPLY,
+        },
+        options
+      )
     }
 
     /**

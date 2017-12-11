@@ -19,22 +19,12 @@ class BaseTraceService extends BaseService {
   /**
      * 用户是否已触发某种行为
      *
-     * @param {number} creatorId
-     * @param {number} resourceId
-     * @param {number} resourceType
+     * @param {Object} where
      * @return {boolean}
      */
-    async hasTrace(creatorId, resourceId, resourceType) {
+    async hasTrace(where) {
 
-      const where = {
-        resource_id: resourceId,
-        resource_type: resourceType,
-        status: STATUS_ACTIVE,
-      }
-
-      if (creatorId) {
-        where.creator_id = creatorId
-      }
+      where.status = STATUS_ACTIVE
 
       const record = await this.findOneBy(where)
 
@@ -45,21 +35,15 @@ class BaseTraceService extends BaseService {
     /**
      * 用户的某种行为是否已触发提醒
      *
-     * @param {number} creatorId
-     * @param {number} resourceId
-     * @param {number} resourceType
+     * @param {Object} where
      * @param {number} receiverId
      * @return {boolean}
      */
-    async hasTraceRemind(creatorId, resourceId, resourceType, receiverId) {
+    async hasTraceRemind(where, receiverId) {
 
       const { trace } = this.service
 
-      const record = await this.findOneBy({
-        resource_id: resourceId,
-        resource_type: resourceType,
-        creator_id: creatorId,
-      })
+      const record = await this.findOneBy(where)
 
       if (record) {
         return await this.remindService.hasRemind(record.id, receiverId)
@@ -72,45 +56,23 @@ class BaseTraceService extends BaseService {
     /**
      * 读取文章的浏览数
      *
-     * @param {number} creatorId
-     * @param {number} resourceId
-     * @param {number} resourceType
+     * @param {Object} where
      * @return {number}
      */
-    async getTraceCount(creatorId, resourceId, resourceType) {
-      const where = {
-        resource_type: resourceType,
-        status: STATUS_ACTIVE,
-      }
-      if (creatorId) {
-        where.creator_id = creatorId
-      }
-      if (resourceId) {
-        where.resource_id = resourceId
-      }
+    async getTraceCount(where) {
+      where.status = STATUS_ACTIVE
       return await this.countBy(where)
     }
 
     /**
      * 获取文章的浏览列表
      *
-     * @param {number} creatorId
-     * @param {number} resourceId
-     * @param {number} resourceType
+     * @param {Object} where
      * @param {Object} options
      * @return {Array}
      */
-    async getTraceList(creatorId, resourceId, resourceType, options) {
-      const where = {
-        resource_type: resourceType,
-        status: STATUS_ACTIVE,
-      }
-      if (creatorId) {
-        where.creator_id = creatorId
-      }
-      if (resourceId) {
-        where.resource_id = resourceId
-      }
+    async getTraceList(where, options) {
+      where.status = STATUS_ACTIVE
       options.where = where
       return await this.findBy(options)
     }

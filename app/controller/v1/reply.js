@@ -310,8 +310,8 @@ module.exports = app => {
         sort_order: input.sort_order || 'desc',
         sort_by: input.sort_by || 'update_time'
       }
-      const list = await trace.follow.getFollowReplyList(userId, replyId, options)
-      const count = await trace.follow.getFollowReplyCount(userId, replyId)
+      const list = await trace.follow.getFollowReplyList(replyId, userId, options)
+      const count = await trace.follow.getFollowReplyCount(replyId, userId)
 
       await util.each(
         list,
@@ -409,8 +409,8 @@ module.exports = app => {
         sort_order: input.sort_order || 'desc',
         sort_by: input.sort_by || 'update_time'
       }
-      const list = await trace.like.getLikeReplyList(userId, replyId, options)
-      const count = await trace.like.getLikeReplyCount(userId, replyId)
+      const list = await trace.like.getLikeReplyList(replyId, userId, options)
+      const count = await trace.like.getLikeReplyCount(replyId, userId)
 
       await util.each(
         list,

@@ -80,11 +80,11 @@ describe('test/service/trace/invite.test.js', () => {
       assert(inviteUnreadRemindCount === 0)
 
       // user1 是否邀请了 user2 回答问题
-      let hasInvite = await trace.invite.hasInviteQuestion(user1.id, user2.id, question.id)
+      let hasInvite = await trace.invite.hasInviteQuestion(question.id, user2.id, user1.id)
       assert(hasInvite === false)
 
       // user1 是否邀请了 user2 回答问题之后是否发送了提醒
-      let hasInviteRemind = await trace.invite.hasInviteQuestionRemind(user1.id, user2.id, question.id)
+      let hasInviteRemind = await trace.invite.hasInviteQuestionRemind(question.id, user2.id, user1.id)
       assert(hasInviteRemind === false)
 
 
@@ -102,10 +102,10 @@ describe('test/service/trace/invite.test.js', () => {
       inviteUnreadRemindCount = await trace.invite.getInviteQuestionUnreadRemindCount(user2.id)
       assert(inviteUnreadRemindCount === 1)
 
-      hasInvite = await trace.invite.hasInviteQuestion(user1.id, user2.id, question.id)
+      hasInvite = await trace.invite.hasInviteQuestion(question.id, user2.id, user1.id)
       assert(hasInvite === true)
 
-      hasInviteRemind = await trace.invite.hasInviteQuestionRemind(user1.id, user2.id, question.id)
+      hasInviteRemind = await trace.invite.hasInviteQuestionRemind(question.id, user2.id, user1.id)
       assert(hasInviteRemind === true)
 
 
@@ -146,10 +146,10 @@ describe('test/service/trace/invite.test.js', () => {
       inviteUnreadRemindCount = await trace.invite.getInviteQuestionUnreadRemindCount(user2.id)
       assert(inviteUnreadRemindCount === 0)
 
-      hasInvite = await trace.invite.hasInviteQuestion(user1.id, user2.id, question.id)
+      hasInvite = await trace.invite.hasInviteQuestion(question.id, user2.id, user1.id)
       assert(hasInvite === false)
 
-      hasInviteRemind = await trace.invite.hasInviteQuestionRemind(user1.id, user2.id, question.id)
+      hasInviteRemind = await trace.invite.hasInviteQuestionRemind(question.id, user2.id, user1.id)
       assert(hasInviteRemind === false)
 
 
@@ -181,10 +181,10 @@ describe('test/service/trace/invite.test.js', () => {
       inviteUnreadRemindCount = await trace.invite.getInviteQuestionUnreadRemindCount(user2.id)
       assert(inviteUnreadRemindCount === 1)
 
-      hasInvite = await trace.invite.hasInviteQuestion(user1.id, user2.id, question.id)
+      hasInvite = await trace.invite.hasInviteQuestion(question.id, user2.id, user1.id)
       assert(hasInvite === true)
 
-      hasInviteRemind = await trace.invite.hasInviteQuestionRemind(user1.id, user2.id, question.id)
+      hasInviteRemind = await trace.invite.hasInviteQuestionRemind(question.id, user2.id, user1.id)
       assert(hasInviteRemind === true)
 
       await trace.invite.uninviteQuestion(user2.id, question.id)

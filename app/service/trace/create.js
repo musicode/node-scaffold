@@ -272,7 +272,10 @@ module.exports = app => {
      * @return {boolean}
      */
     async hasCreatePost(postId) {
-      return await this.hasTrace(null, postId, TYPE_POST)
+      return await this.hasTrace({
+        resource_id: postId,
+        resource_type: TYPE_POST,
+      })
     }
 
 
@@ -289,7 +292,7 @@ module.exports = app => {
      */
     async createComment(commentId, anonymous, postId, parentId) {
 
-      const { article, trace } = this.service
+      const { article } = this.service
 
       const post = await article.post.checkPostAvailableById(postId, true)
 
@@ -337,11 +340,11 @@ module.exports = app => {
             row.resource_parent_id = parentComment.id
           }
 
-          await trace.createRemind.addCreateRemind(row)
+          await this.remindService.addCreateRemind(row)
 
           if (parentComment) {
             row.receiver_id = parentComment.user_id
-            await trace.createRemind.addCreateRemind(row)
+            await this.remindService.addCreateRemind(row)
           }
 
           return true
@@ -365,7 +368,7 @@ module.exports = app => {
      */
     async uncreateComment(commentId) {
 
-      const { article, trace } = this.service
+      const { article } = this.service
 
       const comment = await article.comment.checkCommentAvailableById(commentId)
       const post = await article.post.checkPostAvailableById(comment.post_id)
@@ -378,11 +381,11 @@ module.exports = app => {
             resource_type: TYPE_COMMENT,
           })
 
-          await trace.createRemind.removeCreateRemind(record.id, post.user_id)
+          await this.remindService.removeCreateRemind(record.id, post.user_id)
 
           if (comment.parent_id) {
             const parentComment = await await article.comment.checkCommentAvailableById(comment.parent_id)
-            await trace.createRemind.removeCreateRemind(record.id, parentComment.user_id)
+            await this.remindService.removeCreateRemind(record.id, parentComment.user_id)
           }
 
           return true
@@ -406,7 +409,10 @@ module.exports = app => {
      * @return {boolean}
      */
     async hasCreateComment(commentId) {
-      return await this.hasTrace(null, commentId, TYPE_COMMENT)
+      return await this.hasTrace({
+        resource_id: commentId,
+        resource_type: TYPE_COMMENT,
+      })
     }
 
 
@@ -418,7 +424,7 @@ module.exports = app => {
      */
     async hasCreateCommentRemind(commentId) {
 
-      const { article, trace } = this.service
+      const { article } = this.service
 
       const record = await this.findOneBy({
         resource_id: commentId,
@@ -441,10 +447,10 @@ module.exports = app => {
       let hasParentRemind = true
       if (comment.parent_id) {
         const parentComment = await article.comment.checkCommentAvailableById(comment.parent_id)
-        hasParentRemind = await trace.createRemind.hasCreateRemind(record.id, parentComment.user_id)
+        hasParentRemind = await this.remindService.hasCreateRemind(record.id, parentComment.user_id)
       }
 
-      const hasPostRemind = await trace.createRemind.hasCreateRemind(record.id, post.user_id)
+      const hasPostRemind = await this.remindService.hasCreateRemind(record.id, post.user_id)
 
       return hasPostRemind && hasParentRemind
 
@@ -453,45 +459,38 @@ module.exports = app => {
     /**
      * 读取文章的评论数
      *
-     * @param {number} creatorId
      * @param {number} postId
+     * @param {?number} creatorId
      * @return {number}
      */
-    async getCreateCommentCount(creatorId, postId) {
+    async getCreateCommentCount(postId, creatorId) {
       const where = {
+        resource_master_id: postId,
         resource_type: TYPE_COMMENT,
-        status: this.STATUS_ACTIVE,
       }
       if (creatorId) {
         where.creator_id = creatorId
       }
-      if (postId) {
-        where.resource_master_id = postId
-      }
-      return await this.countBy(where)
+      return await this.getTraceCount(where)
     }
 
     /**
      * 获取文章的评论列表
      *
-     * @param {number} creatorId
      * @param {number} postId
+     * @param {?number} creatorId
      * @param {Object} options
      * @return {Array}
      */
-    async getCreateCommentList(creatorId, postId, options) {
+    async getCreateCommentList(postId, creatorId, options) {
       const where = {
+        resource_master_id: postId,
         resource_type: TYPE_COMMENT,
-        status: this.STATUS_ACTIVE,
       }
       if (creatorId) {
         where.creator_id = creatorId
       }
-      if (postId) {
-        where.resource_master_id = postId
-      }
-      options.where = where
-      return await this.findBy(options)
+      return await this.getTraceList(where, options)
     }
 
     /**
@@ -603,7 +602,10 @@ module.exports = app => {
      * @return {boolean}
      */
     async hasCreateDemand(demandId) {
-      return await this.hasTrace(null, demandId, TYPE_DEMAND)
+      return await this.hasTrace({
+        resource_id: demandId,
+        resource_type: TYPE_DEMAND,
+      })
     }
 
 
@@ -618,7 +620,7 @@ module.exports = app => {
      */
     async createConsult(consultId, demandId, parentId) {
 
-      const { project, trace } = this.service
+      const { project } = this.service
 
       const demand = await project.demand.checkDemandAvailableById(demandId, true)
 
@@ -665,11 +667,11 @@ module.exports = app => {
             row.resource_parent_id = parentConsult.id
           }
 
-          await trace.createRemind.addCreateRemind(row)
+          await this.remindService.addCreateRemind(row)
 
           if (parentConsult) {
             row.receiver_id = parentConsult.user_id
-            await trace.createRemind.addCreateRemind(row)
+            await this.remindService.addCreateRemind(row)
           }
 
           return true
@@ -693,7 +695,7 @@ module.exports = app => {
      */
     async uncreateConsult(consultId) {
 
-      const { project, trace } = this.service
+      const { project } = this.service
 
       const consult = await project.consult.checkConsultAvailableById(consultId)
       const demand = await project.demand.checkDemandAvailableById(consult.demand_id)
@@ -706,11 +708,11 @@ module.exports = app => {
             resource_type: TYPE_CONSULT,
           })
 
-          await trace.createRemind.removeCreateRemind(record.id, demand.user_id)
+          await this.remindService.removeCreateRemind(record.id, demand.user_id)
 
           if (consult.parent_id) {
             const parentConsult = await await project.consult.checkConsultAvailableById(consult.parent_id)
-            await trace.createRemind.removeCreateRemind(record.id, parentConsult.user_id)
+            await this.remindService.removeCreateRemind(record.id, parentConsult.user_id)
           }
 
           return true
@@ -734,7 +736,10 @@ module.exports = app => {
      * @return {boolean}
      */
     async hasCreateConsult(consultId) {
-      return await this.hasTrace(null, consultId, TYPE_CONSULT)
+      return await this.hasTrace({
+        resource_id: consultId,
+        resource_type: TYPE_CONSULT,
+      })
     }
 
     /**
@@ -745,7 +750,7 @@ module.exports = app => {
      */
     async hasCreateConsultRemind(consultId) {
 
-      const { project, trace } = this.service
+      const { project } = this.service
 
       const record = await this.findOneBy({
         resource_id: consultId,
@@ -768,10 +773,10 @@ module.exports = app => {
       let hasParentRemind = true
       if (consult.parent_id) {
         const parentConsult = await project.consult.checkConsultAvailableById(consult.parent_id)
-        hasParentRemind = await trace.createRemind.hasCreateRemind(record.id, parentConsult.user_id)
+        hasParentRemind = await this.remindService.hasCreateRemind(record.id, parentConsult.user_id)
       }
 
-      const hasDemandRemind = await trace.createRemind.hasCreateRemind(record.id, demand.user_id)
+      const hasDemandRemind = await this.remindService.hasCreateRemind(record.id, demand.user_id)
 
       return hasDemandRemind && hasParentRemind
 
@@ -780,45 +785,38 @@ module.exports = app => {
     /**
      * 读取项目的咨询数
      *
-     * @param {number} creatorId
      * @param {number} demandId
+     * @param {?number} creatorId
      * @return {number}
      */
-    async getCreateConsultCount(creatorId, demandId) {
+    async getCreateConsultCount(demandId, creatorId) {
       const where = {
+        resource_master_id: demandId,
         resource_type: TYPE_CONSULT,
-        status: this.STATUS_ACTIVE,
       }
       if (creatorId) {
         where.creator_id = creatorId
       }
-      if (demandId) {
-        where.resource_master_id = demandId
-      }
-      return await this.countBy(where)
+      return await this.getTraceCount(where)
     }
 
     /**
      * 获取项目的咨询列表
      *
-     * @param {number} creatorId
      * @param {number} demandId
+     * @param {?number} creatorId
      * @param {Object} options
      * @return {Array}
      */
-    async getCreateConsultList(creatorId, demandId, options) {
+    async getCreateConsultList(demandId, creatorId, options) {
       const where = {
+        resource_master_id: demandId,
         resource_type: TYPE_CONSULT,
-        status: this.STATUS_ACTIVE,
       }
       if (creatorId) {
         where.creator_id = creatorId
       }
-      if (demandId) {
-        where.resource_master_id = demandId
-      }
-      options.where = where
-      return await this.findBy(options)
+      return await this.getTraceList(where, options)
     }
 
     /**
@@ -934,7 +932,10 @@ module.exports = app => {
      * @return {boolean}
      */
     async hasCreateQuestion(questionId) {
-      return await this.hasTrace(null, questionId, TYPE_QUESTION)
+      return await this.hasTrace({
+        resource_id: questionId,
+        resource_type: TYPE_QUESTION,
+      })
     }
 
 
@@ -952,7 +953,7 @@ module.exports = app => {
      */
     async createReply(replyId, anonymous, questionId, rootId, parentId) {
 
-      const { qa, trace } = this.service
+      const { qa } = this.service
 
       const question = await qa.question.checkQuestionAvailableById(questionId, true)
 
@@ -1005,16 +1006,16 @@ module.exports = app => {
             row.resource_parent_id = parentReply.id
           }
 
-          await trace.createRemind.addCreateRemind(row)
+          await this.remindService.addCreateRemind(row)
 
           if (rootReply) {
             row.receiver_id = rootReply.user_id
-            await trace.createRemind.addCreateRemind(row)
+            await this.remindService.addCreateRemind(row)
           }
 
           if (parentReply && rootId !== parentId) {
             row.receiver_id = parentReply.user_id
-            await trace.createRemind.addCreateRemind(row)
+            await this.remindService.addCreateRemind(row)
           }
 
           return true
@@ -1051,16 +1052,16 @@ module.exports = app => {
             resource_type: TYPE_REPLY,
           })
 
-          await trace.createRemind.removeCreateRemind(record.id, question.user_id)
+          await this.remindService.removeCreateRemind(record.id, question.user_id)
 
           if (reply.root_id) {
             const rootReply = await await qa.reply.checkReplyAvailableById(reply.root_id)
-            await trace.createRemind.removeCreateRemind(record.id, rootReply.user_id)
+            await this.remindService.removeCreateRemind(record.id, rootReply.user_id)
           }
 
           if (reply.parent_id && reply.parent_id !== reply.root_id) {
             const parentReply = await await qa.reply.checkReplyAvailableById(reply.parent_id)
-            await trace.createRemind.removeCreateRemind(record.id, parentReply.user_id)
+            await this.remindService.removeCreateRemind(record.id, parentReply.user_id)
           }
 
           return true
@@ -1084,7 +1085,10 @@ module.exports = app => {
      * @return {boolean}
      */
     async hasCreateReply(replyId) {
-      return await this.hasTrace(null, replyId, TYPE_REPLY)
+      return await this.hasTrace({
+        resource_id: replyId,
+        resource_type: TYPE_REPLY,
+      })
     }
 
     /**
@@ -1118,16 +1122,16 @@ module.exports = app => {
       let hasRootRemind = true
       if (reply.root_id) {
         const rootReply = await qa.reply.checkReplyAvailableById(reply.root_id)
-        hasRootRemind = await trace.createRemind.hasCreateRemind(record.id, rootReply.user_id)
+        hasRootRemind = await this.remindService.hasCreateRemind(record.id, rootReply.user_id)
       }
 
       let hasParentRemind = true
       if (reply.parent_id && reply.parent_id !== reply.root_id) {
         const parentReply = await qa.reply.checkReplyAvailableById(reply.parent_id)
-        hasParentRemind = await trace.createRemind.hasCreateRemind(record.id, parentReply.user_id)
+        hasParentRemind = await this.remindService.hasCreateRemind(record.id, parentReply.user_id)
       }
 
-      const hasQuestionRemind = await trace.createRemind.hasCreateRemind(record.id, question.user_id)
+      const hasQuestionRemind = await this.remindService.hasCreateRemind(record.id, question.user_id)
 
       return hasQuestionRemind && hasRootRemind && hasParentRemind
 
@@ -1136,45 +1140,38 @@ module.exports = app => {
     /**
      * 读取问题的回复数
      *
-     * @param {number} creatorId
      * @param {number} questionId
+     * @param {?number} creatorId
      * @return {number}
      */
-    async getCreateReplyCount(creatorId, questionId) {
+    async getCreateReplyCount(questionId, creatorId) {
       const where = {
+        resource_master_id: questionId,
         resource_type: TYPE_REPLY,
-        status: this.STATUS_ACTIVE,
       }
       if (creatorId) {
         where.creator_id = creatorId
       }
-      if (questionId) {
-        where.resource_master_id = questionId
-      }
-      return await this.countBy(where)
+      return await this.getTraceCount(where)
     }
 
     /**
      * 获取问题的回复列表
      *
-     * @param {number} creatorId
      * @param {number} questionId
+     * @param {?number} creatorId
      * @param {Object} options
      * @return {Array}
      */
-    async getCreateReplyList(creatorId, questionId, options) {
+    async getCreateReplyList(questionId, creatorId, options) {
       const where = {
+        resource_master_id: questionId,
         resource_type: TYPE_REPLY,
-        status: this.STATUS_ACTIVE,
       }
       if (creatorId) {
         where.creator_id = creatorId
       }
-      if (questionId) {
-        where.resource_master_id = questionId
-      }
-      options.where = where
-      return await this.findBy(options)
+      return await this.getTraceList(where, options)
     }
 
     /**

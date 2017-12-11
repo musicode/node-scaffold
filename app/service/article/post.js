@@ -44,8 +44,8 @@ module.exports = app => {
 
       const currentUser = await account.session.getCurrentUser()
       if (currentUser) {
-        result.has_like = await trace.like.hasLikePost(currentUser.id, id)
-        result.has_follow = await trace.follow.hasFollowPost(currentUser.id, id)
+        result.has_like = await trace.like.hasLikePost(id, currentUser.id)
+        result.has_follow = await trace.follow.hasFollowPost(id, currentUser.id)
 
         if (currentUser.id === user_id) {
           result.can_update = true
@@ -509,7 +509,7 @@ module.exports = app => {
       const key = `post_stat:${postId}`
       let likeCount = await redis.hget(key, 'like_count')
       if (likeCount == null) {
-        likeCount = await this.service.trace.like.getLikePostCount(null, postId)
+        likeCount = await this.service.trace.like.getLikePostCount(postId)
         await redis.hset(key, 'like_count', likeCount)
       }
       else {
@@ -554,7 +554,7 @@ module.exports = app => {
       const key = `post_stat:${postId}`
       let followCount = await redis.hget(key, 'follow_count')
       if (followCount == null) {
-        followCount = await this.service.trace.follow.getFollowPostCount(null, postId)
+        followCount = await this.service.trace.follow.getFollowPostCount(postId)
         await redis.hset(key, 'follow_count', followCount)
       }
       else {

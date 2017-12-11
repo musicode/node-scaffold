@@ -167,46 +167,68 @@ module.exports = app => {
     /**
      * 用户是否已浏览文章
      *
-     * @param {number} creatorId
      * @param {number} postId
+     * @param {number} creatorId
      * @return {boolean}
      */
-    async hasViewPost(creatorId, postId) {
-      return await this.hasTrace(creatorId, postId, TYPE_POST)
+    async hasViewPost(postId, creatorId) {
+      return await this.hasTrace({
+        creator_id: creatorId,
+        resource_id: postId,
+        resource_type: TYPE_POST,
+      })
     }
 
     /**
      * 用户浏览文章是否已提醒作者
      *
-     * @param {number} creatorId
      * @param {number} postId
+     * @param {number} creatorId
      * @return {boolean}
      */
-    async hasViewPostRemind(creatorId, postId) {
-      return await this.hasTraceRemind(creatorId, postId, TYPE_POST)
+    async hasViewPostRemind(postId, creatorId) {
+      return await this.hasTraceRemind({
+        creator_id: creatorId,
+        resource_id: postId,
+        resource_type: TYPE_POST,
+      })
     }
 
     /**
      * 读取文章的浏览数
      *
-     * @param {number} creatorId
      * @param {number} postId
+     * @param {?number} creatorId
      * @return {number}
      */
-    async getViewPostCount(creatorId, postId) {
-      return await this.getTraceCount(creatorId, postId, TYPE_POST)
+    async getViewPostCount(postId, creatorId) {
+      const where = {
+        resource_id: postId,
+        resource_type: TYPE_POST,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      return await this.getTraceCount(where)
     }
 
     /**
      * 获取文章的浏览列表
      *
-     * @param {number} creatorId
      * @param {number} postId
+     * @param {?number} creatorId
      * @param {Object} options
      * @return {Array}
      */
-    async getViewPostList(creatorId, postId, options) {
-      return await this.getTraceList(creatorId, postId, TYPE_POST, options)
+    async getViewPostList(postId, creatorId, options) {
+      const where = {
+        resource_id: postId,
+        resource_type: TYPE_POST,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      return await this.getTraceList(where, options)
     }
 
     /**
@@ -325,46 +347,68 @@ module.exports = app => {
     /**
      * 用户是否已浏览项目
      *
-     * @param {number} creatorId
      * @param {number} demandId
+     * @param {number} creatorId
      * @return {boolean}
      */
-    async hasViewDemand(creatorId, demandId) {
-      return await this.hasTrace(creatorId, demandId, TYPE_DEMAND)
+    async hasViewDemand(demandId, creatorId) {
+      return await this.hasTrace({
+        creator_id: creatorId,
+        resource_id: demandId,
+        resource_type: TYPE_DEMAND,
+      })
     }
 
     /**
      * 用户浏览项目是否已提醒作者
      *
-     * @param {number} creatorId
      * @param {number} demandId
+     * @param {number} creatorId
      * @return {boolean}
      */
-    async hasViewDemandRemind(creatorId, demandId) {
-      return await this.hasTraceRemind(creatorId, demandId, TYPE_DEMAND)
+    async hasViewDemandRemind(demandId, creatorId) {
+      return await this.hasTraceRemind({
+        creator_id: creatorId,
+        resource_id: demandId,
+        resource_type: TYPE_DEMAND,
+      })
     }
 
     /**
      * 读取项目的浏览数
      *
-     * @param {number} creatorId
      * @param {number} demandId
+     * @param {?number} creatorId
      * @return {number}
      */
-    async getViewDemandCount(creatorId, demandId) {
-      return await this.getTraceCount(creatorId, demandId, TYPE_DEMAND)
+    async getViewDemandCount(demandId, creatorId) {
+      const where = {
+        resource_id: demandId,
+        resource_type: TYPE_DEMAND,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      return await this.getTraceCount(where)
     }
 
     /**
      * 获取项目的浏览列表
      *
-     * @param {number} creatorId
      * @param {number} demandId
+     * @param {?number} creatorId
      * @param {Object} options
      * @return {Array}
      */
-    async getViewDemandList(creatorId, demandId, options) {
-      return await this.getTraceList(creatorId, demandId, TYPE_DEMAND, options)
+    async getViewDemandList(demandId, creatorId, options) {
+      const where = {
+        resource_id: demandId,
+        resource_type: TYPE_DEMAND,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      return await this.getTraceList(where, options)
     }
 
     /**
@@ -486,46 +530,68 @@ module.exports = app => {
     /**
      * 用户是否已浏览问题
      *
-     * @param {number} creatorId
      * @param {number} questionId
+     * @param {number} creatorId
      * @return {boolean}
      */
-    async hasViewQuestion(creatorId, questionId) {
-      return await this.hasTrace(creatorId, questionId, TYPE_QUESTION)
+    async hasViewQuestion(questionId, creatorId) {
+      return await this.hasTrace({
+        creator_id: creatorId,
+        resource_id: questionId,
+        resource_type: TYPE_QUESTION,
+      })
     }
 
     /**
      * 用户浏览问题是否已提醒作者
      *
-     * @param {number} creatorId
      * @param {number} questionId
+     * @param {number} creatorId
      * @return {boolean}
      */
-    async hasViewQuestionRemind(creatorId, questionId) {
-      return await this.hasTraceRemind(creatorId, questionId, TYPE_QUESTION)
+    async hasViewQuestionRemind(questionId, creatorId) {
+      return await this.hasTraceRemind({
+        creator_id: creatorId,
+        resource_id: questionId,
+        resource_type: TYPE_QUESTION,
+      })
     }
 
     /**
      * 读取问题的浏览数
      *
-     * @param {number} creatorId
      * @param {number} questionId
+     * @param {?number} creatorId
      * @return {number}
      */
-    async getViewQuestionCount(creatorId, questionId) {
-      return await this.getTraceCount(creatorId, questionId, TYPE_QUESTION)
+    async getViewQuestionCount(questionId, creatorId) {
+      const where = {
+        resource_id: questionId,
+        resource_type: TYPE_QUESTION,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      return await this.getTraceCount(where)
     }
 
     /**
      * 获取问题的浏览列表
      *
-     * @param {number} creatorId
      * @param {number} questionId
+     * @param {?number} creatorId
      * @param {Object} options
      * @return {Array}
      */
-    async getViewQuestionList(creatorId, questionId, options) {
-      return await this.getTraceCount(creatorId, questionId, TYPE_QUESTION, options)
+    async getViewQuestionList(questionId, creatorId, options) {
+      const where = {
+        resource_id: questionId,
+        resource_type: TYPE_QUESTION,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      return await this.getTraceList(where, options)
     }
 
     /**
@@ -649,46 +715,68 @@ module.exports = app => {
     /**
      * 用户是否已浏览用户
      *
-     * @param {number} creatorId
      * @param {number} userId
+     * @param {number} creatorId
      * @return {boolean}
      */
-    async hasViewUser(creatorId, userId) {
-      return await this.hasTrace(creatorId, userId, TYPE_USER)
+    async hasViewUser(userId, creatorId) {
+      return await this.hasTrace({
+        creator_id: creatorId,
+        resource_id: userId,
+        resource_type: TYPE_USER,
+      })
     }
 
     /**
      * 用户浏览用户是否已提醒作者
      *
-     * @param {number} creatorId
      * @param {number} userId
+     * @param {number} creatorId
      * @return {boolean}
      */
-    async hasViewUserRemind(creatorId, userId) {
-      return await this.hasTraceRemind(creatorId, userId, TYPE_USER)
+    async hasViewUserRemind(userId, creatorId) {
+      return await this.hasTraceRemind({
+        creator_id: creatorId,
+        resource_id: userId,
+        resource_type: TYPE_USER,
+      })
     }
 
     /**
      * 读取用户的浏览数
      *
-     * @param {number} creatorId
      * @param {number} userId
+     * @param {?number} creatorId
      * @return {number}
      */
-    async getViewUserCount(creatorId, userId) {
-      return await this.getTraceCount(creatorId, userId, TYPE_USER)
+    async getViewUserCount(userId, creatorId) {
+      const where = {
+        resource_id: userId,
+        resource_type: TYPE_USER,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      return await this.getTraceCount(where)
     }
 
     /**
      * 获取用户的浏览列表
      *
-     * @param {number} creatorId
      * @param {number} userId
+     * @param {?number} creatorId
      * @param {Object} options
      * @return {Array}
      */
-    async getViewUserList(creatorId, userId, options) {
-      return await this.getTraceList(creatorId, userId, TYPE_USER, options)
+    async getViewUserList(userId, creatorId, options) {
+      const where = {
+        resource_id: userId,
+        resource_type: TYPE_USER,
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      return await this.getTraceList(where, options)
     }
 
     /**

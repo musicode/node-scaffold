@@ -129,16 +129,16 @@ describe('test/service/trace/create.test.js', () => {
       let hasCreateCommentRemind = await trace.create.hasCreateCommentRemind(commentId)
       assert(hasCreateCommentRemind === false)
 
-      let createCommentCount = await trace.create.getCreateCommentCount(null, post.id)
+      let createCommentCount = await trace.create.getCreateCommentCount(post.id)
       assert(createCommentCount === 1)
 
-      createCommentCount = await trace.create.getCreateCommentCount(user1.id, post.id)
+      createCommentCount = await trace.create.getCreateCommentCount(post.id, user1.id)
       assert(createCommentCount === 1)
 
-      let createCommentList = await trace.create.getCreateCommentList(null, post.id, { page: 0, page_size: 1000 })
+      let createCommentList = await trace.create.getCreateCommentList(post.id, null, { page: 0, page_size: 1000 })
       assert(createCommentList.length === 1)
 
-      createCommentList = await trace.create.getCreateCommentList(user1.id, post.id, { page: 0, page_size: 1000 })
+      createCommentList = await trace.create.getCreateCommentList(post.id, user1.id, { page: 0, page_size: 1000 })
       assert(createCommentList.length === 1)
 
       let createCommentRemindList = await trace.create.getCreateCommentRemindList(user1.id, { page: 0, page_size: 1000 })
@@ -173,22 +173,22 @@ describe('test/service/trace/create.test.js', () => {
       hasCreateCommentRemind = await trace.create.hasCreateCommentRemind(commentId)
       assert(hasCreateCommentRemind === true)
 
-      createCommentCount = await trace.create.getCreateCommentCount(null, post.id)
+      createCommentCount = await trace.create.getCreateCommentCount(post.id)
       assert(createCommentCount === 2)
 
-      createCommentCount = await trace.create.getCreateCommentCount(user1.id, post.id)
+      createCommentCount = await trace.create.getCreateCommentCount(post.id, user1.id)
       assert(createCommentCount === 1)
 
-      createCommentCount = await trace.create.getCreateCommentCount(user2.id, post.id)
+      createCommentCount = await trace.create.getCreateCommentCount(post.id, user2.id)
       assert(createCommentCount === 1)
 
-      createCommentList = await trace.create.getCreateCommentList(null, post.id, { page: 0, page_size: 1000 })
+      createCommentList = await trace.create.getCreateCommentList(post.id, null, { page: 0, page_size: 1000 })
       assert(createCommentList.length === 2)
 
-      createCommentList = await trace.create.getCreateCommentList(user1.id, post.id, { page: 0, page_size: 1000 })
+      createCommentList = await trace.create.getCreateCommentList(post.id, user1.id, { page: 0, page_size: 1000 })
       assert(createCommentList.length === 1)
 
-      createCommentList = await trace.create.getCreateCommentList(user2.id, post.id, { page: 0, page_size: 1000 })
+      createCommentList = await trace.create.getCreateCommentList(post.id, user2.id, { page: 0, page_size: 1000 })
       assert(createCommentList.length === 1)
 
       createCommentRemindList = await trace.create.getCreateCommentRemindList(user1.id, { page: 0, page_size: 1000 })
@@ -218,22 +218,22 @@ describe('test/service/trace/create.test.js', () => {
       hasCreateCommentRemind = await trace.create.hasCreateCommentRemind(commentId)
       assert(hasCreateCommentRemind === true)
 
-      createCommentCount = await trace.create.getCreateCommentCount(null, post.id)
+      createCommentCount = await trace.create.getCreateCommentCount(post.id)
       assert(createCommentCount === 3)
 
-      createCommentCount = await trace.create.getCreateCommentCount(user1.id, post.id)
+      createCommentCount = await trace.create.getCreateCommentCount(post.id, user1.id)
       assert(createCommentCount === 1)
 
-      createCommentCount = await trace.create.getCreateCommentCount(user2.id, post.id)
+      createCommentCount = await trace.create.getCreateCommentCount(post.id, user2.id)
       assert(createCommentCount === 2)
 
-      createCommentList = await trace.create.getCreateCommentList(null, post.id, { page: 0, page_size: 1000 })
+      createCommentList = await trace.create.getCreateCommentList(post.id, null, { page: 0, page_size: 1000 })
       assert(createCommentList.length === 3)
 
-      createCommentList = await trace.create.getCreateCommentList(user1.id, post.id, { page: 0, page_size: 1000 })
+      createCommentList = await trace.create.getCreateCommentList(post.id, user1.id, { page: 0, page_size: 1000 })
       assert(createCommentList.length === 1)
 
-      createCommentList = await trace.create.getCreateCommentList(user2.id, post.id, { page: 0, page_size: 1000 })
+      createCommentList = await trace.create.getCreateCommentList(post.id, user2.id, { page: 0, page_size: 1000 })
       assert(createCommentList.length === 2)
 
       createCommentRemindList = await trace.create.getCreateCommentRemindList(user1.id, { page: 0, page_size: 1000 })
@@ -257,22 +257,22 @@ describe('test/service/trace/create.test.js', () => {
       hasCreateCommentRemind = await trace.create.hasCreateCommentRemind(commentId)
       assert(hasCreateCommentRemind === false)
 
-      createCommentCount = await trace.create.getCreateCommentCount(null, post.id)
+      createCommentCount = await trace.create.getCreateCommentCount(post.id)
       assert(createCommentCount === 2)
 
-      createCommentCount = await trace.create.getCreateCommentCount(user1.id, post.id)
+      createCommentCount = await trace.create.getCreateCommentCount(post.id, user1.id)
       assert(createCommentCount === 1)
 
-      createCommentCount = await trace.create.getCreateCommentCount(user2.id, post.id)
+      createCommentCount = await trace.create.getCreateCommentCount(post.id, user2.id)
       assert(createCommentCount === 1)
 
-      createCommentList = await trace.create.getCreateCommentList(null, post.id, { page: 0, page_size: 1000 })
+      createCommentList = await trace.create.getCreateCommentList(post.id, null, { page: 0, page_size: 1000 })
       assert(createCommentList.length === 2)
 
-      createCommentList = await trace.create.getCreateCommentList(user1.id, post.id, { page: 0, page_size: 1000 })
+      createCommentList = await trace.create.getCreateCommentList(post.id, user1.id, { page: 0, page_size: 1000 })
       assert(createCommentList.length === 1)
 
-      createCommentList = await trace.create.getCreateCommentList(user2.id, post.id, { page: 0, page_size: 1000 })
+      createCommentList = await trace.create.getCreateCommentList(post.id, user2.id, { page: 0, page_size: 1000 })
       assert(createCommentList.length === 1)
 
       createCommentRemindList = await trace.create.getCreateCommentRemindList(user1.id, { page: 0, page_size: 1000 })
@@ -376,16 +376,16 @@ describe('test/service/trace/create.test.js', () => {
       let hasCreateConsultRemind = await trace.create.hasCreateConsultRemind(consultId)
       assert(hasCreateConsultRemind === false)
 
-      let createConsultCount = await trace.create.getCreateConsultCount(null, demand.id)
+      let createConsultCount = await trace.create.getCreateConsultCount(demand.id)
       assert(createConsultCount === 1)
 
-      createConsultCount = await trace.create.getCreateConsultCount(user1.id, demand.id)
+      createConsultCount = await trace.create.getCreateConsultCount(demand.id, user1.id)
       assert(createConsultCount === 1)
 
-      let createConsultList = await trace.create.getCreateConsultList(null, demand.id, { page: 0, page_size: 1000 })
+      let createConsultList = await trace.create.getCreateConsultList(demand.id, null, { page: 0, page_size: 1000 })
       assert(createConsultList.length === 1)
 
-      createConsultList = await trace.create.getCreateConsultList(user1.id, demand.id, { page: 0, page_size: 1000 })
+      createConsultList = await trace.create.getCreateConsultList(demand.id, user1.id, { page: 0, page_size: 1000 })
       assert(createConsultList.length === 1)
 
       let createConsultRemindList = await trace.create.getCreateConsultRemindList(user1.id, { page: 0, page_size: 1000 })
@@ -419,22 +419,22 @@ describe('test/service/trace/create.test.js', () => {
       hasCreateConsultRemind = await trace.create.hasCreateConsultRemind(consultId)
       assert(hasCreateConsultRemind === true)
 
-      createConsultCount = await trace.create.getCreateConsultCount(null, demand.id)
+      createConsultCount = await trace.create.getCreateConsultCount(demand.id)
       assert(createConsultCount === 2)
 
-      createConsultCount = await trace.create.getCreateConsultCount(user1.id, demand.id)
+      createConsultCount = await trace.create.getCreateConsultCount(demand.id, user1.id)
       assert(createConsultCount === 1)
 
-      createConsultCount = await trace.create.getCreateConsultCount(user2.id, demand.id)
+      createConsultCount = await trace.create.getCreateConsultCount(demand.id, user2.id)
       assert(createConsultCount === 1)
 
-      createConsultList = await trace.create.getCreateConsultList(null, demand.id, { page: 0, page_size: 1000 })
+      createConsultList = await trace.create.getCreateConsultList(demand.id, null, { page: 0, page_size: 1000 })
       assert(createConsultList.length === 2)
 
-      createConsultList = await trace.create.getCreateConsultList(user1.id, demand.id, { page: 0, page_size: 1000 })
+      createConsultList = await trace.create.getCreateConsultList(demand.id, user1.id, { page: 0, page_size: 1000 })
       assert(createConsultList.length === 1)
 
-      createConsultList = await trace.create.getCreateConsultList(user2.id, demand.id, { page: 0, page_size: 1000 })
+      createConsultList = await trace.create.getCreateConsultList(demand.id, user2.id, { page: 0, page_size: 1000 })
       assert(createConsultList.length === 1)
 
       createConsultRemindList = await trace.create.getCreateConsultRemindList(user1.id, { page: 0, page_size: 1000 })
@@ -463,22 +463,22 @@ describe('test/service/trace/create.test.js', () => {
       hasCreateConsultRemind = await trace.create.hasCreateConsultRemind(consultId)
       assert(hasCreateConsultRemind === true)
 
-      createConsultCount = await trace.create.getCreateConsultCount(null, demand.id)
+      createConsultCount = await trace.create.getCreateConsultCount(demand.id)
       assert(createConsultCount === 3)
 
-      createConsultCount = await trace.create.getCreateConsultCount(user1.id, demand.id)
+      createConsultCount = await trace.create.getCreateConsultCount(demand.id, user1.id)
       assert(createConsultCount === 1)
 
-      createConsultCount = await trace.create.getCreateConsultCount(user2.id, demand.id)
+      createConsultCount = await trace.create.getCreateConsultCount(demand.id, user2.id)
       assert(createConsultCount === 2)
 
-      createConsultList = await trace.create.getCreateConsultList(null, demand.id, { page: 0, page_size: 1000 })
+      createConsultList = await trace.create.getCreateConsultList(demand.id, null, { page: 0, page_size: 1000 })
       assert(createConsultList.length === 3)
 
-      createConsultList = await trace.create.getCreateConsultList(user1.id, demand.id, { page: 0, page_size: 1000 })
+      createConsultList = await trace.create.getCreateConsultList(demand.id, user1.id, { page: 0, page_size: 1000 })
       assert(createConsultList.length === 1)
 
-      createConsultList = await trace.create.getCreateConsultList(user2.id, demand.id, { page: 0, page_size: 1000 })
+      createConsultList = await trace.create.getCreateConsultList(demand.id, user2.id, { page: 0, page_size: 1000 })
       assert(createConsultList.length === 2)
 
       createConsultRemindList = await trace.create.getCreateConsultRemindList(user1.id, { page: 0, page_size: 1000 })
@@ -502,22 +502,22 @@ describe('test/service/trace/create.test.js', () => {
       hasCreateConsultRemind = await trace.create.hasCreateConsultRemind(consultId)
       assert(hasCreateConsultRemind === false)
 
-      createConsultCount = await trace.create.getCreateConsultCount(null, demand.id)
+      createConsultCount = await trace.create.getCreateConsultCount(demand.id)
       assert(createConsultCount === 2)
 
-      createConsultCount = await trace.create.getCreateConsultCount(user1.id, demand.id)
+      createConsultCount = await trace.create.getCreateConsultCount(demand.id, user1.id)
       assert(createConsultCount === 1)
 
-      createConsultCount = await trace.create.getCreateConsultCount(user2.id, demand.id)
+      createConsultCount = await trace.create.getCreateConsultCount(demand.id, user2.id)
       assert(createConsultCount === 1)
 
-      createConsultList = await trace.create.getCreateConsultList(null, demand.id, { page: 0, page_size: 1000 })
+      createConsultList = await trace.create.getCreateConsultList(demand.id, null, { page: 0, page_size: 1000 })
       assert(createConsultList.length === 2)
 
-      createConsultList = await trace.create.getCreateConsultList(user1.id, demand.id, { page: 0, page_size: 1000 })
+      createConsultList = await trace.create.getCreateConsultList(demand.id, user1.id, { page: 0, page_size: 1000 })
       assert(createConsultList.length === 1)
 
-      createConsultList = await trace.create.getCreateConsultList(user2.id, demand.id, { page: 0, page_size: 1000 })
+      createConsultList = await trace.create.getCreateConsultList(demand.id, user2.id, { page: 0, page_size: 1000 })
       assert(createConsultList.length === 1)
 
       createConsultRemindList = await trace.create.getCreateConsultRemindList(user1.id, { page: 0, page_size: 1000 })

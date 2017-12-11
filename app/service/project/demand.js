@@ -43,8 +43,8 @@ module.exports = app => {
 
       const currentUser = await account.session.getCurrentUser()
       if (currentUser) {
-        result.has_like = await trace.like.hasLikeDemand(currentUser.id, id)
-        result.has_follow = await trace.follow.hasFollowDemand(currentUser.id, id)
+        result.has_like = await trace.like.hasLikeDemand(id, currentUser.id)
+        result.has_follow = await trace.follow.hasFollowDemand(id, currentUser.id)
 
         if (currentUser.id === user_id) {
           result.can_update = true
@@ -481,7 +481,7 @@ module.exports = app => {
       const key = `demand_stat:${demandId}`
       let likeCount = await redis.hget(key, 'like_count')
       if (likeCount == null) {
-        likeCount = await this.service.trace.like.getLikeDemandCount(null, demandId)
+        likeCount = await this.service.trace.like.getLikeDemandCount(demandId)
         await redis.hset(key, 'like_count', likeCount)
       }
       else {
@@ -526,7 +526,7 @@ module.exports = app => {
       const key = `demand_stat:${demandId}`
       let followCount = await redis.hget(key, 'follow_count')
       if (followCount == null) {
-        followCount = await this.service.trace.follow.getFollowDemandCount(null, demandId)
+        followCount = await this.service.trace.follow.getFollowDemandCount(demandId)
         await redis.hset(key, 'follow_count', followCount)
       }
       else {

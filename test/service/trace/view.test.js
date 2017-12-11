@@ -78,7 +78,7 @@ describe('test/service/trace/view.test.js', () => {
       })
 
       // 文章总浏览数
-      let viewCount = await trace.view.getViewPostCount(null, post.id)
+      let viewCount = await trace.view.getViewPostCount(post.id)
       assert(viewCount === 0)
 
       viewCount = await article.post.getPostViewCount(post.id)
@@ -93,11 +93,11 @@ describe('test/service/trace/view.test.js', () => {
       assert(viewUnreadRemindCount === 0)
 
       // user2 是否浏览了 user1 的文章
-      let hasView = await trace.view.hasViewPost(user2.id, post.id)
+      let hasView = await trace.view.hasViewPost(post.id, user2.id)
       assert(hasView === false)
 
       // user2 是否浏览了 user1 的文章之后是否发送了提醒
-      let hasViewRemind = await trace.view.hasViewPostRemind(user2.id, post.id)
+      let hasViewRemind = await trace.view.hasViewPostRemind(post.id, user2.id)
       assert(hasViewRemind === false)
 
 
@@ -106,7 +106,7 @@ describe('test/service/trace/view.test.js', () => {
 
 
 
-      viewCount = await trace.view.getViewPostCount(null, post.id)
+      viewCount = await trace.view.getViewPostCount(post.id)
       assert(viewCount === 1)
 
       viewCount = await article.post.getPostViewCount(post.id)
@@ -118,10 +118,10 @@ describe('test/service/trace/view.test.js', () => {
       viewUnreadRemindCount = await trace.view.getViewPostUnreadRemindCount(user1.id)
       assert(viewUnreadRemindCount === 1)
 
-      hasView = await trace.view.hasViewPost(user2.id, post.id)
+      hasView = await trace.view.hasViewPost(post.id, user2.id)
       assert(hasView === true)
 
-      hasViewRemind = await trace.view.hasViewPostRemind(user2.id, post.id)
+      hasViewRemind = await trace.view.hasViewPostRemind(post.id, user2.id)
       assert(hasViewRemind === true)
 
 
@@ -151,7 +151,7 @@ describe('test/service/trace/view.test.js', () => {
       // 这里 trace_view 表不会每次浏览都 insert
       // 因此他的数据总量是不会变的
 
-      viewCount = await trace.view.getViewPostCount(null, post.id)
+      viewCount = await trace.view.getViewPostCount(post.id)
       assert(viewCount === 1)
 
       // 但是对于资源来说，计数器是需要累加的
@@ -197,7 +197,7 @@ describe('test/service/trace/view.test.js', () => {
       })
 
       // 项目总浏览数
-      let viewCount = await trace.view.getViewDemandCount(null, demand.id)
+      let viewCount = await trace.view.getViewDemandCount(demand.id)
       assert(viewCount === 0)
 
       viewCount = await project.demand.getDemandViewCount(demand.id)
@@ -212,11 +212,11 @@ describe('test/service/trace/view.test.js', () => {
       assert(viewUnreadRemindCount === 0)
 
       // user2 是否浏览了 user1 的项目
-      let hasView = await trace.view.hasViewDemand(user2.id, demand.id)
+      let hasView = await trace.view.hasViewDemand(demand.id, user2.id)
       assert(hasView === false)
 
       // user2 是否浏览了 user1 的项目之后是否发送了提醒
-      let hasViewRemind = await trace.view.hasViewDemandRemind(user2.id, demand.id)
+      let hasViewRemind = await trace.view.hasViewDemandRemind(demand.id, user2.id)
       assert(hasViewRemind === false)
 
 
@@ -225,7 +225,7 @@ describe('test/service/trace/view.test.js', () => {
 
 
 
-      viewCount = await trace.view.getViewDemandCount(null, demand.id)
+      viewCount = await trace.view.getViewDemandCount(demand.id)
       assert(viewCount === 1)
 
       viewCount = await project.demand.getDemandViewCount(demand.id)
@@ -237,10 +237,10 @@ describe('test/service/trace/view.test.js', () => {
       viewUnreadRemindCount = await trace.view.getViewDemandUnreadRemindCount(user1.id)
       assert(viewUnreadRemindCount === 1)
 
-      hasView = await trace.view.hasViewDemand(user2.id, demand.id)
+      hasView = await trace.view.hasViewDemand(demand.id, user2.id)
       assert(hasView === true)
 
-      hasViewRemind = await trace.view.hasViewDemandRemind(user2.id, demand.id)
+      hasViewRemind = await trace.view.hasViewDemandRemind(demand.id, user2.id)
       assert(hasViewRemind === true)
 
 
@@ -270,7 +270,7 @@ describe('test/service/trace/view.test.js', () => {
       // 这里 trace_view 表不会每次浏览都 insert
       // 因此他的数据总量是不会变的
 
-      viewCount = await trace.view.getViewDemandCount(null, demand.id)
+      viewCount = await trace.view.getViewDemandCount(demand.id)
       assert(viewCount === 1)
 
       // 但是对于资源来说，计数器是需要累加的

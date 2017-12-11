@@ -271,8 +271,8 @@ module.exports = app => {
         sort_order: input.sort_order || 'desc',
         sort_by: input.sort_by || 'update_time'
       }
-      const list = await trace.follow.getFollowDemandList(userId, demandId, options)
-      const count = await trace.follow.getFollowDemandCount(userId, demandId)
+      const list = await trace.follow.getFollowDemandList(demandId, userId, options)
+      const count = await trace.follow.getFollowDemandCount(demandId, userId)
 
       await util.each(
         list,
@@ -370,8 +370,8 @@ module.exports = app => {
         sort_order: input.sort_order || 'desc',
         sort_by: input.sort_by || 'update_time'
       }
-      const list = await trace.like.getLikeDemandList(userId, demandId, options)
-      const count = await trace.like.getLikeDemandCount(userId, demandId)
+      const list = await trace.like.getLikeDemandList(demandId, userId, options)
+      const count = await trace.like.getLikeDemandCount(demandId, userId)
 
       await util.each(
         list,

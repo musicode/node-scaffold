@@ -78,7 +78,7 @@ describe('test/service/trace/follow.test.js', () => {
       })
 
       // 文章总关注数
-      let followCount = await trace.follow.getFollowPostCount(null, post.id)
+      let followCount = await trace.follow.getFollowPostCount(post.id)
       assert(followCount === 0)
 
       followCount = await article.post.getPostFollowCount(post.id)
@@ -93,11 +93,11 @@ describe('test/service/trace/follow.test.js', () => {
       assert(followUnreadRemindCount === 0)
 
       // user2 是否关注了 user1 的文章
-      let hasFollow = await trace.follow.hasFollowPost(user2.id, post.id)
+      let hasFollow = await trace.follow.hasFollowPost(post.id, user2.id)
       assert(hasFollow === false)
 
       // user2 是否关注了 user1 的文章之后是否发送了提醒
-      let hasFollowRemind = await trace.follow.hasFollowPostRemind(user2.id, post.id)
+      let hasFollowRemind = await trace.follow.hasFollowPostRemind(post.id, user2.id)
       assert(hasFollowRemind === false)
 
 
@@ -107,7 +107,7 @@ describe('test/service/trace/follow.test.js', () => {
 
 
 
-      followCount = await trace.follow.getFollowPostCount(null, post.id)
+      followCount = await trace.follow.getFollowPostCount(post.id)
       assert(followCount === 1)
 
       followCount = await article.post.getPostFollowCount(post.id)
@@ -119,10 +119,10 @@ describe('test/service/trace/follow.test.js', () => {
       followUnreadRemindCount = await trace.follow.getFollowPostUnreadRemindCount(user1.id)
       assert(followUnreadRemindCount === 1)
 
-      hasFollow = await trace.follow.hasFollowPost(user2.id, post.id)
+      hasFollow = await trace.follow.hasFollowPost(post.id, user2.id)
       assert(hasFollow === true)
 
-      hasFollowRemind = await trace.follow.hasFollowPostRemind(user2.id, post.id)
+      hasFollowRemind = await trace.follow.hasFollowPostRemind(post.id, user2.id)
       assert(hasFollowRemind === true)
 
 
@@ -154,7 +154,7 @@ describe('test/service/trace/follow.test.js', () => {
       await trace.follow.unfollowPost(post.id)
 
 
-      followCount = await trace.follow.getFollowPostCount(null, post.id)
+      followCount = await trace.follow.getFollowPostCount(post.id)
       assert(followCount === 0)
 
       followCount = await article.post.getPostFollowCount(post.id)
@@ -166,10 +166,10 @@ describe('test/service/trace/follow.test.js', () => {
       followUnreadRemindCount = await trace.follow.getFollowPostUnreadRemindCount(user1.id)
       assert(followUnreadRemindCount === 0)
 
-      hasFollow = await trace.follow.hasFollowPost(user2.id, post.id)
+      hasFollow = await trace.follow.hasFollowPost(post.id, user2.id)
       assert(hasFollow === false)
 
-      hasFollowRemind = await trace.follow.hasFollowPostRemind(user2.id, post.id)
+      hasFollowRemind = await trace.follow.hasFollowPostRemind(post.id, user2.id)
       assert(hasFollowRemind === false)
 
 
@@ -193,7 +193,7 @@ describe('test/service/trace/follow.test.js', () => {
 
 
 
-      followCount = await trace.follow.getFollowPostCount(null, post.id)
+      followCount = await trace.follow.getFollowPostCount(post.id)
       assert(followCount === 1)
 
       followCount = await article.post.getPostFollowCount(post.id)
@@ -205,10 +205,10 @@ describe('test/service/trace/follow.test.js', () => {
       followUnreadRemindCount = await trace.follow.getFollowPostUnreadRemindCount(user1.id)
       assert(followUnreadRemindCount === 1)
 
-      hasFollow = await trace.follow.hasFollowPost(user2.id, post.id)
+      hasFollow = await trace.follow.hasFollowPost(post.id, user2.id)
       assert(hasFollow === true)
 
-      hasFollowRemind = await trace.follow.hasFollowPostRemind(user2.id, post.id)
+      hasFollowRemind = await trace.follow.hasFollowPostRemind(post.id, user2.id)
       assert(hasFollowRemind === true)
 
       await trace.follow.unfollowPost(post.id)
@@ -255,7 +255,7 @@ describe('test/service/trace/follow.test.js', () => {
 
 
       // 项目总关注数
-      let followCount = await trace.follow.getFollowDemandCount(null, demand.id)
+      let followCount = await trace.follow.getFollowDemandCount(demand.id)
       assert(followCount === 0)
 
       followCount = await project.demand.getDemandFollowCount(demand.id)
@@ -270,11 +270,11 @@ describe('test/service/trace/follow.test.js', () => {
       assert(followUnreadRemindCount === 0)
 
       // user2 是否关注了 user1 的项目
-      let hasFollow = await trace.follow.hasFollowDemand(user2.id, demand.id)
+      let hasFollow = await trace.follow.hasFollowDemand(demand.id, user2.id)
       assert(hasFollow === false)
 
       // user2 是否关注了 user1 的项目之后是否发送了提醒
-      let hasFollowRemind = await trace.follow.hasFollowDemandRemind(user2.id, demand.id)
+      let hasFollowRemind = await trace.follow.hasFollowDemandRemind(demand.id, user2.id)
       assert(hasFollowRemind === false)
 
 
@@ -284,7 +284,7 @@ describe('test/service/trace/follow.test.js', () => {
 
 
 
-      followCount = await trace.follow.getFollowDemandCount(null, demand.id)
+      followCount = await trace.follow.getFollowDemandCount(demand.id)
       assert(followCount === 1)
 
       followCount = await project.demand.getDemandFollowCount(demand.id)
@@ -296,10 +296,10 @@ describe('test/service/trace/follow.test.js', () => {
       followUnreadRemindCount = await trace.follow.getFollowDemandUnreadRemindCount(user1.id)
       assert(followUnreadRemindCount === 1)
 
-      hasFollow = await trace.follow.hasFollowDemand(user2.id, demand.id)
+      hasFollow = await trace.follow.hasFollowDemand(demand.id, user2.id)
       assert(hasFollow === true)
 
-      hasFollowRemind = await trace.follow.hasFollowDemandRemind(user2.id, demand.id)
+      hasFollowRemind = await trace.follow.hasFollowDemandRemind(demand.id, user2.id)
       assert(hasFollowRemind === true)
 
 
@@ -331,7 +331,7 @@ describe('test/service/trace/follow.test.js', () => {
       await trace.follow.unfollowDemand(demand.id)
 
 
-      followCount = await trace.follow.getFollowDemandCount(null, demand.id)
+      followCount = await trace.follow.getFollowDemandCount(demand.id)
       assert(followCount === 0)
 
       followCount = await project.demand.getDemandFollowCount(demand.id)
@@ -343,10 +343,10 @@ describe('test/service/trace/follow.test.js', () => {
       followUnreadRemindCount = await trace.follow.getFollowDemandUnreadRemindCount(user1.id)
       assert(followUnreadRemindCount === 0)
 
-      hasFollow = await trace.follow.hasFollowDemand(user2.id, demand.id)
+      hasFollow = await trace.follow.hasFollowDemand(demand.id, user2.id)
       assert(hasFollow === false)
 
-      hasFollowRemind = await trace.follow.hasFollowDemandRemind(user2.id, demand.id)
+      hasFollowRemind = await trace.follow.hasFollowDemandRemind(demand.id, user2.id)
       assert(hasFollowRemind === false)
 
 
@@ -369,7 +369,7 @@ describe('test/service/trace/follow.test.js', () => {
 
 
 
-      followCount = await trace.follow.getFollowDemandCount(null, demand.id)
+      followCount = await trace.follow.getFollowDemandCount(demand.id)
       assert(followCount === 1)
 
       followCount = await project.demand.getDemandFollowCount(demand.id)
@@ -381,10 +381,10 @@ describe('test/service/trace/follow.test.js', () => {
       followUnreadRemindCount = await trace.follow.getFollowDemandUnreadRemindCount(user1.id)
       assert(followUnreadRemindCount === 1)
 
-      hasFollow = await trace.follow.hasFollowDemand(user2.id, demand.id)
+      hasFollow = await trace.follow.hasFollowDemand(demand.id, user2.id)
       assert(hasFollow === true)
 
-      hasFollowRemind = await trace.follow.hasFollowDemandRemind(user2.id, demand.id)
+      hasFollowRemind = await trace.follow.hasFollowDemandRemind(demand.id, user2.id)
       assert(hasFollowRemind === true)
 
       await trace.follow.unfollowDemand(demand.id)
@@ -430,7 +430,7 @@ describe('test/service/trace/follow.test.js', () => {
       })
 
       // 问题总关注数
-      let followCount = await trace.follow.getFollowQuestionCount(null, question.id)
+      let followCount = await trace.follow.getFollowQuestionCount(question.id)
       assert(followCount === 0)
 
       followCount = await qa.question.getQuestionFollowCount(question.id)
@@ -445,11 +445,11 @@ describe('test/service/trace/follow.test.js', () => {
       assert(followUnreadRemindCount === 0)
 
       // user2 是否关注了 user1 的问题
-      let hasFollow = await trace.follow.hasFollowQuestion(user2.id, question.id)
+      let hasFollow = await trace.follow.hasFollowQuestion(question.id, user2.id)
       assert(hasFollow === false)
 
       // user2 是否关注了 user1 的问题之后是否发送了提醒
-      let hasFollowRemind = await trace.follow.hasFollowQuestionRemind(user2.id, question.id)
+      let hasFollowRemind = await trace.follow.hasFollowQuestionRemind(question.id, user2.id)
       assert(hasFollowRemind === false)
 
 
@@ -459,7 +459,7 @@ describe('test/service/trace/follow.test.js', () => {
 
 
 
-      followCount = await trace.follow.getFollowQuestionCount(null, question.id)
+      followCount = await trace.follow.getFollowQuestionCount(question.id)
       assert(followCount === 1)
 
       followCount = await qa.question.getQuestionFollowCount(question.id)
@@ -471,10 +471,10 @@ describe('test/service/trace/follow.test.js', () => {
       followUnreadRemindCount = await trace.follow.getFollowQuestionUnreadRemindCount(user1.id)
       assert(followUnreadRemindCount === 1)
 
-      hasFollow = await trace.follow.hasFollowQuestion(user2.id, question.id)
+      hasFollow = await trace.follow.hasFollowQuestion(question.id, user2.id)
       assert(hasFollow === true)
 
-      hasFollowRemind = await trace.follow.hasFollowQuestionRemind(user2.id, question.id)
+      hasFollowRemind = await trace.follow.hasFollowQuestionRemind(question.id, user2.id)
       assert(hasFollowRemind === true)
 
 
@@ -506,7 +506,7 @@ describe('test/service/trace/follow.test.js', () => {
       await trace.follow.unfollowQuestion(question.id)
 
 
-      followCount = await trace.follow.getFollowQuestionCount(null, question.id)
+      followCount = await trace.follow.getFollowQuestionCount(question.id)
       assert(followCount === 0)
 
       followCount = await qa.question.getQuestionFollowCount(question.id)
@@ -518,10 +518,10 @@ describe('test/service/trace/follow.test.js', () => {
       followUnreadRemindCount = await trace.follow.getFollowQuestionUnreadRemindCount(user1.id)
       assert(followUnreadRemindCount === 0)
 
-      hasFollow = await trace.follow.hasFollowQuestion(user2.id, question.id)
+      hasFollow = await trace.follow.hasFollowQuestion(question.id, user2.id)
       assert(hasFollow === false)
 
-      hasFollowRemind = await trace.follow.hasFollowQuestionRemind(user2.id, question.id)
+      hasFollowRemind = await trace.follow.hasFollowQuestionRemind(question.id, user2.id)
       assert(hasFollowRemind === false)
 
 
@@ -545,7 +545,7 @@ describe('test/service/trace/follow.test.js', () => {
 
 
 
-      followCount = await trace.follow.getFollowQuestionCount(null, question.id)
+      followCount = await trace.follow.getFollowQuestionCount(question.id)
       assert(followCount === 1)
 
       followCount = await qa.question.getQuestionFollowCount(question.id)
@@ -557,10 +557,10 @@ describe('test/service/trace/follow.test.js', () => {
       followUnreadRemindCount = await trace.follow.getFollowQuestionUnreadRemindCount(user1.id)
       assert(followUnreadRemindCount === 1)
 
-      hasFollow = await trace.follow.hasFollowQuestion(user2.id, question.id)
+      hasFollow = await trace.follow.hasFollowQuestion(question.id, user2.id)
       assert(hasFollow === true)
 
-      hasFollowRemind = await trace.follow.hasFollowQuestionRemind(user2.id, question.id)
+      hasFollowRemind = await trace.follow.hasFollowQuestionRemind(question.id, user2.id)
       assert(hasFollowRemind === true)
 
       await trace.follow.unfollowQuestion(question.id)

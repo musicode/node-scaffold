@@ -290,8 +290,8 @@ module.exports = app => {
         sort_order: input.sort_order || 'desc',
         sort_by: input.sort_by || 'update_time'
       }
-      const list = await trace.follow.getFollowQuestionList(userId, questionId, options)
-      const count = await trace.follow.getFollowQuestionCount(userId, questionId)
+      const list = await trace.follow.getFollowQuestionList(questionId, userId, options)
+      const count = await trace.follow.getFollowQuestionCount(questionId, userId)
 
       await util.each(
         list,
@@ -389,8 +389,8 @@ module.exports = app => {
         sort_order: input.sort_order || 'desc',
         sort_by: input.sort_by || 'update_time'
       }
-      const list = await trace.like.getLikeQuestionList(userId, questionId, options)
-      const count = await trace.like.getLikeQuestionCount(userId, questionId)
+      const list = await trace.like.getLikeQuestionList(questionId, userId, options)
+      const count = await trace.like.getLikeQuestionCount(questionId, userId)
 
       await util.each(
         list,
@@ -536,7 +536,7 @@ module.exports = app => {
         async item => {
           const user = item.master
           if (user.user_id !== currentUser.id) {
-            const hasInvite = await trace.invite.hasInviteQuestion(currentUser.id, user.user_id, question.id)
+            const hasInvite = await trace.invite.hasInviteQuestion(question.id, user.user_id, currentUser.id)
             users.push({
               user,
               has_invite: hasInvite,
