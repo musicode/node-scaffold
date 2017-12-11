@@ -93,8 +93,10 @@ module.exports = app => {
                 break
             }
 
-            const user = await account.user.getFullUserById(master.user.user_id)
-            master.user = await account.user.toExternal(user)
+            if (master.user) {
+              const user = await account.user.getFullUserById(master.user.user_id)
+              master.user = await account.user.toExternal(user)
+            }
 
             if (resourceType) {
               master.has_follow = await trace.follow.hasTrace({
