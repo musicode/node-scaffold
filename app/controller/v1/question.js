@@ -469,12 +469,32 @@ module.exports = app => {
 
     async inviteList() {
 
-      // [TODO] 这里要做分页
+      const input = this.filter(this.input, {
+        page: 'number',
+        page_size: 'number',
+        sort_order: 'string',
+        sort_by: 'string',
+      })
+
+      this.validate(input, {
+        page: 'page',
+        page_size: 'page_size',
+        sort_by: {
+          required: false,
+          type: 'sort_by',
+        },
+        sort_order: {
+          required: false,
+          type: 'sort_order'
+        },
+      })
+
       const { account, qa, trace } = this.ctx.service
 
       const currentUser = await account.session.checkCurrentUser()
 
-      const list = await trace.invite.getInviteQuestionList(null, currentUser.id, null, { })
+      const list = await trace.invite.getInviteQuestionList(null, currentUser.id, null, input)
+      const count =  await trace.invite.getInviteQuestionCount(null, currentUser.id)
 
       await util.each(
         list,
@@ -484,6 +504,8 @@ module.exports = app => {
       )
 
       this.output.list = list
+      this.output.pager = this.createPager(input, count)
+
 
     }
 
