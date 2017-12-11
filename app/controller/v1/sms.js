@@ -67,7 +67,7 @@ module.exports = app => {
       const { account, sms } = this.ctx.service
 
       const user = await this.findOneBy({
-        mobile: data.mobile,
+        mobile: input.mobile,
       })
 
       if (!user) {
