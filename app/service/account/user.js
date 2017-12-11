@@ -45,7 +45,7 @@ module.exports = app => {
       Object.assign(result, user)
 
       result.password = result.password ? true : false
-      const { number, area_id } = result
+      const { id, number, area_id } = result
       delete result.number
 
       if (result.user_id) {
@@ -64,6 +64,13 @@ module.exports = app => {
         if (area_id && area_id != 0) {
           result.area = await this.service.common.area.getAreaById(area_id)
         }
+      }
+
+      const { account, relation } = this.sevice
+      const currentUser = await account.session.getCurrentUser()
+      if (currentUser && currentUser.id !== id) {
+        result.is_followee = relation.followee.hasFollow(currentUser.id, id)
+        result.is_follower = relation.followee.hasFollow(id, currentUser.id)
       }
 
       result.id = number
