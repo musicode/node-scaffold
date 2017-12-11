@@ -34,23 +34,20 @@ module.exports = app => {
     async toExternal(invite) {
 
       const { account, qa } = this.service
-      const { resource_id, resource_type, creator_id, user_id } = invite
+      const { resource_id, creator_id, user_id } = invite
 
-      let resource = await qa.question.getFullQuestionById(resource_id)
-      resource = await qa.question.toExternal(resource)
+      const resource = await qa.question.getFullQuestionById(resource_id)
 
-      let creator = await account.user.getFullUserById(creator_id)
-      creator = await account.user.toExternal(creator)
+      const creator = await account.user.getFullUserById(creator_id)
 
-      let user = await account.user.getFullUserById(user_id)
-      user = await account.user.toExternal(user)
+      const user = await account.user.getFullUserById(user_id)
 
       return {
         id: invite.id,
         type: 'question',
-        resource,
-        creator,
-        user,
+        resource: await qa.question.toExternal(resource),
+        creator: await account.user.toExternal(creator),
+        user: await account.user.toExternal(user),
         create_time: invite.create_time.getTime(),
       }
     }
