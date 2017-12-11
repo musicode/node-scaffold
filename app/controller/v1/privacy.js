@@ -37,29 +37,24 @@ module.exports = app => {
     async setActivityDenied() {
 
       const input = this.filter(this.input, {
-        user_ids: 'trim',
+        user_ids: 'array',
       })
 
       this.validate(input, {
-        user_ids: {
-          allowEmpty: true,
-          type: 'string',
-        },
+        user_ids: 'array',
       })
 
       const { account, privacy } = this.ctx.service
 
       const userIds = [ ]
 
-      if (input.user_ids) {
-        await util.each(
-          input.user_ids.split(','),
-          async userId => {
-            const user = await account.user.checkUserAvailableByNumber(userId)
-            userIds.push(user.id)
-          }
-        )
-      }
+      await util.each(
+        input.user_ids,
+        async userId => {
+          const user = await account.user.checkUserAvailableByNumber(userId)
+          userIds.push(user.id)
+        }
+      )
 
       await privacy.activityDenied.setDeniedUserList(userIds)
 
@@ -91,29 +86,24 @@ module.exports = app => {
     async setActivityBlocked() {
 
       const input = this.filter(this.input, {
-        user_ids: 'trim',
+        user_ids: 'array',
       })
 
       this.validate(input, {
-        user_ids: {
-          allowEmpty: true,
-          type: 'string',
-        },
+        user_ids: 'array',
       })
 
       const { account, privacy } = this.ctx.service
 
       const userIds = [ ]
 
-      if (input.user_ids) {
-        await util.each(
-          input.user_ids.split(','),
-          async userId => {
-            const user = await account.user.checkUserAvailableByNumber(userId)
-            userIds.push(user.id)
-          }
-        )
-      }
+      await util.each(
+        input.user_ids,
+        async userId => {
+          const user = await account.user.checkUserAvailableByNumber(userId)
+          userIds.push(user.id)
+        }
+      )
 
       await privacy.activityBlocked.setBlockedUserList(userIds)
 
@@ -200,29 +190,24 @@ module.exports = app => {
     async setBlacklist() {
 
       const input = this.filter(this.input, {
-        user_ids: 'trim',
+        user_ids: 'array',
       })
 
       this.validate(input, {
-        user_ids: {
-          allowEmpty: true,
-          type: 'string',
-        },
+        user_ids: 'array',
       })
 
       const { account, privacy } = this.ctx.service
 
       const userIds = [ ]
 
-      if (input.user_ids) {
-        await util.each(
-          input.user_ids.split(','),
-          async userId => {
-            const user = await account.user.checkUserAvailableByNumber(userId)
-            userIds.push(user.id)
-          }
-        )
-      }
+      await util.each(
+        input.user_ids,
+        async userId => {
+          const user = await account.user.checkUserAvailableByNumber(userId)
+          userIds.push(user.id)
+        }
+      )
 
       await privacy.blacklist.setBlacklist(userIds)
 
