@@ -23,7 +23,7 @@ module.exports = app => {
     get anonymous() {
       return {
         id: '',
-        avatar: '',
+        avatar: config.avatar.anonymous,
         nickname: '匿名用户',
         company: '',
         job: '',
@@ -214,7 +214,7 @@ module.exports = app => {
       }
 
       if (data.mobile) {
-        await this.service.account.session.checkVerifyCode(data.verify_code)
+        await this.service.account.session.checkVerifyCode(data.mobile, data.verify_code)
       }
 
       const user = await this.findOneBy({
@@ -412,7 +412,7 @@ module.exports = app => {
       const currentUser = await account.session.checkCurrentUser()
 
       // 判断验证码的有效性
-      await account.session.checkVerifyCode(data.verify_code)
+      await account.session.checkVerifyCode(data.mobile, data.verify_code)
 
       if (currentUser.mobile !== data.mobile) {
         await this.checkMobileAvailable(data.mobile)
@@ -541,7 +541,7 @@ module.exports = app => {
 
       const { account } = this.service
 
-      await account.session.checkVerifyCode(data.verify_code)
+      await account.session.checkVerifyCode(data.mobile, data.verify_code)
 
       const user = await this.findOneBy({
         mobile: data.mobile,

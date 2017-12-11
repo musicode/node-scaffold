@@ -557,7 +557,7 @@ module.exports = app => {
         list,
         async item => {
           const user = item.master
-          if (user.user_id !== currentUser.id) {
+          if (user.user_id != currentUser.id) {
             const hasInvite = await trace.invite.hasInviteQuestion(question.id, user.user_id, currentUser.id)
             users.push({
               user,

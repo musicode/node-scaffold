@@ -163,6 +163,10 @@ module.exports = app => {
             limit.USER_GENDER_FEMALE,
           ]
         },
+        domain: {
+          required: false,
+          type: 'domain',
+        },
         company: {
           required: false,
           allowEmpty: true,

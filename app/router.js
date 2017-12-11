@@ -713,6 +713,16 @@ module.exports = app => {
     v1.sms.signup
   )
 
+  app.post(
+    '/v1/sms/mobileUpdate',
+    v1.sms.updateMobile
+  )
+
+  app.post(
+    '/v1/sms/passwordReset',
+    v1.sms.resetPassword
+  )
+
   // =============================================
   // 地域
   // =============================================

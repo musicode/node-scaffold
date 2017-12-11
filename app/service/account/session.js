@@ -51,7 +51,15 @@ module.exports = app => {
       await redis.expire(key, expireTime / 1000)
     }
 
-    async checkVerifyCode(verifyCode) {
+    async setVerifyCode(mobile, verifyCode) {
+      await this.setExpire(
+        config.session.verifyCode,
+        `${mobile}:${verifyCode}`,
+        config.expireTime.verifyCode
+      )
+    }
+
+    async checkVerifyCode(mobile, verifyCode) {
       const { PARAM_INVALID } = code
       if (!verifyCode) {
         this.throw(
@@ -66,10 +74,10 @@ module.exports = app => {
         if (!value) {
           this.throw(
             PARAM_INVALID,
-            '未发送该验证码'
+            '未发送该验证码或验证码已过期'
           )
         }
-        if (value != verifyCode) {
+        if (value != `${mobile}:${verifyCode}`) {
           this.throw(
             PARAM_INVALID,
             '验证码错误'

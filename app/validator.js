@@ -9,8 +9,20 @@ const limit = require('./limit')
 validator.addRule(
   'mobile',
   (rule, value) => {
-    if (typeof value !== 'string' || !/1\d{10}/.test(value)) {
+    if (util.type(value) !== 'string' || !/1\d{10}/.test(value)) {
       return '手机号码格式错误'
+    }
+  }
+)
+
+validator.addRule(
+  'domain',
+  (rule, value) => {
+    if (util.type(value) !== 'string') {
+      return '参数错误'
+    }
+    if (!/^[a-z0-9_]+$/i.test(value)) {
+      return '只能包含字母、数字、下划线'
     }
   }
 )
@@ -18,7 +30,7 @@ validator.addRule(
 validator.addRule(
   'verify_code',
   (rule, value) => {
-    if (typeof value !== 'string' || !/\d{6}/.test(value)) {
+    if (util.type(value) !== 'string' || !/\d{6}/.test(value)) {
       return '验证码格式错误'
     }
   }

@@ -13,6 +13,13 @@ module.exports = app => {
 
       const { account } = this.service
 
+      if (!params.code) {
+        this.throw(
+          code.INNER_ERROR,
+          '缺少 params.code'
+        )
+      }
+
       const smsClient = new SMSClient({
         accessKeyId: config.sms.accessKey,
         secretAccessKey: config.sms.secretKey,
@@ -27,11 +34,7 @@ module.exports = app => {
       .then(
         async res => {
           if (res.Code === 'OK') {
-            await account.session.setExpire(
-              config.session.verifyCode,
-              params.code,
-              config.expireTime.verifyCode
-            )
+            await account.session.setVerifyCode(mobile, params.code)
           }
           else {
             this.throw(
