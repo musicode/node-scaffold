@@ -41,8 +41,6 @@ class BaseTraceService extends BaseService {
      */
     async hasTraceRemind(where, receiverId) {
 
-      const { trace } = this.service
-
       const record = await this.findOneBy(where)
 
       if (record) {

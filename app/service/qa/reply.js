@@ -24,7 +24,7 @@ module.exports = app => {
 
     async toExternal(reply) {
 
-      if (!('content' in reply)) {
+      if (util.type(reply.content) !== 'string') {
         reply = await this.getFullReplyById(reply)
       }
 

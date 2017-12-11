@@ -82,7 +82,7 @@ class BaseRemindService extends BaseService {
    * 取消提醒
    *
    * @param {number} traceId
-   * @param {number} receiverId
+   * @param {?number} receiverId
    */
   async removeRemind(traceId, receiverId) {
 
@@ -113,7 +113,7 @@ class BaseRemindService extends BaseService {
    * 是否已提醒
    *
    * @param {number} traceId
-   * @param {number} receiverId
+   * @param {?number} receiverId
    * @return {boolean}
    */
   async hasRemind(traceId, receiverId) {

@@ -24,7 +24,7 @@ module.exports = app => {
 
     async toExternal(comment) {
 
-      if (!('content' in comment)) {
+      if (util.type(comment.content) !== 'string') {
         comment = await this.getFullCommentById(comment)
       }
 

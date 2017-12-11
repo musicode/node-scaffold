@@ -24,7 +24,7 @@ module.exports = app => {
 
     async toExternal(consult) {
 
-      if (!('content' in consult)) {
+      if (util.type(consult.content) !== 'string') {
         consult = await this.getFullConsultById(consult)
       }
 
