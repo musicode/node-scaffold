@@ -66,7 +66,7 @@ module.exports = app => {
         }
       }
 
-      const { account, relation } = this.sevice
+      const { account, relation } = this.service
       const currentUser = await account.session.getCurrentUser()
       if (currentUser && currentUser.id !== id) {
         result.is_followee = relation.followee.hasFollow(currentUser.id, id)
