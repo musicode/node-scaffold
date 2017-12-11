@@ -34,7 +34,7 @@ module.exports = app => {
 
     async unfollow() {
 
-      const { relation } = this.ctx.service
+      const { relation, trace } = this.ctx.service
 
       const user = await this.checkUser()
 
