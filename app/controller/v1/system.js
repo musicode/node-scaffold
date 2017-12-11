@@ -54,23 +54,11 @@ module.exports = app => {
           required: false,
           type: 'sort_order',
         },
+        types: 'array',
+        fields: 'array',
       })
 
       const { types, fields } = input
-
-      if (util.type(types) !== 'array') {
-        this.throw(
-          code.PARAM_INVALID,
-          'types 必须传数组'
-        )
-      }
-
-      if (util.type(fields) !== 'array') {
-        this.throw(
-          code.PARAM_INVALID,
-          'fields 必须传数组'
-        )
-      }
 
       const { account, search, qa, article, project, trace } = this.ctx.service
 
@@ -104,6 +92,9 @@ module.exports = app => {
                 resourceType = trace.follow.TYPE_DEMAND
                 break
             }
+
+            const user = await account.user.getFullUserById(master.user.user_id)
+            master.user = await account.user.toExternal(user)
 
             if (resourceType) {
               master.has_follow = await trace.follow.hasTrace({
