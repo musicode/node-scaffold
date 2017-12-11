@@ -69,8 +69,8 @@ module.exports = app => {
       const { account, relation } = this.service
       const currentUser = await account.session.getCurrentUser()
       if (currentUser && currentUser.id !== id) {
-        result.is_followee = relation.followee.hasFollow(currentUser.id, id)
-        result.is_follower = relation.followee.hasFollow(id, currentUser.id)
+        result.is_followee = await relation.followee.hasFollow(currentUser.id, id)
+        result.is_follower = await relation.followee.hasFollow(id, currentUser.id)
       }
 
       result.id = number
