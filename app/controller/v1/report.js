@@ -40,6 +40,7 @@ module.exports = app => {
         ],
         content: {
           required: false,
+          allowEmpty: true,
           type: 'string',
         },
       })
