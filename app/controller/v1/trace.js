@@ -45,6 +45,7 @@ module.exports = app => {
         )
 
         input.user_number = friendNumbers
+        input.user_ids = friendIds
 
         const result = await search.news(input)
 

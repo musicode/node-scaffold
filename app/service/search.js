@@ -120,7 +120,7 @@ module.exports = app => {
       const data = util.filterObject(
         params,
         [
-          'page', 'page_size', 'user_number', 'max_content_length', 'ts',
+          'page', 'page_size', 'user_number', 'user_ids', 'max_content_length', 'ts',
         ]
       )
 
