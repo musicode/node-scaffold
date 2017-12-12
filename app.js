@@ -32,13 +32,9 @@ module.exports = app => {
     }
 
     validate(data, rules) {
-      const errors = validator.validate(rules, data)
+      const errors = validator.validate(data, rules)
       if (errors) {
-        errors.forEach(
-          error => {
-            this.output[ error.field ] = error.message
-          }
-        )
+        this.output = errors
         this.throw(
           code.PARAM_INVALID,
           'param invalid'

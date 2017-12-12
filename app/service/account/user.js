@@ -41,6 +41,7 @@ module.exports = app => {
     }
 
     async toExternal(user) {
+
       const result = { }
       Object.assign(result, user)
 

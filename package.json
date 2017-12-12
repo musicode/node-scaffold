@@ -18,7 +18,8 @@
     "qiniu": "^7.1.1",
     "striptags": "^3.1.1",
     "ua-device": "^0.1.10",
-    "uuid": "^3.1.0"
+    "uuid": "^3.1.0",
+    "x-validator": "0.0.2"
   },
   "devDependencies": {
     "autod": "^3.0.1",

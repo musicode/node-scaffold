@@ -1,12 +1,47 @@
 'use strict'
 
-const Parameter = require('parameter')
+const Validator = require('x-validator')
 
-const validator = new Parameter()
+const validator = new Validator(
+  (key, value, errorReason, rule) => {
+    switch (errorReason) {
+      case 'required':
+        return '缺少' + key
+
+      case 'type':
+        return type + '类型错误'
+
+      case 'empty':
+        return key + '不能为空字符串'
+
+      case 'pattern':
+        return key + '格式错误'
+
+      case 'min':
+        if (typeof value === 'number') {
+          return key + '不能小余' + rule.min
+        }
+        else {
+          return key + '长度不能小余' + rule.min
+        }
+
+      case 'max':
+        if (typeof value === 'number') {
+          return key + '不能小余' + rule.min
+        }
+        else {
+          return key + '长度不能小余' + rule.min
+        }
+
+      case 'itemType':
+        return key + '数组类型错误'
+    }
+  }
+)
 const util = require('./util')
 const limit = require('./limit')
 
-validator.addRule(
+validator.add(
   'mobile',
   (rule, value) => {
     if (util.type(value) !== 'string' || !/1\d{10}/.test(value)) {
@@ -15,7 +50,7 @@ validator.addRule(
   }
 )
 
-validator.addRule(
+validator.add(
   'domain',
   (rule, value) => {
     if (util.type(value) !== 'string') {
@@ -27,7 +62,7 @@ validator.addRule(
   }
 )
 
-validator.addRule(
+validator.add(
   'verify_code',
   (rule, value) => {
     if (util.type(value) !== 'string' || !/\d{6}/.test(value)) {
@@ -36,7 +71,7 @@ validator.addRule(
   }
 )
 
-validator.addRule(
+validator.add(
   'end_date',
   (rule, value) => {
     if (!value || util.type('value') !== 'string') {
@@ -48,7 +83,7 @@ validator.addRule(
   }
 )
 
-validator.addRule(
+validator.add(
   'page',
   (rule, value) => {
     if (value != null) {
@@ -59,7 +94,7 @@ validator.addRule(
   }
 )
 
-validator.addRule(
+validator.add(
   'page_size',
   (rule, value) => {
     if (value != null) {
@@ -70,7 +105,7 @@ validator.addRule(
   }
 )
 
-validator.addRule(
+validator.add(
   'sort_by',
   (rule, value) => {
     if (value) {
@@ -81,7 +116,7 @@ validator.addRule(
   }
 )
 
-validator.addRule(
+validator.add(
   'sort_order',
   (rule, value) => {
     if (value) {

@@ -28,7 +28,7 @@ module.exports = app => {
         },
         degree: limit.EDUCATION_DEGREE_VALUES,
         description: {
-          allowEmpty: true,
+          empty: true,
           type: 'string',
           max: limit.CAREER_DESCRIPTION_MAX_LENGTH,
         },
@@ -70,7 +70,7 @@ module.exports = app => {
         },
         degree: limit.EDUCATION_DEGREE_VALUES,
         description: {
-          allowEmpty: true,
+          empty: true,
           type: 'string',
           max: limit.CAREER_DESCRIPTION_MAX_LENGTH,
         },

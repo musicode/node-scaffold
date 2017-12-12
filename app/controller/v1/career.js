@@ -26,7 +26,7 @@ module.exports = app => {
           max: limit.CAREER_JOB_MAX_LENGTH,
         },
         description: {
-          allowEmpty: true,
+          empty: true,
           type: 'string',
           max: limit.CAREER_DESCRIPTION_MAX_LENGTH,
         },
@@ -64,7 +64,7 @@ module.exports = app => {
           max: limit.CAREER_JOB_MAX_LENGTH,
         },
         description: {
-          allowEmpty: true,
+          empty: true,
           type: 'string',
           max: limit.CAREER_DESCRIPTION_MAX_LENGTH,
         },
