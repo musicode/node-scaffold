@@ -618,6 +618,7 @@ module.exports = app => {
       if (subCount == null) {
         subCount = await this.service.qa.reply.getReplyCount({
           question_id: questionId,
+          parent_id: 0,
         })
         await redis.hset(key, 'sub_count', subCount)
       }
