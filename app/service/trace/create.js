@@ -459,14 +459,16 @@ module.exports = app => {
     /**
      * 读取文章的评论数
      *
-     * @param {number} postId
+     * @param {?number} postId
      * @param {?number} creatorId
      * @return {number}
      */
     async getCreateCommentCount(postId, creatorId) {
       const where = {
-        resource_master_id: postId,
         resource_type: TYPE_COMMENT,
+      }
+      if (postId) {
+        where.resource_master_id = postId
       }
       if (creatorId) {
         where.creator_id = creatorId
@@ -477,15 +479,17 @@ module.exports = app => {
     /**
      * 获取文章的评论列表
      *
-     * @param {number} postId
+     * @param {?number} postId
      * @param {?number} creatorId
      * @param {Object} options
      * @return {Array}
      */
     async getCreateCommentList(postId, creatorId, options) {
       const where = {
-        resource_master_id: postId,
         resource_type: TYPE_COMMENT,
+      }
+      if (postId) {
+        where.resource_master_id = postId
       }
       if (creatorId) {
         where.creator_id = creatorId
@@ -785,14 +789,16 @@ module.exports = app => {
     /**
      * 读取项目的咨询数
      *
-     * @param {number} demandId
+     * @param {?number} demandId
      * @param {?number} creatorId
      * @return {number}
      */
     async getCreateConsultCount(demandId, creatorId) {
       const where = {
-        resource_master_id: demandId,
         resource_type: TYPE_CONSULT,
+      }
+      if (demandId) {
+        where.resource_master_id = demandId
       }
       if (creatorId) {
         where.creator_id = creatorId
@@ -803,15 +809,17 @@ module.exports = app => {
     /**
      * 获取项目的咨询列表
      *
-     * @param {number} demandId
+     * @param {?number} demandId
      * @param {?number} creatorId
      * @param {Object} options
      * @return {Array}
      */
     async getCreateConsultList(demandId, creatorId, options) {
       const where = {
-        resource_master_id: demandId,
         resource_type: TYPE_CONSULT,
+      }
+      if (demandId) {
+        where.resource_master_id = demandId
       }
       if (creatorId) {
         where.creator_id = creatorId
@@ -1140,14 +1148,16 @@ module.exports = app => {
     /**
      * 读取问题的回复数
      *
-     * @param {number} questionId
+     * @param {?number} questionId
      * @param {?number} creatorId
      * @return {number}
      */
     async getCreateReplyCount(questionId, creatorId) {
       const where = {
-        resource_master_id: questionId,
         resource_type: TYPE_REPLY,
+      }
+      if (questionId) {
+        where.resource_master_id = questionId
       }
       if (creatorId) {
         where.creator_id = creatorId
@@ -1158,15 +1168,17 @@ module.exports = app => {
     /**
      * 获取问题的回复列表
      *
-     * @param {number} questionId
+     * @param {?number} questionId
      * @param {?number} creatorId
      * @param {Object} options
      * @return {Array}
      */
     async getCreateReplyList(questionId, creatorId, options) {
       const where = {
-        resource_master_id: questionId,
         resource_type: TYPE_REPLY,
+      }
+      if (questionId) {
+        where.resource_master_id = questionId
       }
       if (creatorId) {
         where.creator_id = creatorId

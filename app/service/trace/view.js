@@ -197,14 +197,16 @@ module.exports = app => {
     /**
      * 读取文章的浏览数
      *
-     * @param {number} postId
+     * @param {?number} postId
      * @param {?number} creatorId
      * @return {number}
      */
     async getViewPostCount(postId, creatorId) {
       const where = {
-        resource_id: postId,
         resource_type: TYPE_POST,
+      }
+      if (postId) {
+        where.resource_id = postId
       }
       if (creatorId) {
         where.creator_id = creatorId
@@ -215,15 +217,17 @@ module.exports = app => {
     /**
      * 获取文章的浏览列表
      *
-     * @param {number} postId
+     * @param {?number} postId
      * @param {?number} creatorId
      * @param {Object} options
      * @return {Array}
      */
     async getViewPostList(postId, creatorId, options) {
       const where = {
-        resource_id: postId,
         resource_type: TYPE_POST,
+      }
+      if (postId) {
+        where.resource_id = postId
       }
       if (creatorId) {
         where.creator_id = creatorId
@@ -377,14 +381,16 @@ module.exports = app => {
     /**
      * 读取项目的浏览数
      *
-     * @param {number} demandId
+     * @param {?number} demandId
      * @param {?number} creatorId
      * @return {number}
      */
     async getViewDemandCount(demandId, creatorId) {
       const where = {
-        resource_id: demandId,
         resource_type: TYPE_DEMAND,
+      }
+      if (demandId) {
+        where.resource_id = demandId
       }
       if (creatorId) {
         where.creator_id = creatorId
@@ -395,15 +401,17 @@ module.exports = app => {
     /**
      * 获取项目的浏览列表
      *
-     * @param {number} demandId
+     * @param {?number} demandId
      * @param {?number} creatorId
      * @param {Object} options
      * @return {Array}
      */
     async getViewDemandList(demandId, creatorId, options) {
       const where = {
-        resource_id: demandId,
         resource_type: TYPE_DEMAND,
+      }
+      if (demandId) {
+        where.resource_id = demandId
       }
       if (creatorId) {
         where.creator_id = creatorId
@@ -560,14 +568,16 @@ module.exports = app => {
     /**
      * 读取问题的浏览数
      *
-     * @param {number} questionId
+     * @param {?number} questionId
      * @param {?number} creatorId
      * @return {number}
      */
     async getViewQuestionCount(questionId, creatorId) {
       const where = {
-        resource_id: questionId,
         resource_type: TYPE_QUESTION,
+      }
+      if (questionId) {
+        where.resource_id = questionId
       }
       if (creatorId) {
         where.creator_id = creatorId
@@ -578,15 +588,17 @@ module.exports = app => {
     /**
      * 获取问题的浏览列表
      *
-     * @param {number} questionId
+     * @param {?number} questionId
      * @param {?number} creatorId
      * @param {Object} options
      * @return {Array}
      */
     async getViewQuestionList(questionId, creatorId, options) {
       const where = {
-        resource_id: questionId,
         resource_type: TYPE_QUESTION,
+      }
+      if (questionId) {
+        where.resource_id = questionId
       }
       if (creatorId) {
         where.creator_id = creatorId
@@ -745,14 +757,16 @@ module.exports = app => {
     /**
      * 读取用户的浏览数
      *
-     * @param {number} userId
+     * @param {?number} userId
      * @param {?number} creatorId
      * @return {number}
      */
     async getViewUserCount(userId, creatorId) {
       const where = {
-        resource_id: userId,
         resource_type: TYPE_USER,
+      }
+      if (userId) {
+        where.resource_id = userId
       }
       if (creatorId) {
         where.creator_id = creatorId
@@ -763,15 +777,17 @@ module.exports = app => {
     /**
      * 获取用户的浏览列表
      *
-     * @param {number} userId
+     * @param {?number} userId
      * @param {?number} creatorId
      * @param {Object} options
      * @return {Array}
      */
     async getViewUserList(userId, creatorId, options) {
       const where = {
-        resource_id: userId,
         resource_type: TYPE_USER,
+      }
+      if (userId) {
+        where.resource_id = userId
       }
       if (creatorId) {
         where.creator_id = creatorId

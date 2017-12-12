@@ -304,14 +304,16 @@ module.exports = app => {
     /**
      * 读取文章的关注数
      *
-     * @param {number} postId
+     * @param {?number} postId
      * @param {?number} creatorId
      * @return {number}
      */
     async getFollowPostCount(postId, creatorId) {
       const where = {
-        resource_id: postId,
         resource_type: TYPE_POST,
+      }
+      if (postId) {
+        where.resource_id = postId
       }
       if (creatorId) {
         where.creator_id = creatorId
@@ -322,15 +324,17 @@ module.exports = app => {
     /**
      * 获取文章的关注列表
      *
-     * @param {number} postId
+     * @param {?number} postId
      * @param {?number} creatorId
      * @param {Object} options
      * @return {Array}
      */
     async getFollowPostList(postId, creatorId, options) {
       const where = {
-        resource_id: postId,
         resource_type: TYPE_POST,
+      }
+      if (postId) {
+        where.resource_id = postId
       }
       if (creatorId) {
         where.creator_id = creatorId
@@ -520,14 +524,16 @@ module.exports = app => {
     /**
      * 读取项目的关注数
      *
-     * @param {number} demandId
+     * @param {?number} demandId
      * @param {?number} creatorId
      * @return {number}
      */
     async getFollowDemandCount(demandId, creatorId) {
       const where = {
-        resource_id: demandId,
         resource_type: TYPE_DEMAND,
+      }
+      if (demandId) {
+        where.resource_id = demandId
       }
       if (creatorId) {
         where.creator_id = creatorId
@@ -538,15 +544,17 @@ module.exports = app => {
     /**
      * 获取项目的关注列表
      *
-     * @param {number} demandId
+     * @param {?number} demandId
      * @param {?number} creatorId
      * @param {Object} options
      * @return {Array}
      */
     async getFollowDemandList(demandId, creatorId, options) {
       const where = {
-        resource_id: demandId,
         resource_type: TYPE_DEMAND,
+      }
+      if (demandId) {
+        where.resource_id = demandId
       }
       if (creatorId) {
         where.creator_id = creatorId
@@ -738,14 +746,16 @@ module.exports = app => {
     /**
      * 读取问题的关注数
      *
-     * @param {number} questionId
+     * @param {?number} questionId
      * @param {?number} creatorId
      * @return {number}
      */
     async getFollowQuestionCount(questionId, creatorId) {
       const where = {
-        resource_id: questionId,
         resource_type: TYPE_QUESTION,
+      }
+      if (questionId) {
+        where.resource_id = questionId
       }
       if (creatorId) {
         where.creator_id = creatorId
@@ -756,15 +766,17 @@ module.exports = app => {
     /**
      * 获取问题的关注列表
      *
-     * @param {number} questionId
+     * @param {?number} questionId
      * @param {?number} creatorId
      * @param {Object} options
      * @return {Array}
      */
     async getFollowQuestionList(questionId, creatorId, options) {
       const where = {
-        resource_id: questionId,
         resource_type: TYPE_QUESTION,
+      }
+      if (questionId) {
+        where.resource_id = questionId
       }
       if (creatorId) {
         where.creator_id = creatorId
@@ -956,14 +968,16 @@ module.exports = app => {
     /**
      * 读取回复的关注数
      *
-     * @param {number} replyId
+     * @param {?number} replyId
      * @param {?number} creatorId
      * @return {number}
      */
     async getFollowReplyCount(replyId, creatorId) {
       const where = {
-        resource_id: replyId,
         resource_type: TYPE_REPLY,
+      }
+      if (replyId) {
+        where.resource_id = replyId
       }
       if (creatorId) {
         where.creator_id = creatorId
@@ -974,15 +988,17 @@ module.exports = app => {
     /**
      * 获取回复的关注列表
      *
-     * @param {number} replyId
+     * @param {?number} replyId
      * @param {?number} creatorId
      * @param {Object} options
      * @return {Array}
      */
     async getFollowReplyList(replyId, creatorId, options) {
       const where = {
-        resource_id: replyId,
         resource_type: TYPE_REPLY,
+      }
+      if (replyId) {
+        where.resource_id = replyId
       }
       if (creatorId) {
         where.creator_id = creatorId
@@ -1171,14 +1187,16 @@ module.exports = app => {
     /**
      * 读取用户的关注数
      *
-     * @param {number} userId
-     * @param {number} creatorId
+     * @param {?number} userId
+     * @param {?number} creatorId
      * @return {number}
      */
     async getFollowUserCount(userId, creatorId) {
       const where = {
-        resource_id: userId,
         resource_type: TYPE_USER,
+      }
+      if (userId) {
+        where.resource_id = userId
       }
       if (creatorId) {
         where.creator_id = creatorId
@@ -1189,15 +1207,17 @@ module.exports = app => {
     /**
      * 获取用户的关注列表
      *
-     * @param {number} userId
-     * @param {number} creatorId
+     * @param {?number} userId
+     * @param {?number} creatorId
      * @param {Object} options
      * @return {Array}
      */
     async getFollowUserList(userId, creatorId, options) {
       const where = {
-        resource_id: userId,
         resource_type: TYPE_USER,
+      }
+      if (userId) {
+        where.resource_id = userId
       }
       if (creatorId) {
         where.creator_id = creatorId

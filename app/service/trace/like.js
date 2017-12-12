@@ -292,14 +292,16 @@ module.exports = app => {
     /**
      * 读取文章的点赞数
      *
-     * @param {number} postId
+     * @param {?number} postId
      * @param {?number} creatorId
      * @return {number}
      */
     async getLikePostCount(postId, creatorId) {
       const where = {
-        resource_id: postId,
         resource_type: TYPE_POST,
+      }
+      if (postId) {
+        where.resource_id = postId
       }
       if (creatorId) {
         where.creator_id = creatorId
@@ -310,15 +312,17 @@ module.exports = app => {
     /**
      * 获取文章的点赞列表
      *
-     * @param {number} postId
+     * @param {?number} postId
      * @param {?number} creatorId
      * @param {Object} options
      * @return {Array}
      */
     async getLikePostList(postId, creatorId, options) {
       const where = {
-        resource_id: postId,
         resource_type: TYPE_POST,
+      }
+      if (postId) {
+        where.resource_id = postId
       }
       if (creatorId) {
         where.creator_id = creatorId
@@ -509,14 +513,16 @@ module.exports = app => {
     /**
      * 读取项目的点赞数
      *
-     * @param {number} demandId
+     * @param {?number} demandId
      * @param {?number} creatorId
      * @return {number}
      */
     async getLikeDemandCount(demandId, creatorId) {
       const where = {
-        resource_id: demandId,
         resource_type: TYPE_DEMAND,
+      }
+      if (demandId) {
+        where.resource_id = demandId
       }
       if (creatorId) {
         where.creator_id = creatorId
@@ -527,15 +533,17 @@ module.exports = app => {
     /**
      * 获取项目的点赞列表
      *
-     * @param {number} demandId
+     * @param {?number} demandId
      * @param {?number} creatorId
      * @param {Object} options
      * @return {Array}
      */
     async getLikeDemandList(demandId, creatorId, options) {
       const where = {
-        resource_id: demandId,
         resource_type: TYPE_DEMAND,
+      }
+      if (demandId) {
+        where.resource_id = demandId
       }
       if (creatorId) {
         where.creator_id = creatorId
@@ -728,14 +736,16 @@ module.exports = app => {
     /**
      * 读取问题的点赞数
      *
-     * @param {number} questionId
+     * @param {?number} questionId
      * @param {?number} creatorId
      * @return {number}
      */
     async getLikeQuestionCount(questionId, creatorId) {
       const where = {
-        resource_id: questionId,
         resource_type: TYPE_QUESTION,
+      }
+      if (questionId) {
+        where.resource_id = questionId
       }
       if (creatorId) {
         where.creator_id = creatorId
@@ -746,15 +756,17 @@ module.exports = app => {
     /**
      * 获取问题的点赞列表
      *
-     * @param {number} questionId
+     * @param {?number} questionId
      * @param {?number} creatorId
      * @param {Object} options
      * @return {Array}
      */
     async getLikeQuestionList(questionId, creatorId, options) {
       const where = {
-        resource_id: questionId,
         resource_type: TYPE_QUESTION,
+      }
+      if (questionId) {
+        where.resource_id = questionId
       }
       if (creatorId) {
         where.creator_id = creatorId
@@ -948,14 +960,16 @@ module.exports = app => {
     /**
      * 读取回复的点赞数
      *
-     * @param {number} replyId
+     * @param {?number} replyId
      * @param {?number} creatorId
      * @return {number}
      */
     async getLikeReplyCount(replyId, creatorId) {
       const where = {
-        resource_id: replyId,
         resource_type: TYPE_REPLY,
+      }
+      if (replyId) {
+        where.resource_id = replyId
       }
       if (creatorId) {
         where.creator_id = creatorId
@@ -966,20 +980,22 @@ module.exports = app => {
     /**
      * 获取回复的点赞列表
      *
-     * @param {number} replyId
+     * @param {?number} replyId
      * @param {?number} creatorId
      * @param {Object} options
      * @return {Array}
      */
     async getLikeReplyList(replyId, creatorId, options) {
-      return await this.getTraceList(
-        {
-          creator_id: creatorId,
-          resource_id: replyId,
-          resource_type: TYPE_REPLY,
-        },
-        options
-      )
+      const where = {
+        resource_type: TYPE_REPLY,
+      }
+      if (replyId) {
+        where.resource_id = replyId
+      }
+      if (creatorId) {
+        where.creator_id = creatorId
+      }
+      return await this.getTraceList(where, options)
     }
 
     /**
