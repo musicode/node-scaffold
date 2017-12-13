@@ -138,20 +138,9 @@ module.exports = app => {
       })
 
       this.validate(input, {
-        title: {
-          type: 'string',
-          min: limit.QUESTION_TITLE_MIN_LENGTH,
-          max: limit.QUESTION_TITLE_MAX_LENGTH,
-        },
-        content: {
-          type: 'string',
-          min: limit.QUESTION_CONTENT_MIN_LENGTH,
-          max: limit.QUESTION_CONTENT_MAX_LENGTH,
-        },
-        anonymous: [
-          limit.ANONYMOUS_YES,
-          limit.ANONYMOUS_NO
-        ]
+        title: 'question_title',
+        content: 'question_content',
+        anonymous: 'anonymous',
       })
 
       const questionService = this.ctx.service.qa.question
@@ -174,20 +163,9 @@ module.exports = app => {
 
       this.validate(input, {
         question_id: 'string',
-        title: {
-          type: 'string',
-          min: limit.QUESTION_TITLE_MIN_LENGTH,
-          max: limit.QUESTION_TITLE_MAX_LENGTH,
-        },
-        content: {
-          type: 'string',
-          min: limit.QUESTION_CONTENT_MIN_LENGTH,
-          max: limit.QUESTION_CONTENT_MAX_LENGTH,
-        },
-        anonymous: [
-          limit.ANONYMOUS_YES,
-          limit.ANONYMOUS_NO
-        ]
+        title: 'question_title',
+        content: 'question_content',
+        anonymous: 'anonymous',
       })
 
       const questionService = this.ctx.service.qa.question
@@ -266,7 +244,7 @@ module.exports = app => {
         },
         sort_order: {
           required: false,
-          type: 'sort_order'
+          type: 'sort_order',
         },
       })
 

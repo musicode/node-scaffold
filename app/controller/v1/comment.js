@@ -143,14 +143,8 @@ module.exports = app => {
           required: false,
           type: 'number',
         },
-        content: {
-          type: 'string',
-          max: limit.COMMENT_CONTENT_MAX_LENGTH,
-        },
-        anonymous: [
-          limit.ANONYMOUS_YES,
-          limit.ANONYMOUS_NO,
-        ]
+        content: 'comment_content',
+        anonymous: 'anonymous',
       })
 
       const { article } = this.ctx.service
@@ -182,14 +176,8 @@ module.exports = app => {
 
       this.validate(input, {
         comment_id: 'string',
-        content: {
-          type: 'string',
-          max: limit.COMMENT_CONTENT_MAX_LENGTH,
-        },
-        anonymous: [
-          limit.ANONYMOUS_YES,
-          limit.ANONYMOUS_NO,
-        ]
+        content: 'comment_content',
+        anonymous: 'anonymous',
       })
 
       const commentService = this.ctx.service.article.comment

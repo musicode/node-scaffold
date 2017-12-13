@@ -20,38 +20,25 @@ module.exports = app => {
       })
 
       const rules = {
-        nickname: {
-          type: 'string',
-          max: limit.USER_NICKNAME_MAX_LENGTH,
-          min: limit.USER_NICKNAME_MIN_LENGTH,
-        },
-        gender: [
-          limit.USER_GENDER_MALE,
-          limit.USER_GENDER_FEMALE,
-        ],
+        nickname: 'nickname',
+        gender: 'gender',
         company: {
           required: false,
           empty: true,
-          type: 'string',
-          max: limit.CAREER_COMPANY_MAX_LENGTH,
+          type: 'career_company',
         },
         job: {
           required: false,
           empty: true,
-          type: 'string',
-          max: limit.CAREER_JOB_MAX_LENGTH,
+          type: 'career_job',
         },
         mobile: 'mobile',
-        password: {
-          type: 'string',
-          max: limit.USER_PASSWORD_MAX_LENGTH,
-          min: limit.USER_PASSWORD_MIN_LENGTH,
-        },
+        password: 'password',
         verify_code: 'verify_code'
       }
 
       if (config.system.signupByInvite) {
-        rules.invite_code = 'string'
+        rules.invite_code = 'invite_code'
       }
 
       this.validate(input, rules)
@@ -68,12 +55,12 @@ module.exports = app => {
 
       const input = this.filter(this.input, {
         username: 'trim',
-        password: ['trim', 'lower'],
+        password: 'trim',
       })
 
       this.validate(input, {
         username: 'mobile',
-        password: 'string',
+        password: 'password',
       })
 
       const userService = this.ctx.service.account.user

@@ -14,15 +14,8 @@ module.exports = app => {
       })
 
       this.validate(input, {
-        content: {
-          type: 'string',
-          min: limit.ISSUE_CONTENT_MIN_LENGTH,
-          max: limit.ISSUE_CONTENT_MAX_LENGTH,
-        },
-        anonymous: [
-          limit.ANONYMOUS_YES,
-          limit.ANONYMOUS_NO
-        ]
+        content: 'issue_content',
+        anonymous: 'anonymous',
       })
 
       const issueService = this.ctx.service.feedback.issue

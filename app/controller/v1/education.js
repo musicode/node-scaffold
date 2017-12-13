@@ -2,7 +2,7 @@
 
 module.exports = app => {
 
-  const { util, limit } = app
+  const { util } = app
 
   class EducationController extends app.BaseController {
 
@@ -18,22 +18,15 @@ module.exports = app => {
       })
 
       this.validate(input, {
-        college: {
-          type: 'string',
-          max: limit.CAREER_COMPANY_MAX_LENGTH,
-        },
-        speciality: {
-          type: 'string',
-          max: limit.CAREER_JOB_MAX_LENGTH,
-        },
-        degree: limit.EDUCATION_DEGREE_VALUES,
+        college: 'education_college',
+        speciality: 'education_speciality',
+        degree: 'education_degree',
         description: {
           empty: true,
-          type: 'string',
-          max: limit.CAREER_DESCRIPTION_MAX_LENGTH,
+          type: 'education_description',
         },
-        start_date: 'date',
-        end_date: 'end_date'
+        start_date: 'start_date',
+        end_date: 'end_date',
       })
 
       const educationService = this.ctx.service.account.education
@@ -60,22 +53,15 @@ module.exports = app => {
 
       this.validate(input, {
         education_id: 'string',
-        college: {
-          type: 'string',
-          max: limit.CAREER_COMPANY_MAX_LENGTH,
-        },
-        speciality: {
-          type: 'string',
-          max: limit.CAREER_JOB_MAX_LENGTH,
-        },
-        degree: limit.EDUCATION_DEGREE_VALUES,
+        college: 'education_college',
+        speciality: 'education_speciality',
+        degree: 'education_degree',
         description: {
           empty: true,
-          type: 'string',
-          max: limit.CAREER_DESCRIPTION_MAX_LENGTH,
+          type: 'education_description',
         },
-        start_date: 'date',
-        end_date: 'end_date'
+        start_date: 'start_date',
+        end_date: 'end_date',
       })
 
       const educationService = this.ctx.service.account.education

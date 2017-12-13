@@ -2,7 +2,7 @@
 
 module.exports = app => {
 
-  const { util, limit } = app
+  const { util } = app
 
   class ConsultController extends app.BaseController {
 
@@ -133,10 +133,7 @@ module.exports = app => {
           required: false,
           type: 'number',
         },
-        content: {
-          type: 'string',
-          max: limit.CONSULT_CONTENT_MAX_LENGTH,
-        }
+        content: 'consult_content',
       })
 
       const { project } = this.ctx.service
@@ -167,10 +164,7 @@ module.exports = app => {
 
       this.validate(input, {
         consult_id: 'string',
-        content: {
-          type: 'string',
-          max: limit.CONSULT_CONTENT_MAX_LENGTH,
-        },
+        content: 'consult_content',
       })
 
       const consultService = this.ctx.service.project.consult

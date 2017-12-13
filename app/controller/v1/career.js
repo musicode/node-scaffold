@@ -17,21 +17,14 @@ module.exports = app => {
       })
 
       this.validate(input, {
-        company: {
-          type: 'string',
-          max: limit.CAREER_COMPANY_MAX_LENGTH,
-        },
-        job: {
-          type: 'string',
-          max: limit.CAREER_JOB_MAX_LENGTH,
-        },
+        company: 'career_company',
+        job: 'career_job',
         description: {
           empty: true,
-          type: 'string',
-          max: limit.CAREER_DESCRIPTION_MAX_LENGTH,
+          type: 'career_description',
         },
-        start_date: 'date',
-        end_date: 'end_date'
+        start_date: 'start_date',
+        end_date: 'end_date',
       })
 
       const careerService = this.ctx.service.account.career
@@ -55,21 +48,14 @@ module.exports = app => {
 
       this.validate(input, {
         career_id: 'string',
-        company: {
-          type: 'string',
-          max: limit.CAREER_COMPANY_MAX_LENGTH,
-        },
-        job: {
-          type: 'string',
-          max: limit.CAREER_JOB_MAX_LENGTH,
-        },
+        company: 'career_company',
+        job: 'career_job',
         description: {
           empty: true,
-          type: 'string',
-          max: limit.CAREER_DESCRIPTION_MAX_LENGTH,
+          type: 'career_description',
         },
-        start_date: 'date',
-        end_date: 'end_date'
+        start_date: 'start_date',
+        end_date: 'end_date',
       })
 
       const careerService = this.ctx.service.account.career

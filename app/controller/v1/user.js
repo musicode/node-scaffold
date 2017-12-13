@@ -151,17 +151,11 @@ module.exports = app => {
       this.validate(input, {
         nickname: {
           required: false,
-          type: 'string',
-          max: limit.USER_NICKNAME_MAX_LENGTH,
-          min: limit.USER_NICKNAME_MIN_LENGTH,
+          type: 'nickname',
         },
         gender: {
           required: false,
-          type: 'enum',
-          values: [
-            limit.USER_GENDER_MALE,
-            limit.USER_GENDER_FEMALE,
-          ]
+          type: 'gender',
         },
         domain: {
           required: false,
@@ -170,14 +164,12 @@ module.exports = app => {
         company: {
           required: false,
           empty: true,
-          type: 'string',
-          max: limit.CAREER_COMPANY_MAX_LENGTH,
+          type: 'career_company',
         },
         job: {
           required: false,
           empty: true,
-          type: 'string',
-          max: limit.CAREER_JOB_MAX_LENGTH,
+          type: 'career_job',
         },
       })
 

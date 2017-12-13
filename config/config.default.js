@@ -1,5 +1,6 @@
 'use strict'
 
+const os = require('os')
 const path = require('path')
 const qiniu = require('qiniu')
 const moment = require('../app/moment')
@@ -88,7 +89,7 @@ module.exports = appInfo => {
   }
 
   config.upload = {
-    dir: path.join(appInfo.baseDir, 'upload'),
+    dir: os.tmpdir(),
   }
 
   // 因为运行时的配置会输出到 baseDir/run 目录

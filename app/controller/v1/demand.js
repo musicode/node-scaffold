@@ -2,7 +2,7 @@
 
 module.exports = app => {
 
-  const { util, limit } = app
+  const { util } = app
 
   class DemandController extends app.BaseController {
 
@@ -128,16 +128,8 @@ module.exports = app => {
       })
 
       this.validate(input, {
-        title: {
-          type: 'string',
-          min: limit.DEMAND_TITLE_MIN_LENGTH,
-          max: limit.DEMAND_TITLE_MAX_LENGTH,
-        },
-        content: {
-          type: 'string',
-          min: limit.DEMAND_CONTENT_MIN_LENGTH,
-          max: limit.DEMAND_CONTENT_MAX_LENGTH,
-        }
+        title: 'demand_title',
+        content: 'demand_content',
       })
 
       const demandService = this.ctx.service.project.demand
@@ -159,16 +151,8 @@ module.exports = app => {
 
       this.validate(input, {
         demand_id: 'string',
-        title: {
-          type: 'string',
-          min: limit.DEMAND_TITLE_MIN_LENGTH,
-          max: limit.DEMAND_TITLE_MAX_LENGTH,
-        },
-        content: {
-          type: 'string',
-          min: limit.DEMAND_CONTENT_MIN_LENGTH,
-          max: limit.DEMAND_CONTENT_MAX_LENGTH,
-        },
+        title: 'demand_title',
+        content: 'demand_content',
       })
 
       const demandService = this.ctx.service.project.demand

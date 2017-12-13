@@ -15,10 +15,9 @@ module.exports = app => {
       form.hash = 'md5'
       form.keepExtensions = true
       form.maxFieldsSize = 50 * 1024 * 1024
-      // if (config.upload.dir) {
-      //   form.uploadDir = config.upload.dir
-      // }
-
+      if (config.upload.dir) {
+        form.uploadDir = config.upload.dir
+      }
 
       return new Promise(resolve => {
 

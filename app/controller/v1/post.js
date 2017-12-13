@@ -138,20 +138,9 @@ module.exports = app => {
       })
 
       this.validate(input, {
-        title: {
-          type: 'string',
-          min: limit.POST_TITLE_MIN_LENGTH,
-          max: limit.POST_TITLE_MAX_LENGTH,
-        },
-        content: {
-          type: 'string',
-          min: limit.POST_CONTENT_MIN_LENGTH,
-          max: limit.POST_CONTENT_MAX_LENGTH,
-        },
-        anonymous: [
-          limit.ANONYMOUS_YES,
-          limit.ANONYMOUS_NO
-        ]
+        title: 'post_title',
+        content: 'post_content',
+        anonymous: 'anonymous',
       })
 
       const postService = this.ctx.service.article.post
@@ -174,20 +163,9 @@ module.exports = app => {
 
       this.validate(input, {
         post_id: 'string',
-        title: {
-          type: 'string',
-          min: limit.POST_TITLE_MIN_LENGTH,
-          max: limit.POST_TITLE_MAX_LENGTH,
-        },
-        content: {
-          type: 'string',
-          min: limit.POST_CONTENT_MIN_LENGTH,
-          max: limit.POST_CONTENT_MAX_LENGTH,
-        },
-        anonymous: [
-          limit.ANONYMOUS_YES,
-          limit.ANONYMOUS_NO
-        ]
+        title: 'post_title',
+        content: 'post_content',
+        anonymous: 'anonymous',
       })
 
       const postService = this.ctx.service.article.post
