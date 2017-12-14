@@ -164,7 +164,7 @@ module.exports = appInfo => {
   config.expireTime = {
     currentUser: moment.MONTH,
     captcha: 10 * moment.MINUTE,
-    verifyCode: 20 * moment.MINUTE,
+    verifyCode: 10 * moment.MINUTE,
   }
 
   return config
