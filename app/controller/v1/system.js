@@ -93,7 +93,7 @@ module.exports = app => {
                 break
             }
 
-            if (master.user) {
+            if (master.user && master.user.user_id) {
               const user = await account.user.getFullUserById(master.user.user_id)
               master.user = await account.user.toExternal(user)
             }
