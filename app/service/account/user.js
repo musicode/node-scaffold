@@ -215,7 +215,7 @@ module.exports = app => {
       }
 
       if (data.mobile) {
-        await this.service.account.session.checkVerifyCode(data.mobile, data.verify_code)
+        await account.session.checkVerifyCode(data.mobile, data.verify_code)
       }
 
       const user = await this.findOneBy({
@@ -278,6 +278,10 @@ module.exports = app => {
           code.DB_INSERT_ERROR,
           '注册失败'
         )
+      }
+
+      if (data.mobile) {
+        await account.session.removeVerifyCode()
       }
 
       await account.session.set(currentUser, userId)
@@ -421,19 +425,20 @@ module.exports = app => {
           mobile: data.mobile,
         }
         const rows = await this.update(fields, { id: currentUser.id })
-        if (rows === 1) {
-          await this.updateRedis(`user:${currentUser.id}`, fields)
-          eventEmitter.emit(
-            eventEmitter.USER_UPDATE,
-            {
-              userId: currentUser.id,
-              service: this.service,
-            }
-          )
-          return true
+        if (rows !== 1) {
+          return false
         }
-        return false
+        await this.updateRedis(`user:${currentUser.id}`, fields)
+        eventEmitter.emit(
+          eventEmitter.USER_UPDATE,
+          {
+            userId: currentUser.id,
+            service: this.service,
+          }
+        )
       }
+
+      await account.session.removeVerifyCode()
 
       return true
 
@@ -571,6 +576,7 @@ module.exports = app => {
             service: this.service,
           }
         )
+        await account.session.removeVerifyCode()
         return true
       }
       return false

@@ -51,12 +51,21 @@ module.exports = app => {
       await redis.expire(key, expireTime / 1000)
     }
 
+    async removeExpire(name) {
+      const key = `expire_session:${this.accessToken}:${name}`
+      await redis.del(key)
+    }
+
     async setVerifyCode(mobile, verifyCode) {
       await this.setExpire(
         config.session.verifyCode,
         `${mobile}:${verifyCode}`,
         config.expireTime.verifyCode
       )
+    }
+
+    async removeVerifyCode() {
+      await this.removeExpire(config.session.verifyCode)
     }
 
     async checkVerifyCode(mobile, verifyCode) {

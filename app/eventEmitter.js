@@ -11,7 +11,6 @@ const eventEmitter = new events.EventEmitter()
 eventEmitter.USER_CREATE = 'user_create'
 eventEmitter.USER_UPDATE = 'user_update'
 
-
 eventEmitter.POST_CREATE = 'post_create'
 eventEmitter.POST_UPDATE = 'post_update'
 
