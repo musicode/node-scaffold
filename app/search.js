@@ -79,6 +79,7 @@ async function upsertReply(data) {
   const { replyId, service } = data
 
   const reply = await service.qa.reply.getFullReplyById(replyId)
+  reply.view_count = 0
 
   service.search.upsert(
     'reply',
