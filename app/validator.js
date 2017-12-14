@@ -197,7 +197,12 @@ validator.add(
       rule = {
         required: rule.required,
         type: 'enum',
-        values: limit.EDUCATION_DEGREE_VALUES,
+        values: [
+          limit.EDUCATION_DEGREE_REGULAR,
+          limit.EDUCATION_DEGREE_MASTER,
+          limit.EDUCATION_DEGREE_DOCTOR,
+          limit.EDUCATION_DEGREE_OTHER,
+        ]
       }
 
       return checkString(rule, value)
