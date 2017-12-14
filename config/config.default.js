@@ -51,6 +51,19 @@ module.exports = appInfo => {
     secretKey: '',
   }
 
+  config.view = {
+    defaultViewEngine: 'etpl',
+    defaultExtension: '.html',
+  }
+
+  config.etpl = {
+    filters: {
+      slice(source, start, end) {
+        return source.slice(start, end)
+      }
+    }
+  }
+
   config.qiniu = {
     accessKey: '',
     secretKey: '',

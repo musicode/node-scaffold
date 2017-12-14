@@ -17,3 +17,8 @@ exports.filter = {
   enable: true,
   package: 'egg-filter',
 }
+
+exports.etpl = {
+  enable: true,
+  package: 'egg-view-etpl',
+}

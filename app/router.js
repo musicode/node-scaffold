@@ -5,6 +5,11 @@ module.exports = app => {
   const { controller } = app
   const { v1 } = controller
 
+  app.get(
+    '/test',
+    controller.test.test
+  )
+
   app.post(
     '/v1/auth/signup',
     v1.auth.signup
