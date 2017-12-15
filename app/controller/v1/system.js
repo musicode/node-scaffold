@@ -35,6 +35,7 @@ module.exports = app => {
     async search() {
 
       const input = this.filter(this.input, {
+        query: 'trim',
         page: 'number',
         page_size: 'number',
         sort_by: 'trim',
@@ -44,6 +45,11 @@ module.exports = app => {
       })
 
       this.validate(input, {
+        query: {
+          required: false,
+          empty: true,
+          type: 'string',
+        },
         page: 'page',
         page_size: 'page_size',
         sort_by: {
@@ -58,12 +64,7 @@ module.exports = app => {
         fields: 'array',
       })
 
-      const { types, fields } = input
-
       const { account, search, qa, article, project, trace } = this.ctx.service
-
-      input.types = input.types
-      input.fields = input.fields
 
       const currentUser = await account.session.getCurrentUser()
       const result = await search.search(input)

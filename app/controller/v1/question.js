@@ -491,6 +491,7 @@ module.exports = app => {
 
       const input = this.filter(this.input, {
         question_id: 'number',
+        query: 'trim',
         page: 'number',
         page_size: 'number',
         sort_order: 'string',
@@ -501,6 +502,11 @@ module.exports = app => {
         question_id: {
           required: false,
           type: 'number'
+        },
+        query: {
+          required: false,
+          empty: true,
+          type: 'string',
         },
         page: 'page',
         page_size: 'page_size',

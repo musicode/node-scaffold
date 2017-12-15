@@ -9,6 +9,8 @@ module.exports = app => {
     async friend() {
 
       const input = this.filter(this.input, {
+        ts: 'trim',
+        type: 'array',
         page: 'number',
         page_size: 'number',
         sort_by: 'trim',
@@ -16,6 +18,12 @@ module.exports = app => {
       })
 
       this.validate(input, {
+        ts: {
+          required: false,
+          empty: true,
+          type: 'string',
+        },
+        type: 'array',
         page: 'page',
         page_size: 'page_size',
         sort_by: {
@@ -33,24 +41,8 @@ module.exports = app => {
       const friendIds = await relation.friend.getFrienIdListForNews()
 
       if (friendIds.length) {
-        input.type = this.input.type
-
-        const friendNumbers = [ ]
-        await util.each(
-          friendIds,
-          async id => {
-            const { number } = await account.user.getUserById(id)
-            friendNumbers.push(number)
-          }
-        )
-
-        input.user_number = friendNumbers
         input.user_ids = friendIds
-
-        const result = await search.news(input)
-
-        this.ctx.body = result
-
+        this.ctx.body = await search.news(input)
       }
       else {
         this.output.list = [ ]
