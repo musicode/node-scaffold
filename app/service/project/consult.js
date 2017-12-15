@@ -235,6 +235,8 @@ module.exports = app => {
         )
       }
 
+      await redis.hset(`consult_stat:${consultId}`, 'sub_count', 0)
+
       await project.demand.increaseDemandSubCount(data.demand_id)
 
       if (data.parent_id) {
@@ -463,11 +465,7 @@ module.exports = app => {
      * @param {number} consultId
      */
     async increaseConsultSubCount(consultId) {
-      const key = `consult_stat:${consultId}`
-      const subCount = await redis.hget(key, 'sub_count')
-      if (subCount != null) {
-        await redis.hincrby(key, 'sub_count', 1)
-      }
+      await redis.hincrby(`consult_stat:${consultId}`, 'sub_count', 1)
     }
 
     /**
@@ -476,11 +474,7 @@ module.exports = app => {
      * @param {number} consultId
      */
     async decreaseConsultSubCount(consultId) {
-      const key = `consult_stat:${consultId}`
-      const subCount = await redis.hget(key, 'sub_count')
-      if (subCount != null) {
-        await redis.hincrby(key, 'sub_count', -1)
-      }
+      await redis.hincrby(`consult_stat:${consultId}`, 'sub_count', -1)
     }
 
     /**

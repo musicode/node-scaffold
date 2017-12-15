@@ -239,6 +239,11 @@ module.exports = app => {
         )
       }
 
+      await redis.hset(`post_stat:${postId}`, 'sub_count', 0)
+      await redis.hset(`post_stat:${postId}`, 'view_count', 0)
+      await redis.hset(`post_stat:${postId}`, 'like_count', 0)
+      await redis.hset(`post_stat:${postId}`, 'follow_count', 0)
+
       await account.user.increaseUserWriteCount(currentUser.id)
 
       eventEmitter.emit(
@@ -479,11 +484,7 @@ module.exports = app => {
      * @param {number} postId
      */
     async increasePostLikeCount(postId) {
-      const key = `post_stat:${postId}`
-      const likeCount = await redis.hget(key, 'like_count')
-      if (likeCount != null) {
-        await redis.hincrby(key, 'like_count', 1)
-      }
+      await redis.hincrby(`post_stat:${postId}`, 'like_count', 1)
     }
 
     /**
@@ -492,11 +493,7 @@ module.exports = app => {
      * @param {number} postId
      */
     async decreasePostLikeCount(postId) {
-      const key = `post_stat:${postId}`
-      const likeCount = await redis.hget(key, 'like_count')
-      if (likeCount != null) {
-        await redis.hincrby(key, 'like_count', -1)
-      }
+      await redis.hincrby(`post_stat:${postId}`, 'like_count', -1)
     }
 
     /**
@@ -524,11 +521,7 @@ module.exports = app => {
      * @param {number} postId
      */
     async increasePostFollowCount(postId) {
-      const key = `post_stat:${postId}`
-      const followCount = await redis.hget(key, 'follow_count')
-      if (followCount != null) {
-        await redis.hincrby(key, 'follow_count', 1)
-      }
+      await redis.hincrby(`post_stat:${postId}`, 'follow_count', 1)
     }
 
     /**
@@ -537,11 +530,7 @@ module.exports = app => {
      * @param {number} postId
      */
     async decreasePostFollowCount(postId) {
-      const key = `post_stat:${postId}`
-      const followCount = await redis.hget(key, 'follow_count')
-      if (followCount != null) {
-        await redis.hincrby(key, 'follow_count', -1)
-      }
+      await redis.hincrby(`post_stat:${postId}`, 'follow_count', -1)
     }
 
     /**
@@ -593,11 +582,7 @@ module.exports = app => {
      * @param {number} postId
      */
     async increasePostSubCount(postId) {
-      const key = `post_stat:${postId}`
-      const subCount = await redis.hget(key, 'sub_count')
-      if (subCount != null) {
-        await redis.hincrby(key, 'sub_count', 1)
-      }
+      await redis.hincrby(`post_stat:${postId}`, 'sub_count', 1)
     }
 
     /**
@@ -606,11 +591,7 @@ module.exports = app => {
      * @param {number} postId
      */
     async decreasePostSubCount(postId) {
-      const key = `post_stat:${postId}`
-      const subCount = await redis.hget(key, 'sub_count')
-      if (subCount != null) {
-        await redis.hincrby(key, 'sub_count', -1)
-      }
+      await redis.hincrby(`post_stat:${postId}`, 'sub_count', -1)
     }
 
     /**
