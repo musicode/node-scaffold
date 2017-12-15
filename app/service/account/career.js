@@ -89,7 +89,7 @@ module.exports = app => {
 
       const fields = this.getFields(data)
       if (fields) {
-        if (fields.end_date === limit.SOFAR) {
+        if (fields.end_date == limit.SOFAR) {
           fields.end_date = ''
         }
         this.checkDateRange(fields.start_date, fields.end_date)
@@ -114,7 +114,7 @@ module.exports = app => {
       await this.checkCareerOwner(careerId)
       const fields = this.getFields(data)
       if (fields) {
-        if (fields.end_date === limit.SOFAR) {
+        if (fields.end_date == limit.SOFAR) {
           fields.end_date = ''
         }
         this.checkDateRange(fields.start_date, fields.end_date)
