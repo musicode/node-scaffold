@@ -91,7 +91,7 @@ module.exports = app => {
       const fields = this.getFields(data)
       if (fields) {
         if (fields.end_date == limit.SOFAR) {
-          fields.end_date = ''
+          delete fields.end_date
         }
         this.checkDateRange(fields.start_date, fields.end_date)
         return await this.insert(fields)
@@ -117,7 +117,7 @@ module.exports = app => {
       const fields = this.getFields(data)
       if (fields) {
         if (fields.end_date == limit.SOFAR) {
-          fields.end_date = ''
+          delete fields.end_date
         }
         this.checkDateRange(fields.start_date, fields.end_date)
         const rows = await this.update(fields, { id: educationId })
