@@ -32,7 +32,7 @@ module.exports = app => {
           data: entity,
         }
       )
-
+console.log('upsert', response, entity)
       if (response.status !== 200) {
         this.throw(
           code.INNER_ERROR,
@@ -102,7 +102,7 @@ module.exports = app => {
           data,
         }
       )
-
+      console.log('search', response, config.server.search + '/search', data)
       // status/headers/res/data
       if (response.status !== 200) {
         this.throw(
