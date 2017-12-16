@@ -6,7 +6,7 @@ const BaseUploadService = require('./base')
 
 module.exports = app => {
 
-  const { code, config } = app
+  const { code, util, config } = app
 
   class VideoUpload extends BaseUploadService {
 
@@ -70,7 +70,7 @@ module.exports = app => {
       return {
         url: record.url,
         size: record.size,
-        duration: record.duration,
+        duration: util.toNumber(record.duration),
       }
 
     }
