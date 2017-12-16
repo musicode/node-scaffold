@@ -21,11 +21,16 @@ module.exports = app => {
 
       return new Promise(resolve => {
 
+        const { ctx } = this
+
         form.parse(
-          this.ctx.req,
+          ctx.req,
           (err, fields, files) => {
             if (err) {
               throw err
+            }
+            if (fields && fields.access_token) {
+              ctx.accessToken = fields.access_token
             }
             resolve({
               fields,
@@ -40,9 +45,9 @@ module.exports = app => {
 
     async image() {
 
-      const { upload } = this.ctx.service
-
       const { files } = await this.uploading()
+
+      const { upload } = this.ctx.service
 
       this.output = await upload.image.addImage(files.file)
 
@@ -50,9 +55,9 @@ module.exports = app => {
 
     async audio() {
 
-      const { upload } = this.ctx.service
-
       const { fields, files } = await this.uploading()
+
+      const { upload } = this.ctx.service
 
       this.output = await upload.audio.addAudio(files.file, fields.duration)
 
@@ -60,9 +65,9 @@ module.exports = app => {
 
     async video() {
 
-      const { upload } = this.ctx.service
-
       const { fields, files } = await this.uploading()
+
+      const { upload } = this.ctx.service
 
       this.output = await upload.video.addVideo(files.file, fields.duration)
 
