@@ -36,6 +36,7 @@
   },
   "scripts": {
     "start": "egg-scripts start --env=local --daemon --port 8989 --title=egg-server",
+    "start-front": "egg-scripts start --env=local --port 8989 --title=egg-server",
     "stop": "egg-scripts stop",
     "dev": "egg-bin dev --port 8989",
     "start-dev": "egg-bin dev --daemon --port 8989",
