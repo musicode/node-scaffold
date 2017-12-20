@@ -53,6 +53,8 @@ module.exports = app => {
           result.can_delete = subCount === 0
         }
 
+        result.can_share = true
+
       }
 
       if (anonymous === limit.ANONYMOUS_YES) {
