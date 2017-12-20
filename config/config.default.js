@@ -20,7 +20,7 @@ module.exports = appInfo => {
   config.keys = appInfo.name + '_1509871538031_1201'
 
   config.system = {
-    appMinVersion: '1.0.1',
+    appMinVersion: '1.0.0',
     signupByInvite: false,
     ignoreInviteCode: true,
     ignoreVerifyCode: true,
