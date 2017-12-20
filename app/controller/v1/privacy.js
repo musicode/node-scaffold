@@ -1,7 +1,5 @@
 'use strict'
 
-// [TODO] user_ids 传递的参数需要数组化
-
 module.exports = app => {
 
   const { util } = app

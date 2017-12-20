@@ -8,7 +8,6 @@ module.exports = app => {
 
     async create() {
 
-      // [TODO] 待完善类型
       const { account, article, feedback } = this.ctx.service
 
       const input = this.filter(this.input, {

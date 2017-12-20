@@ -30,16 +30,6 @@ module.exports = app => {
 
   class Report extends app.BaseService {
 
-    get tableName() {
-      return 'feedback_report'
-    }
-
-    get fields() {
-      return [
-        'user_id', 'resource_id', 'resource_type', 'reason', 'content', 'status',
-      ]
-    }
-
     get TYPE_QUESTION() {
       return TYPE_QUESTION
     }
@@ -85,10 +75,20 @@ module.exports = app => {
       return REASON_OTHER
     }
 
+    get tableName() {
+      return 'feedback_report'
+    }
+
+    get fields() {
+      return [
+        'user_id', 'resource_id', 'resource_type', 'reason', 'content', 'status',
+      ]
+    }
+
     async toExternal(report) {
 
       // [TODO] 类型待完善
-      const { account, article } = this.service
+      const { account, article, project } = this.service
 
       let resource
 
@@ -101,6 +101,26 @@ module.exports = app => {
         case TYPE_COMMENT:
           resource = await article.comment.getFullCommentById(report.resource_id)
           resource = await article.comment.toExternal(resource)
+          break
+
+        case TYPE_DEMAND:
+          resource = await project.demand.getFullDemandById(report.resource_id)
+          resource = await project.demand.toExternal(resource)
+          break
+
+        case TYPE_CONSULT:
+          resource = await project.consult.getFullConsultById(report.resource_id)
+          resource = await project.consult.toExternal(resource)
+          break
+
+        case TYPE_QUESTION:
+          resource = await qa.question.getFullQuestionById(report.resource_id)
+          resource = await qa.question.toExternal(resource)
+          break
+
+        case TYPE_REPLY:
+          resource = await qa.reply.getFullReplyById(report.resource_id)
+          resource = await qa.reply.toExternal(resource)
           break
 
         case TYPE_USER:
