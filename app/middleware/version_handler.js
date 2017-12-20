@@ -9,7 +9,7 @@ module.exports = (options, app) => {
     // 版本格式是 x.x.x
     const version = ctx.input.app_version
 
-    if (util.type(version) !== 'string' || version.split('.') !== 3) {
+    if (util.type(version) !== 'string' || version.split('.').length !== 3) {
       util.throw(
         code.PERMISSION_DENIED,
         '无权限访问'
